@@ -3,20 +3,20 @@ package models
 import rl "github.com/gen2brain/raylib-go/raylib"
 
 type Rectangle struct {
-	pos rl.Vector2
-	box rl.Vector2
-	color  rl.Color
+	pos   rl.Vector2
+	box   rl.Vector2
+	color rl.Color
 }
 
 func NewRectangle(x, y float32) *Rectangle {
 	return &Rectangle{
-		pos: rl.NewVector2(x, y),
-		box: rl.NewVector2(20, 10),
-		color:  rl.Blue,
+		pos:   rl.NewVector2(x, y),
+		box:   rl.NewVector2(20, 10),
+		color: rl.Blue,
 	}
 }
 
-func (p Rectangle) ResolveCollission(callback CollissionCallback) {
+func (p Rectangle) ResolveCollision(callback CollisionCallback) {
 	callback(&p)
 }
 
@@ -36,7 +36,6 @@ func (p *Rectangle) SetColor(col rl.Color) *Rectangle {
 	p.color = col
 	return p
 }
-
 
 func (p *Rectangle) SetWidth(width float32) *Rectangle {
 	p.box.X = width

@@ -17,8 +17,8 @@ type Player struct {
 	fallSpeed int32
 
 	box              rl.Vector2
-	collissionsBoxes []CollissionBox
-	collissionsCheck []Collision
+	collisionsBoxes []CollisionBox
+	collisionsCheck []Collision
 
 	debugText Text
 }
@@ -31,8 +31,8 @@ func NewPlayer(x float32, y float32) *Player {
 		fallSpeed: 0,
 
 		box:              rl.NewVector2(100, 200),
-		collissionsBoxes: make([]CollissionBox, 0),
-		collissionsCheck: make([]Collision, 0),
+		collisionsBoxes: make([]CollisionBox, 0),
+		collisionsCheck: make([]Collision, 0),
 	}
 
 	p.debugText = *NewText(int32(x), int32(y)).
@@ -49,7 +49,7 @@ func (p Player) Draw() {
 }
 
 func (p *Player) Update(delta float32) {
-	
+
 	if rl.IsKeyDown(rl.KeySpace) && p.fallSpeed == 0 {
 		p.fallSpeed = -JUMP_SPEED
 	}
@@ -63,11 +63,11 @@ func (p *Player) Update(delta float32) {
 	}
 
 	p.fallSpeed += int32(GRAVITY * delta)
-	p.Pos.Y += float32(p.fallSpeed) * delta	
+	p.Pos.Y += float32(p.fallSpeed) * delta
 
-	p.updateCollissions()
+	p.updateCollisions()
 
-	if ok, pos, box := p.hasBottomCollission(); ok {	
+	if ok, pos, box := p.hasBottomCollision(); ok {
 
 		if p.fallSpeed < 0 {
 			p.fallSpeed *= -1
@@ -80,16 +80,16 @@ func (p *Player) Update(delta float32) {
 		}
 	}
 
-	if ok, pos, box := p.hasTopCollission(); ok {
+	if ok, pos, box := p.hasTopCollision(); ok {
 		p.fallSpeed = 0
-		
-		inaccurracy := float32(math.Min(float64(box.Y), float64(p.box.Y)/ 3))
+
+		inaccurracy := float32(math.Min(float64(box.Y), float64(p.box.Y)/3))
 
 		yRangeBegin := pos.Y - inaccurracy
 		yRangeEnd := pos.Y + inaccurracy
 
 		playerBottomLine := p.Pos.Y + p.box.Y
-		
+
 		if playerBottomLine >= yRangeBegin && playerBottomLine <= yRangeEnd {
 			p.Pos.Y = pos.Y - p.box.Y
 		}
@@ -98,9 +98,9 @@ func (p *Player) Update(delta float32) {
 	p.debugText.Update(delta)
 }
 
-func (p *Player) AddCollissionBox(cb CollissionBox) *Player {
-	p.collissionsBoxes = append(p.collissionsBoxes, cb)
-	p.collissionsCheck = append(p.collissionsCheck, Collision{})
+func (p *Player) AddCollisionBox(cb CollisionBox) *Player {
+	p.collisionsBoxes = append(p.collisionsBoxes, cb)
+	p.collisionsCheck = append(p.collisionsCheck, Collision{})
 	return p
 }
 
@@ -113,7 +113,7 @@ func (p Player) GetBox() *rl.Vector2 {
 }
 
 func (p Player) canMoveRight() bool {
-	for _, c := range p.collissionsCheck {
+	for _, c := range p.collisionsCheck {
 		if c.Left && c.Bottom {
 			return false
 		}
@@ -122,7 +122,7 @@ func (p Player) canMoveRight() bool {
 }
 
 func (p Player) canMoveLeft() bool {
-	for _, c := range p.collissionsCheck {
+	for _, c := range p.collisionsCheck {
 		if c.Right && c.Bottom {
 			return false
 		}
@@ -130,8 +130,8 @@ func (p Player) canMoveLeft() bool {
 	return true
 }
 
-func (p *Player) hasTopCollission() (bool, *rl.Vector2, *rl.Vector2) {
-	for _, c := range p.collissionsCheck {
+func (p *Player) hasTopCollision() (bool, *rl.Vector2, *rl.Vector2) {
+	for _, c := range p.collisionsCheck {
 		if c.Top {
 			return true, c.Y.GetPos(), c.Y.GetBox()
 		}
@@ -139,8 +139,8 @@ func (p *Player) hasTopCollission() (bool, *rl.Vector2, *rl.Vector2) {
 	return false, nil, nil
 }
 
-func (p *Player) hasBottomCollission() (bool, *rl.Vector2, *rl.Vector2) {
-	for _, c := range p.collissionsCheck {
+func (p *Player) hasBottomCollision() (bool, *rl.Vector2, *rl.Vector2) {
+	for _, c := range p.collisionsCheck {
 		if c.Bottom {
 			return true, c.Y.GetPos(), c.Y.GetBox()
 		}
@@ -148,18 +148,18 @@ func (p *Player) hasBottomCollission() (bool, *rl.Vector2, *rl.Vector2) {
 	return false, nil, nil
 }
 
-func (p *Player) updateCollissions() {
-	for i, _ := range p.collissionsBoxes {
-		cb := p.collissionsBoxes[i]
-		cb.ResolveCollission(func(bp BoxPosition) {
+func (p *Player) updateCollisions() {
+	for i, _ := range p.collisionsBoxes {
+		cb := p.collisionsBoxes[i]
+		cb.ResolveCollision(func(bp BoxPosition) {
 			res := DetectCollision(p, bp)
-			p.collissionsCheck[i].Intersected = res.Intersected
-			p.collissionsCheck[i].Top = res.Top
-			p.collissionsCheck[i].Bottom = res.Bottom
-			p.collissionsCheck[i].Right = res.Right
-			p.collissionsCheck[i].Left = res.Left
-			p.collissionsCheck[i].X = res.X
-			p.collissionsCheck[i].Y = res.Y
+			p.collisionsCheck[i].Intersected = res.Intersected
+			p.collisionsCheck[i].Top = res.Top
+			p.collisionsCheck[i].Bottom = res.Bottom
+			p.collisionsCheck[i].Right = res.Right
+			p.collisionsCheck[i].Left = res.Left
+			p.collisionsCheck[i].X = res.X
+			p.collisionsCheck[i].Y = res.Y
 		})
 	}
 }
@@ -172,19 +172,19 @@ func (p *Player) normalDebug() func(t *Text) {
 		t.SetX(int32(p.Pos.X) - int32(offset))
 		t.SetY(int32(p.Pos.Y))
 
-		collissions := ""
-		for i, c := range p.collissionsCheck {
+		collisions := ""
+		// for i, c := range p.collisionsCheck {
 
-			pos1 := c.X.GetPos()
-			box1 := c.X.GetBox()
+		// 	pos1 := c.X.GetPos()
+		// 	box1 := c.X.GetBox()
 
-			pos2 := c.Y.GetPos()
-			box2 := c.Y.GetBox()
+		// 	pos2 := c.Y.GetPos()
+		// 	box2 := c.Y.GetBox()
 
-			collissions += fmt.Sprintf("%d t: %v b: %v r: %v l: %v [{%.1f:%.1f %1.f:%1.f}, {%.1f:%.1f %1.f:%1.f}]\n",
-				i, c.Top, c.Bottom, c.Right, c.Left, pos1.X, pos1.Y, box1.X, box1.Y, pos2.X, pos2.Y, box2.X, box2.Y)
-		}
+		// 	collisions += fmt.Sprintf("%d t: %v b: %v r: %v l: %v [{%.1f:%.1f %1.f:%1.f}, {%.1f:%.1f %1.f:%1.f}]\n",
+		// 		i, c.Top, c.Bottom, c.Right, c.Left, pos1.X, pos1.Y, box1.X, box1.Y, pos2.X, pos2.Y, box2.X, box2.Y)
+		// }
 
-		t.SetData(fmt.Sprintf("x: %.1f y: %.1f fs: %d; \n%s", p.Pos.X, p.Pos.Y, p.fallSpeed, collissions))
+		t.SetData(fmt.Sprintf("x: %.1f y: %.1f fs: %d; \n%s", p.Pos.X, p.Pos.Y, p.fallSpeed, collisions))
 	}
 }

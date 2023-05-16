@@ -36,7 +36,7 @@ func Start() {
 	for i, _ := range rectangles {
 		rect := rectangles[i]
 		worldObjectContainer.AddObject(&rect)	
-		player.AddCollissionBox(rect)
+		player.AddCollisionBox(rect)
 	}
 
 	worldObjectContainer.AddObject(player)

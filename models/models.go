@@ -17,10 +17,10 @@ type BoxPosition interface {
 	Position
 }
 
-type CollissionCallback func(pos BoxPosition)
+type CollisionCallback func(pos BoxPosition)
 
-type CollissionBox interface {
-	ResolveCollission(callback CollissionCallback)
+type CollisionBox interface {
+	ResolveCollision(callback CollisionCallback)
 }
 
 type Object interface {
