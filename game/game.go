@@ -23,9 +23,16 @@ func Start() {
 
 	worldObjectContainer := container.NewObjectContainer()
 
+	rl.SetConfigFlags(rl.FlagMsaa4xHint)
+
+	worldObjectContainer.AddObject(
+		models.NewBezier(rl.NewVector2(WIDTH,600), rl.NewVector2(WIDTH+100,800), 10.0),
+		models.NewBezier(rl.NewVector2(WIDTH+400,800), rl.NewVector2(2*WIDTH+100,600), 10.0),
+	)
+
 	rectangles := []models.Rectangle{
-		*models.NewRectangle(0, 600).SetWidth(WIDTH).SetHeight(100),
 		*models.NewRectangle(100, 350).SetWidth(200).SetHeight(20),
+		*models.NewRectangle(0, 600).SetWidth(WIDTH).SetHeight(100),
 		*models.NewRectangle(800, 450).SetWidth(300).SetHeight(20),
 		*models.NewRectangle(WIDTH+100, 800).SetWidth(WIDTH).SetHeight(100),
 		*models.NewRectangle(2*WIDTH+100, 600).SetWidth(WIDTH).SetHeight(100),

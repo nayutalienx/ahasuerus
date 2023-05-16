@@ -14,8 +14,11 @@ func NewObjectContainer() ObjectContainer {
 	}
 }
 
-func (w *ObjectContainer) AddObject(obj models.Object) {
-	w.objects = append(w.objects, obj)
+func (w *ObjectContainer) AddObject(obj... models.Object) {
+	for i, _ := range obj {
+		o := obj[i]
+		w.objects = append(w.objects, o)
+	}
 }
 
 func (w ObjectContainer) Draw() {

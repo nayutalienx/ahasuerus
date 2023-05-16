@@ -167,7 +167,7 @@ func (p *Player) updateCollisions() {
 func (p *Player) normalDebug() func(t *Text) {
 	return func(t *Text) {
 
-		offset := 400
+		offset := 0
 
 		t.SetX(int32(p.Pos.X) - int32(offset))
 		t.SetY(int32(p.Pos.Y))
