@@ -60,24 +60,55 @@ func (p Player) Draw() {
 
 func (p *Player) Update(delta float32) {
 
-	if rl.IsKeyDown(rl.KeySpace) && p.fallSpeed == 0 {
+	hasCurveCollision, collisionedCurve := p.hasCurveCollision()
+
+	spacePressed := rl.IsKeyDown(rl.KeySpace)
+
+	if spacePressed && p.fallSpeed == 0 {
 		p.fallSpeed = -JUMP_SPEED
 	}
 
 	if rl.IsKeyDown(rl.KeyLeft) && p.canMoveLeft() {
-		p.Pos.X -= p.speed
+		if hasCurveCollision {
+			prev, _ := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
+			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.box.X, p.Pos.Y+p.box.Y))
+			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
+			p.Pos = rl.Vector2Add(p.Pos, movement)
+		} else {
+			p.Pos.X -= p.speed
+		}
 	}
 
 	if rl.IsKeyDown(rl.KeyRight) && p.canMoveRight() {
-		p.Pos.X += p.speed
+		if hasCurveCollision {
+			_, next := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
+			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.box.Y))
+			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
+			p.Pos = rl.Vector2Add(p.Pos, movement)
+		} else {
+			p.Pos.X += p.speed
+		}
 	}
 
 	p.fallSpeed += int32(GRAVITY * delta)
-	p.Pos.Y += float32(p.fallSpeed) * delta
+
+	shouldUpdateY := true
+
+	if hasCurveCollision {
+		shouldUpdateY = false
+	}
+
+	if hasCurveCollision && spacePressed {
+		shouldUpdateY = true
+	}
+
+	if shouldUpdateY {
+		p.Pos.Y += float32(p.fallSpeed) * delta
+	}
 
 	p.updateCollisions()
 
-	if ok, pos, box := p.hasBottomCollision(); ok {
+	if ok, pos, box := p.hasBottomBoxCollision(); ok {
 
 		if p.fallSpeed < 0 {
 			p.fallSpeed *= -1
@@ -90,7 +121,11 @@ func (p *Player) Update(delta float32) {
 		}
 	}
 
-	if ok, pos, box := p.hasTopCollision(); ok {
+	if hasCurveCollision {
+		p.fallSpeed = 0
+	}
+
+	if ok, pos, box := p.hasTopBoxCollision(); ok {
 		p.fallSpeed = 0
 
 		inaccurracy := float32(math.Min(float64(box.Y), float64(p.box.Y)/3))
@@ -148,7 +183,7 @@ func (p Player) canMoveLeft() bool {
 	return true
 }
 
-func (p *Player) hasTopCollision() (bool, *rl.Vector2, *rl.Vector2) {
+func (p *Player) hasTopBoxCollision() (bool, *rl.Vector2, *rl.Vector2) {
 	for _, c := range p.collisionBoxChecks {
 		if c.Top {
 			return true, c.Y.GetPos(), c.Y.GetBox()
@@ -157,13 +192,23 @@ func (p *Player) hasTopCollision() (bool, *rl.Vector2, *rl.Vector2) {
 	return false, nil, nil
 }
 
-func (p *Player) hasBottomCollision() (bool, *rl.Vector2, *rl.Vector2) {
+func (p *Player) hasBottomBoxCollision() (bool, *rl.Vector2, *rl.Vector2) {
 	for _, c := range p.collisionBoxChecks {
 		if c.Bottom {
 			return true, c.Y.GetPos(), c.Y.GetBox()
 		}
 	}
 	return false, nil, nil
+}
+
+func (p Player) hasCurveCollision() (bool, *CollisionBezierCheck) {
+	for i, _ := range p.collisionBezierChecks {
+		c := p.collisionBezierChecks[i]
+		if c.Colliding {
+			return true, &c
+		}
+	}
+	return false, nil
 }
 
 func (p *Player) updateCollisions() {
@@ -213,6 +258,10 @@ func (p *Player) normalDebug() func(t *Text) {
 		for i, _ := range p.collisionBezierChecks {
 			cp := p.collisionBezierChecks[i]
 			collisions += fmt.Sprintf("%d: %v %.1f %.1f \n", i, cp.Colliding, cp.Point.X, cp.Point.Y)
+			if cp.Colliding {
+				prev, next := CalculatePreviousNextPoints(cp.Point, cp.Curve.Start, cp.Curve.End)
+				collisions += fmt.Sprintf("prev {%.1f : %.1f} next {%.1f : %.1f} \n", prev.X, prev.Y, next.X, next.Y)
+			}
 		}
 		// for i, c := range p.collisionsCheck {
 
