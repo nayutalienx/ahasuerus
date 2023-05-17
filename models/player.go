@@ -7,8 +7,10 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-const JUMP_SPEED = 350
-const GRAVITY = 400
+const (
+	JUMP_SPEED = 350
+	GRAVITY    = 400
+)
 
 type Player struct {
 	Pos   rl.Vector2
@@ -16,9 +18,13 @@ type Player struct {
 
 	fallSpeed int32
 
-	box              rl.Vector2
-	collisionsBoxes []CollisionBox
-	collisionsCheck []Collision
+	box rl.Vector2
+
+	collisionBoxes     []CollisionBox
+	collisionBoxChecks []CollisionBoxCheck
+
+	collisionBeziers      []CollisionBezier
+	collisionBezierChecks []CollisionBezierCheck
 
 	debugText Text
 }
@@ -30,9 +36,13 @@ func NewPlayer(x float32, y float32) *Player {
 
 		fallSpeed: 0,
 
-		box:              rl.NewVector2(100, 200),
-		collisionsBoxes: make([]CollisionBox, 0),
-		collisionsCheck: make([]Collision, 0),
+		box: rl.NewVector2(100, 200),
+
+		collisionBoxes:     make([]CollisionBox, 0),
+		collisionBoxChecks: make([]CollisionBoxCheck, 0),
+
+		collisionBeziers:      make([]CollisionBezier, 0),
+		collisionBezierChecks: make([]CollisionBezierCheck, 0),
 	}
 
 	p.debugText = *NewText(int32(x), int32(y)).
@@ -99,8 +109,16 @@ func (p *Player) Update(delta float32) {
 }
 
 func (p *Player) AddCollisionBox(cb CollisionBox) *Player {
-	p.collisionsBoxes = append(p.collisionsBoxes, cb)
-	p.collisionsCheck = append(p.collisionsCheck, Collision{})
+	p.collisionBoxes = append(p.collisionBoxes, cb)
+	p.collisionBoxChecks = append(p.collisionBoxChecks, CollisionBoxCheck{})
+	return p
+}
+
+func (p *Player) AddCollisionBezier(bz *Bezier) *Player {
+	p.collisionBeziers = append(p.collisionBeziers, bz)
+	p.collisionBezierChecks = append(p.collisionBezierChecks, CollisionBezierCheck{
+		Curve: bz,
+	})
 	return p
 }
 
@@ -113,7 +131,7 @@ func (p Player) GetBox() *rl.Vector2 {
 }
 
 func (p Player) canMoveRight() bool {
-	for _, c := range p.collisionsCheck {
+	for _, c := range p.collisionBoxChecks {
 		if c.Left && c.Bottom {
 			return false
 		}
@@ -122,7 +140,7 @@ func (p Player) canMoveRight() bool {
 }
 
 func (p Player) canMoveLeft() bool {
-	for _, c := range p.collisionsCheck {
+	for _, c := range p.collisionBoxChecks {
 		if c.Right && c.Bottom {
 			return false
 		}
@@ -131,7 +149,7 @@ func (p Player) canMoveLeft() bool {
 }
 
 func (p *Player) hasTopCollision() (bool, *rl.Vector2, *rl.Vector2) {
-	for _, c := range p.collisionsCheck {
+	for _, c := range p.collisionBoxChecks {
 		if c.Top {
 			return true, c.Y.GetPos(), c.Y.GetBox()
 		}
@@ -140,7 +158,7 @@ func (p *Player) hasTopCollision() (bool, *rl.Vector2, *rl.Vector2) {
 }
 
 func (p *Player) hasBottomCollision() (bool, *rl.Vector2, *rl.Vector2) {
-	for _, c := range p.collisionsCheck {
+	for _, c := range p.collisionBoxChecks {
 		if c.Bottom {
 			return true, c.Y.GetPos(), c.Y.GetBox()
 		}
@@ -149,17 +167,36 @@ func (p *Player) hasBottomCollision() (bool, *rl.Vector2, *rl.Vector2) {
 }
 
 func (p *Player) updateCollisions() {
-	for i, _ := range p.collisionsBoxes {
-		cb := p.collisionsBoxes[i]
+	for i, _ := range p.collisionBoxes {
+		cb := p.collisionBoxes[i]
 		cb.ResolveCollision(func(bp BoxPosition) {
-			res := DetectCollision(p, bp)
-			p.collisionsCheck[i].Intersected = res.Intersected
-			p.collisionsCheck[i].Top = res.Top
-			p.collisionsCheck[i].Bottom = res.Bottom
-			p.collisionsCheck[i].Right = res.Right
-			p.collisionsCheck[i].Left = res.Left
-			p.collisionsCheck[i].X = res.X
-			p.collisionsCheck[i].Y = res.Y
+			res := DetectBoxCollision(p, bp)
+			p.collisionBoxChecks[i].Intersected = res.Intersected
+			p.collisionBoxChecks[i].Top = res.Top
+			p.collisionBoxChecks[i].Bottom = res.Bottom
+			p.collisionBoxChecks[i].Right = res.Right
+			p.collisionBoxChecks[i].Left = res.Left
+			p.collisionBoxChecks[i].X = res.X
+			p.collisionBoxChecks[i].Y = res.Y
+		})
+	}
+
+	for i, _ := range p.collisionBeziers {
+		bz := p.collisionBeziers[i]
+		bz.ResolveCollision(func(bezier *Bezier) {
+
+			startLine := rl.NewVector2(p.Pos.X, p.Pos.Y+p.box.Y)
+			endLine := rl.NewVector2(p.Pos.X+p.box.X, p.Pos.Y+p.box.Y)
+
+			colPoint := CheckCollisionLineBezier(
+				startLine,
+				endLine,
+				bezier.Start,
+				bezier.End,
+				float64(bezier.Thick))
+			p.collisionBezierChecks[i].Colliding = colPoint.Colliding
+			p.collisionBezierChecks[i].Point.X = colPoint.Point.X
+			p.collisionBezierChecks[i].Point.Y = colPoint.Point.Y
 		})
 	}
 }
@@ -173,6 +210,10 @@ func (p *Player) normalDebug() func(t *Text) {
 		t.SetY(int32(p.Pos.Y))
 
 		collisions := ""
+		for i, _ := range p.collisionBezierChecks {
+			cp := p.collisionBezierChecks[i]
+			collisions += fmt.Sprintf("%d: %v %.1f %.1f \n", i, cp.Colliding, cp.Point.X, cp.Point.Y)
+		}
 		// for i, c := range p.collisionsCheck {
 
 		// 	pos1 := c.X.GetPos()

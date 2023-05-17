@@ -1,15 +1,19 @@
 package models
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	"math"
 
-type Collision struct {
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
+
+type CollisionBoxCheck struct {
 	Intersected              bool
 	Top, Bottom, Left, Right bool
 	X                        BoxPosition
 	Y                        BoxPosition
 }
 
-func DetectCollision(boxPosition1, boxPosition2 BoxPosition) Collision {
+func DetectBoxCollision(boxPosition1, boxPosition2 BoxPosition) CollisionBoxCheck {
 	pos1 := boxPosition1.GetPos()
 	pos2 := boxPosition2.GetPos()
 
@@ -19,7 +23,7 @@ func DetectCollision(boxPosition1, boxPosition2 BoxPosition) Collision {
 	rect1 := rl.NewRectangle(pos1.X, pos1.Y, box1.X, box1.Y)
 	rect2 := rl.NewRectangle(pos2.X, pos2.Y, box2.X, box2.Y)
 
-	collision := Collision{
+	collision := CollisionBoxCheck{
 		X: boxPosition1,
 		Y: boxPosition2,
 	}
@@ -45,4 +49,69 @@ func DetectCollision(boxPosition1, boxPosition2 BoxPosition) Collision {
 	}
 
 	return collision
+}
+
+type CollisionBezierCheck struct {
+	Point     rl.Vector2
+	Colliding bool
+	Curve     *Bezier
+}
+
+func CheckCollisionLineBezier(lineStartPos, lineEndPos, bezierStartPos, bezierEndPos rl.Vector2, thickness float64) CollisionBezierCheck {
+	// Calculate the control points of the cubic-bezier curve with ease-in-out motion
+	cp1 := rl.Vector2{X: bezierStartPos.X + (bezierEndPos.X-bezierStartPos.X)/3, Y: bezierStartPos.Y}
+	cp2 := rl.Vector2{X: bezierStartPos.X + (bezierEndPos.X-bezierStartPos.X)*2/3, Y: bezierEndPos.Y}
+
+	// Check collision between the line segment and the cubic-bezier curve
+	return CheckLineBezierCollision(lineStartPos, lineEndPos, bezierStartPos, cp1, cp2, bezierEndPos, thickness)
+}
+
+func CheckLineBezierCollision(lineStartPos, lineEndPos, p0, p1, p2, p3 rl.Vector2, thickness float64) CollisionBezierCheck {
+	// Calculate the line direction and length
+	lineDir := rl.Vector2{X: lineEndPos.X - lineStartPos.X, Y: lineEndPos.Y - lineStartPos.Y}
+	lineLength := math.Sqrt(math.Pow(float64(lineDir.X), 2) + math.Pow(float64(lineDir.Y), 2))
+
+	// Normalize the line direction
+	lineDir.X /= float32(lineLength)
+	lineDir.Y /= float32(lineLength)
+
+	// Perform collision check using ray casting algorithm
+	for t := 0.0; t <= 1.0; t += 0.01 {
+		// Calculate the point on the cubic-bezier curve
+		bezierPoint := CalculateCubicBezierPoint(t, p0, p1, p2, p3)
+
+		// Calculate the vector from the line start position to the bezier point
+		lineToPoint := rl.Vector2{X: bezierPoint.X - lineStartPos.X, Y: bezierPoint.Y - lineStartPos.Y}
+
+		// Calculate the dot product between the line direction and line-to-point vector
+		dotProduct := lineDir.X*lineToPoint.X + lineDir.Y*lineToPoint.Y
+
+		// Check if the point is in front of the line segment
+		if dotProduct >= 0 && dotProduct <= float32(lineLength) {
+			// Calculate the distance between the line and the bezier point
+			distance := math.Abs(float64(lineDir.X*lineToPoint.Y - lineDir.Y*lineToPoint.X))
+
+			// Check if the distance is within a threshold (collision threshold)
+			if distance <= thickness/2 { // Adjust the threshold as needed
+				return CollisionBezierCheck{Point: bezierPoint, Colliding: true}
+			}
+		}
+	}
+
+	return CollisionBezierCheck{Colliding: false}
+}
+
+func CalculateCubicBezierPoint(t float64, p0, p1, p2, p3 rl.Vector2) rl.Vector2 {
+	u := 1 - t
+	tt := t * t
+	uu := u * u
+	uuu := uu * u
+	ttt := tt * t
+
+	p := rl.Vector2{
+		X: float32(uuu*float64(p0.X) + 3*uu*t*float64(p1.X) + 3*u*tt*float64(p2.X) + ttt*float64(p3.X)),
+		Y: float32(uuu*float64(p0.Y) + 3*uu*t*float64(p1.Y) + 3*u*tt*float64(p2.Y) + ttt*float64(p3.Y)),
+	}
+
+	return p
 }

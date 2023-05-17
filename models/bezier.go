@@ -5,27 +5,32 @@ import (
 )
 
 type Bezier struct {
-	start rl.Vector2
-	end   rl.Vector2
-	thick float32
+	Start rl.Vector2
+	End rl.Vector2
+
+	Thick float32
 	color rl.Color
 }
 
 func NewBezier(start, end rl.Vector2, thick float32) *Bezier {
 	return &Bezier{
-		start: start,
-		end:   end,
-		thick: thick,
+		Start:    start,
+		End:    end,
+		Thick: thick,
 		color: rl.Gold,
 	}
 }
 
 func (p *Bezier) Draw() {
-	rl.DrawLineBezier(p.start, p.end, p.thick, p.color)
+	rl.DrawLineBezier(p.Start, p.End, p.Thick, p.color)
 }
 
 func (p *Bezier) Update(delta float32) {
 
+}
+
+func (p *Bezier) ResolveCollision(callback CollisionBezierCallback) {
+	callback(p)
 }
 
 func (p Bezier) GetColor() rl.Color {

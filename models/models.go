@@ -17,10 +17,16 @@ type BoxPosition interface {
 	Position
 }
 
-type CollisionCallback func(pos BoxPosition)
+type CollisionBoxCallback func(pos BoxPosition)
 
 type CollisionBox interface {
-	ResolveCollision(callback CollisionCallback)
+	ResolveCollision(callback CollisionBoxCallback)
+}
+
+type CollisionBezierCallback func(bezier *Bezier)
+
+type CollisionBezier interface {
+	ResolveCollision(callback CollisionBezierCallback)
 }
 
 type Object interface {

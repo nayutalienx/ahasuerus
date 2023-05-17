@@ -25,10 +25,19 @@ func Start() {
 
 	rl.SetConfigFlags(rl.FlagMsaa4xHint)
 
-	worldObjectContainer.AddObject(
-		models.NewBezier(rl.NewVector2(WIDTH,600), rl.NewVector2(WIDTH+100,800), 10.0),
-		models.NewBezier(rl.NewVector2(WIDTH+400,800), rl.NewVector2(2*WIDTH+100,600), 10.0),
-	)
+	beziers := []models.Bezier{
+		*models.NewBezier(rl.NewVector2(0,150), rl.NewVector2(300,400), 20.0),
+		*models.NewBezier(rl.NewVector2(WIDTH,600), rl.NewVector2(WIDTH+100,800), 20.0),
+		*models.NewBezier(rl.NewVector2(WIDTH+400,800), rl.NewVector2(2*WIDTH+100,600), 20.0),
+	}
+
+	player := models.NewPlayer(100, 100)
+
+	for i, _ := range beziers {
+		bz := beziers[i]
+		worldObjectContainer.AddObject(&bz)
+		player.AddCollisionBezier(&bz)
+	}
 
 	rectangles := []models.Rectangle{
 		*models.NewRectangle(100, 350).SetWidth(200).SetHeight(20),
@@ -37,8 +46,6 @@ func Start() {
 		*models.NewRectangle(WIDTH+100, 800).SetWidth(WIDTH).SetHeight(100),
 		*models.NewRectangle(2*WIDTH+100, 600).SetWidth(WIDTH).SetHeight(100),
 	}
-
-	player := models.NewPlayer(100, 100)
 
 	for i, _ := range rectangles {
 		rect := rectangles[i]

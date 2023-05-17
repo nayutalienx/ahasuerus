@@ -16,7 +16,7 @@ func NewRectangle(x, y float32) *Rectangle {
 	}
 }
 
-func (p Rectangle) ResolveCollision(callback CollisionCallback) {
+func (p Rectangle) ResolveCollision(callback CollisionBoxCallback) {
 	callback(&p)
 }
 
