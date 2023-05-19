@@ -54,8 +54,14 @@ func NewPlayer(x float32, y float32) *Player {
 }
 
 func (p Player) Draw() {
-	rl.DrawRectangle(int32(p.Pos.X), int32(p.Pos.Y), int32(p.box.X), int32(p.box.Y), rl.DarkPurple)
+	rl.DrawRectangle(int32(p.Pos.X), int32(p.Pos.Y), int32(p.box.X), int32(p.box.Y), rl.NewColor(112, 31, 126, 50))
 	p.debugText.Draw()
+
+	for _, colPoint := range p.collisionBezierChecks {
+		if colPoint.Colliding {
+			rl.DrawCircle(int32(colPoint.Point.X), int32(colPoint.Point.Y), 4, rl.Orange)
+		}
+	}
 }
 
 func (p *Player) Update(delta float32) {
@@ -74,6 +80,7 @@ func (p *Player) Update(delta float32) {
 			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.box.X, p.Pos.Y+p.box.Y))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
+			rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
 		} else {
 			p.Pos.X -= p.speed
 		}
@@ -85,6 +92,7 @@ func (p *Player) Update(delta float32) {
 			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.box.Y))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
+			rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
 		} else {
 			p.Pos.X += p.speed
 		}
