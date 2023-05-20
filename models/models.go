@@ -17,6 +17,10 @@ type BoxPosition interface {
 	Position
 }
 
+type Scene interface {
+	Run() Scene
+}
+
 type CollisionBoxCallback func(pos BoxPosition)
 
 type CollisionBox interface {
