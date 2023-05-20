@@ -37,3 +37,13 @@ type Object interface {
 	Draw()
 	Update(delta float32)
 }
+
+type Resource interface {
+	Load()
+	Unload()
+}
+
+type ObjectResource interface {
+	Object
+	Resource
+}
