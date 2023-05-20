@@ -17,7 +17,7 @@ func NewStartScene() StartScene {
 
 func (StartScene) Run() models.Scene {
 
-	worldContainer := container.NewObjectContainer()
+	worldContainer := container.NewObjectResourceContainer()
 	beziers := []models.Bezier{
 		*models.NewBezier(rl.NewVector2(0, 150), rl.NewVector2(300, 400), 20.0),
 		*models.NewBezier(rl.NewVector2(WIDTH, 600), rl.NewVector2(WIDTH+100, 800), 20.0),
@@ -46,7 +46,7 @@ func (StartScene) Run() models.Scene {
 		player.AddCollisionBox(rect)
 	}
 
-	worldContainer.AddObject(player)
+	worldContainer.AddObjectResource(player)
 
 	environmentContainer := container.NewObjectResourceContainer()
 
@@ -72,6 +72,7 @@ func (StartScene) Run() models.Scene {
 			}))
 
 	environmentContainer.Load()
+	worldContainer.Load()
 
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT/2),
@@ -98,6 +99,7 @@ func (StartScene) Run() models.Scene {
 	}
 
 	environmentContainer.Unload()
+	worldContainer.Unload()
 
 	return NewMenuScene()
 }

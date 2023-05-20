@@ -8,12 +8,12 @@ import (
 )
 
 const (
-	FPS         = 60
 	APPLICATION = "ahasuerus"
 )
 
 var (
 	WIDTH, HEIGHT = config.GetResolution()
+	FPS           = config.GetFPS()
 )
 
 func Start() {
@@ -27,6 +27,6 @@ func Start() {
 	for nextScene != nil {
 		nextScene = nextScene.Run()
 	}
-	
+
 	rl.CloseAudioDevice()
 }

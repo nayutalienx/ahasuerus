@@ -18,13 +18,15 @@ type Player struct {
 
 	fallSpeed int32
 
-	box rl.Vector2
+	Box rl.Vector2
 
 	collisionBoxes     []CollisionBox
 	collisionBoxChecks []CollisionBoxCheck
 
 	collisionBeziers      []CollisionBezier
 	collisionBezierChecks []CollisionBezierCheck
+
+	runAnimation Animation
 
 	debugText Text
 }
@@ -36,7 +38,7 @@ func NewPlayer(x float32, y float32) *Player {
 
 		fallSpeed: 0,
 
-		box: rl.NewVector2(100, 200),
+		Box: rl.NewVector2(100, 200),
 
 		collisionBoxes:     make([]CollisionBox, 0),
 		collisionBoxChecks: make([]CollisionBoxCheck, 0),
@@ -53,10 +55,22 @@ func NewPlayer(x float32, y float32) *Player {
 	return p
 }
 
-func (p Player) Draw() {
-	rl.DrawRectangle(int32(p.Pos.X), int32(p.Pos.Y), int32(p.box.X), int32(p.box.Y), rl.NewColor(112, 31, 126, 50))
-	p.debugText.Draw()
+func (p *Player) Load() {
+	p.runAnimation = *NewAnimation("resources/heroes/tim_run.png", 27, 24)
+	p.runAnimation.Load()
 
+	p.Box.X = float32(p.runAnimation.StepInPixel)
+	p.Box.Y = float32(p.runAnimation.Texture.Height)
+}
+
+func (p *Player) Unload() {
+	p.runAnimation.Unload()
+}
+
+func (p Player) Draw() {
+	p.runAnimation.Draw()
+	
+	p.debugText.Draw()
 	for _, colPoint := range p.collisionBezierChecks {
 		if colPoint.Colliding {
 			rl.DrawCircle(int32(colPoint.Point.X), int32(colPoint.Point.Y), 4, rl.Orange)
@@ -65,6 +79,10 @@ func (p Player) Draw() {
 }
 
 func (p *Player) Update(delta float32) {
+
+	p.runAnimation.Pos.X = p.Pos.X
+	p.runAnimation.Pos.Y = p.Pos.Y
+	p.runAnimation.Update(delta)
 
 	hasCurveCollision, collisionedCurve := p.hasCurveCollision()
 
@@ -77,7 +95,7 @@ func (p *Player) Update(delta float32) {
 	if rl.IsKeyDown(rl.KeyLeft) && p.canMoveLeft() {
 		if hasCurveCollision {
 			prev, _ := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
-			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.box.X, p.Pos.Y+p.box.Y))
+			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 			rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
@@ -89,7 +107,7 @@ func (p *Player) Update(delta float32) {
 	if rl.IsKeyDown(rl.KeyRight) && p.canMoveRight() {
 		if hasCurveCollision {
 			_, next := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
-			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.box.Y))
+			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 			rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
@@ -136,15 +154,15 @@ func (p *Player) Update(delta float32) {
 	if ok, pos, box := p.hasTopBoxCollision(); ok {
 		p.fallSpeed = 0
 
-		inaccurracy := float32(math.Min(float64(box.Y), float64(p.box.Y)/3))
+		inaccurracy := float32(math.Min(float64(box.Y), float64(p.Box.Y)/3))
 
 		yRangeBegin := pos.Y - inaccurracy
 		yRangeEnd := pos.Y + inaccurracy
 
-		playerBottomLine := p.Pos.Y + p.box.Y
+		playerBottomLine := p.Pos.Y + p.Box.Y
 
 		if playerBottomLine >= yRangeBegin && playerBottomLine <= yRangeEnd {
-			p.Pos.Y = pos.Y - p.box.Y
+			p.Pos.Y = pos.Y - p.Box.Y
 		}
 	}
 
@@ -165,12 +183,12 @@ func (p *Player) AddCollisionBezier(bz *Bezier) *Player {
 	return p
 }
 
-func (p Player) GetPos() *rl.Vector2 {
+func (p *Player) GetPos() *rl.Vector2 {
 	return &p.Pos
 }
 
-func (p Player) GetBox() *rl.Vector2 {
-	return &p.box
+func (p *Player) GetBox() *rl.Vector2 {
+	return &p.Box
 }
 
 func (p Player) canMoveRight() bool {
@@ -238,8 +256,8 @@ func (p *Player) updateCollisions() {
 		bz := p.collisionBeziers[i]
 		bz.ResolveCollision(func(bezier *Bezier) {
 
-			startLine := rl.NewVector2(p.Pos.X, p.Pos.Y+p.box.Y)
-			endLine := rl.NewVector2(p.Pos.X+p.box.X, p.Pos.Y+p.box.Y)
+			startLine := rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y)
+			endLine := rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y)
 
 			colPoint := CheckCollisionLineBezier(
 				startLine,
