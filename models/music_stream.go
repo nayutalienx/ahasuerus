@@ -6,7 +6,8 @@ import (
 
 type MusicStream struct {
 	resourcePath string
-	music *rl.Music
+	volume       float32
+	music        *rl.Music
 }
 
 func NewMusicStream(resourcePath string) *MusicStream {
@@ -26,8 +27,16 @@ func (p *MusicStream) Load() {
 	musicTheme := rl.LoadMusicStream(p.resourcePath)
 	rl.PlayMusicStream(musicTheme)
 	p.music = &musicTheme
+	if p.volume > 0.0 {
+		rl.SetMusicVolume(*p.music, p.volume)
+	}
 }
 
 func (p *MusicStream) Unload() {
 	rl.UnloadMusicStream(*p.music)
+}
+
+func (p *MusicStream) SetVolume(v float32) *MusicStream {
+	p.volume = v
+	return p
 }

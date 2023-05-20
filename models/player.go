@@ -26,7 +26,10 @@ type Player struct {
 	collisionBeziers      []CollisionBezier
 	collisionBezierChecks []CollisionBezierCheck
 
-	runAnimation Animation
+	currentAnimation *Animation
+	runAnimation     *Animation
+	stayAnimation    *Animation
+	orientation      Orientation
 
 	debugText Text
 }
@@ -56,20 +59,24 @@ func NewPlayer(x float32, y float32) *Player {
 }
 
 func (p *Player) Load() {
-	p.runAnimation = *NewAnimation("resources/heroes/tim_run.png", 27, 24)
+	p.runAnimation = NewAnimation("resources/heroes/tim_run.png", 27, 24)
 	p.runAnimation.Load()
 
-	p.Box.X = float32(p.runAnimation.StepInPixel)
-	p.Box.Y = float32(p.runAnimation.Texture.Height)
+	p.stayAnimation = NewAnimation("resources/heroes/tim_stay.png", 22, 24)
+	p.stayAnimation.Load()
+
+	p.Box.X = float32(p.stayAnimation.StepInPixel)
+	p.Box.Y = float32(p.stayAnimation.Texture.Height)
 }
 
 func (p *Player) Unload() {
 	p.runAnimation.Unload()
+	p.stayAnimation.Unload()
 }
 
 func (p Player) Draw() {
-	p.runAnimation.Draw()
-	
+	p.currentAnimation.Draw()
+
 	p.debugText.Draw()
 	for _, colPoint := range p.collisionBezierChecks {
 		if colPoint.Colliding {
@@ -80,9 +87,7 @@ func (p Player) Draw() {
 
 func (p *Player) Update(delta float32) {
 
-	p.runAnimation.Pos.X = p.Pos.X
-	p.runAnimation.Pos.Y = p.Pos.Y
-	p.runAnimation.Update(delta)
+	p.currentAnimation = p.stayAnimation
 
 	hasCurveCollision, collisionedCurve := p.hasCurveCollision()
 
@@ -93,6 +98,7 @@ func (p *Player) Update(delta float32) {
 	}
 
 	if rl.IsKeyDown(rl.KeyLeft) && p.canMoveLeft() {
+		p.currentAnimation = p.runAnimation
 		if hasCurveCollision {
 			prev, _ := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
 			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y))
@@ -102,9 +108,11 @@ func (p *Player) Update(delta float32) {
 		} else {
 			p.Pos.X -= p.speed
 		}
+		p.orientation = Left
 	}
 
 	if rl.IsKeyDown(rl.KeyRight) && p.canMoveRight() {
+		p.currentAnimation = p.runAnimation
 		if hasCurveCollision {
 			_, next := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
 			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y))
@@ -114,6 +122,7 @@ func (p *Player) Update(delta float32) {
 		} else {
 			p.Pos.X += p.speed
 		}
+		p.orientation = Right
 	}
 
 	p.fallSpeed += int32(GRAVITY * delta)
@@ -165,6 +174,11 @@ func (p *Player) Update(delta float32) {
 			p.Pos.Y = pos.Y - p.Box.Y
 		}
 	}
+
+	p.currentAnimation.Pos.X = p.Pos.X
+	p.currentAnimation.Pos.Y = p.Pos.Y
+	p.currentAnimation.Orientation = p.orientation
+	p.currentAnimation.Update(delta)
 
 	p.debugText.Update(delta)
 }
@@ -289,17 +303,6 @@ func (p *Player) normalDebug() func(t *Text) {
 				collisions += fmt.Sprintf("prev {%.1f : %.1f} next {%.1f : %.1f} \n", prev.X, prev.Y, next.X, next.Y)
 			}
 		}
-		// for i, c := range p.collisionsCheck {
-
-		// 	pos1 := c.X.GetPos()
-		// 	box1 := c.X.GetBox()
-
-		// 	pos2 := c.Y.GetPos()
-		// 	box2 := c.Y.GetBox()
-
-		// 	collisions += fmt.Sprintf("%d t: %v b: %v r: %v l: %v [{%.1f:%.1f %1.f:%1.f}, {%.1f:%.1f %1.f:%1.f}]\n",
-		// 		i, c.Top, c.Bottom, c.Right, c.Left, pos1.X, pos1.Y, box1.X, box1.Y, pos2.X, pos2.Y, box2.X, box2.Y)
-		// }
 
 		t.SetData(fmt.Sprintf("x: %.1f y: %.1f fs: %d; \n%s", p.Pos.X, p.Pos.Y, p.fallSpeed, collisions))
 	}

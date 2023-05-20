@@ -61,7 +61,7 @@ func (StartScene) Run() models.Scene {
 				girl.Pos.X = WIDTH - WIDTH/12 - float32(girl.Texture.Width)
 				girl.Pos.Y = HEIGHT - float32(girl.Texture.Height)
 			}),
-		models.NewMusicStream("resources/music/theme.mp3"))
+		models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
 
 	environmentContainer.AddObject(
 		models.NewText(10, 10).
