@@ -9,8 +9,8 @@ type ObjectResourceContainer struct {
 	objectResources []models.ObjectResource
 }
 
-func NewObjectResourceContainer() ObjectResourceContainer {
-	return ObjectResourceContainer{
+func NewObjectResourceContainer() *ObjectResourceContainer {
+	return &ObjectResourceContainer{
 		objectResources: make([]models.ObjectResource, 0),
 	}
 }
@@ -26,6 +26,18 @@ func (w *ObjectResourceContainer) AddObjectResource(obj... models.ObjectResource
 func (w ObjectResourceContainer) Load() {
 	for _, o := range w.objectResources {
 		o.Load()
+	}
+}
+
+func (w ObjectResourceContainer) Pause() {
+	for _, o := range w.objectResources {
+		o.Pause()
+	}
+}
+
+func (w ObjectResourceContainer) Resume() {
+	for _, o := range w.objectResources {
+		o.Resume()
 	}
 }
 

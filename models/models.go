@@ -19,6 +19,7 @@ type BoxPosition interface {
 
 type Scene interface {
 	Run() Scene
+	Unload()
 }
 
 type CollisionBoxCallback func(pos BoxPosition)
@@ -40,6 +41,8 @@ type Object interface {
 
 type Resource interface {
 	Load()
+	Pause()
+	Resume()
 	Unload()
 }
 

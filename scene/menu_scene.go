@@ -8,33 +8,49 @@ import (
 )
 
 type MenuScene struct {
+	menuShouldClose bool
+	nextScene models.Scene
 }
 
-func NewMenuScene() models.Scene {
-	return MenuScene{}
-}
-
-func (m MenuScene) Run() models.Scene {
-	
-	menuShouldClose := false
-	var nextScene models.Scene
-
+func NewMenuScene() *MenuScene {
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 70)
+	return &MenuScene{}
+}
 
-	for !menuShouldClose {
+func (m *MenuScene) Run() models.Scene {
+
+	for !m.menuShouldClose {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		menuShouldClose = rl.WindowShouldClose()
+		m.menuShouldClose = rl.WindowShouldClose()
 
-		buttonClicked := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/2, 500, 200), "START")
-		if buttonClicked {
-			menuShouldClose = true
-			nextScene = NewStartScene()
+		startButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/6, 500, 200), "START")
+		if startButton {
+			m.menuShouldClose = true
+			m.nextScene = GetScene(Start)
+		}
+
+		closeButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/3, 500, 200), "CLOSE")
+		if closeButton {
+			m.menuShouldClose = true
+			m.nextScene = nil
+		}
+
+		if m.nextScene == nil {
+			rl.DrawText("next scene nil", 100, 100, 50, rl.Blue)
+		} else {
+			rl.DrawText("next scene not nil", 100, 100, 50, rl.Blue)
 		}
 
 		rl.EndDrawing()
 	}
 
-	return nextScene
+	m.menuShouldClose = false
+
+	return m.nextScene
+}
+
+func (m MenuScene) Unload() {
+
 }

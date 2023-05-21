@@ -9,27 +9,32 @@ import (
 )
 
 type StartScene struct {
+	worldContainer *container.ObjectResourceContainer
+	environmentContainer *container.ObjectResourceContainer
+	camera *rl.Camera2D
+	player *models.Player
+
+	paused bool
 }
 
-func NewStartScene() StartScene {
-	return StartScene{}
-}
+func NewStartScene() *StartScene {
+	startScene := StartScene{
+		worldContainer: container.NewObjectResourceContainer(),
+		environmentContainer: container.NewObjectResourceContainer(),
+	}
 
-func (StartScene) Run() models.Scene {
-
-	worldContainer := container.NewObjectResourceContainer()
 	beziers := []models.Bezier{
 		*models.NewBezier(rl.NewVector2(0, 150), rl.NewVector2(300, 400), 20.0),
 		*models.NewBezier(rl.NewVector2(WIDTH, 600), rl.NewVector2(WIDTH+100, 800), 20.0),
 		*models.NewBezier(rl.NewVector2(WIDTH+400, 800), rl.NewVector2(2*WIDTH+100, 600), 20.0),
 	}
 
-	player := models.NewPlayer(100, 100)
+	startScene.player = models.NewPlayer(100, 100)
 
 	for i, _ := range beziers {
 		bz := beziers[i]
-		worldContainer.AddObject(&bz)
-		player.AddCollisionBezier(&bz)
+		startScene.worldContainer.AddObject(&bz)
+		startScene.player.AddCollisionBezier(&bz)
 	}
 
 	rectangles := []models.Rectangle{
@@ -42,15 +47,13 @@ func (StartScene) Run() models.Scene {
 
 	for i, _ := range rectangles {
 		rect := rectangles[i]
-		worldContainer.AddObject(&rect)
-		player.AddCollisionBox(rect)
+		startScene.worldContainer.AddObject(&rect)
+		startScene.player.AddCollisionBox(rect)
 	}
 
-	worldContainer.AddObjectResource(player)
+	startScene.worldContainer.AddObjectResource(startScene.player)
 
-	environmentContainer := container.NewObjectResourceContainer()
-
-	environmentContainer.AddObjectResource(
+	startScene.environmentContainer.AddObjectResource(
 		models.NewImage("resources/bg/1.jpg", 0, 0).AfterLoadPreset(func(i *models.Image) {
 			i.Texture.Width = int32(WIDTH)
 			i.Texture.Height = int32(HEIGHT)
@@ -63,7 +66,7 @@ func (StartScene) Run() models.Scene {
 			}),
 		models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
 
-	environmentContainer.AddObject(
+	startScene.environmentContainer.AddObject(
 		models.NewText(10, 10).
 			SetFontSize(40).
 			SetColor(rl.White).
@@ -71,35 +74,61 @@ func (StartScene) Run() models.Scene {
 				t.SetData(fmt.Sprintf("fps: %d ", rl.GetFPS()))
 			}))
 
-	environmentContainer.Load()
-	worldContainer.Load()
+	startScene.environmentContainer.Load()
+	startScene.worldContainer.Load()
 
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT/2),
 		rl.NewVector2(0, 0),
 		0, 1)
+	startScene.camera = &camera
+
+	return &startScene
+}
+
+func (s *StartScene) Run() models.Scene {
+
+	if s.paused {
+		s.resume()
+	}
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 		delta := rl.GetFrameTime()
-		camera.Zoom += rl.GetMouseWheelMove() * 0.05
+		s.camera.Zoom += rl.GetMouseWheelMove() * 0.05
 
-		updateCameraSmooth(&camera, player, delta)
+		updateCameraSmooth(s.camera, s.player, delta)
 
-		environmentContainer.Update(delta)
-		environmentContainer.Draw()
+		s.environmentContainer.Update(delta)
+		s.environmentContainer.Draw()
 
-		rl.BeginMode2D(camera)
-		worldContainer.Update(delta)
-		worldContainer.Draw()
+		rl.BeginMode2D(*s.camera)
+		s.worldContainer.Update(delta)
+		s.worldContainer.Draw()
 		rl.EndMode2D()
 
 		rl.EndDrawing()
 	}
 
-	environmentContainer.Unload()
-	worldContainer.Unload()
+	s.pause()
 
-	return NewMenuScene()
+	return GetScene(Menu)
+}
+
+func (m *StartScene) Unload() {
+	m.environmentContainer.Unload()
+	m.worldContainer.Unload()	
+}
+
+func (s *StartScene) pause() {
+	s.worldContainer.Pause()
+	s.environmentContainer.Pause()
+	s.paused = true
+}
+
+func (s *StartScene) resume() {
+	s.worldContainer.Resume()
+	s.environmentContainer.Resume()
+	s.paused = false
 }

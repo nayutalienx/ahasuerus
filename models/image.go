@@ -47,6 +47,14 @@ func (p *Image) Load() {
 	}
 }
 
+func (p *Image) Resume() {
+	
+}
+
+func (p *Image) Pause() {
+	
+}
+
 func (p *Image) Unload() {
 	rl.UnloadTexture(p.Texture) // clear VRAM
 }

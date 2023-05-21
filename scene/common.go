@@ -1,16 +1,62 @@
 package scene
 
 import (
-	"ahasuerus/models"
 	"ahasuerus/config"
+	"ahasuerus/models"
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+type SceneId int
+
+const (
+	Menu SceneId = iota
+	Start
+)
+
 var (
 	WIDTH, HEIGHT = config.GetResolution()
+	sceneMap      = make(map[SceneId]models.Scene, 0)
 )
+
+func GetScene(id SceneId) models.Scene {
+	scene, ok := sceneMap[id]
+	if ok {
+		return scene
+	}
+
+	switch id {
+	case Menu:
+		scene = NewMenuScene()
+	case Start:
+		scene = NewStartScene()
+	}
+
+	if scene == nil {
+		panic("scene not found")
+	}
+	
+	sceneMap[id] = scene
+
+	return scene
+}
+
+func UnloadScene(id SceneId) {
+	scene, ok := sceneMap[id]
+	if ok {
+		scene.Unload()
+		delete(sceneMap, id)
+	} else {
+		panic("scene to unload not found")
+	}
+}
+
+func UnloadAllScenes() {
+	for _, scene := range sceneMap {
+		scene.Unload()
+	}
+}
 
 func updateCameraSmooth(camera *rl.Camera2D, player *models.Player, delta float32) {
 	minSpeed := 60.0
@@ -21,7 +67,7 @@ func updateCameraSmooth(camera *rl.Camera2D, player *models.Player, delta float3
 	length := rl.Vector2Length(diff)
 
 	if length > float32(minEffectLength) {
-		speed := float32(math.Max(fractionSpeed*float64(length),minSpeed))
+		speed := float32(math.Max(fractionSpeed*float64(length), minSpeed))
 		camera.Target = rl.Vector2Add(camera.Target, rl.Vector2Scale(diff, speed*delta/length))
 	}
 }

@@ -23,10 +23,12 @@ func Start() {
 	rl.InitAudioDevice()
 	rl.SetConfigFlags(rl.FlagMsaa4xHint)
 
-	nextScene := scene.NewMenuScene().Run()
+	nextScene := scene.GetScene(scene.Menu)
 	for nextScene != nil {
 		nextScene = nextScene.Run()
 	}
+
+	scene.UnloadAllScenes()
 
 	rl.CloseAudioDevice()
 }

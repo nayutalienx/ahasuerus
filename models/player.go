@@ -74,6 +74,14 @@ func (p *Player) Unload() {
 	p.stayAnimation.Unload()
 }
 
+func (p *Player) Resume() {
+	
+}
+
+func (p *Player) Pause() {
+	
+}
+
 func (p Player) Draw() {
 	p.currentAnimation.Draw()
 

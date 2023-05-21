@@ -32,6 +32,14 @@ func (p *MusicStream) Load() {
 	}
 }
 
+func (p *MusicStream) Resume() {
+	rl.ResumeMusicStream(*p.music)
+}
+
+func (p *MusicStream) Pause() {
+	rl.PauseMusicStream(*p.music)
+}
+
 func (p *MusicStream) Unload() {
 	rl.UnloadMusicStream(*p.music)
 }
