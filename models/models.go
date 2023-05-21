@@ -50,3 +50,7 @@ type ObjectResource interface {
 	Object
 	Resource
 }
+
+type EditorItem interface {
+	ReactOnCollision()
+}

@@ -31,6 +31,8 @@ type Player struct {
 	stayAnimation    *Animation
 	orientation      Orientation
 
+	paused bool
+
 	debugText Text
 }
 
@@ -75,11 +77,11 @@ func (p *Player) Unload() {
 }
 
 func (p *Player) Resume() {
-	
+	p.paused = false
 }
 
 func (p *Player) Pause() {
-	
+	p.paused = true
 }
 
 func (p Player) Draw() {
@@ -105,7 +107,7 @@ func (p *Player) Update(delta float32) {
 		p.fallSpeed = -JUMP_SPEED
 	}
 
-	if rl.IsKeyDown(rl.KeyLeft) && p.canMoveLeft() {
+	if rl.IsKeyDown(rl.KeyLeft) && p.canMoveLeft() && !p.paused {
 		p.currentAnimation = p.runAnimation
 		if hasCurveCollision {
 			prev, _ := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
@@ -119,7 +121,7 @@ func (p *Player) Update(delta float32) {
 		p.orientation = Left
 	}
 
-	if rl.IsKeyDown(rl.KeyRight) && p.canMoveRight() {
+	if rl.IsKeyDown(rl.KeyRight) && p.canMoveRight() && !p.paused {
 		p.currentAnimation = p.runAnimation
 		if hasCurveCollision {
 			_, next := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)

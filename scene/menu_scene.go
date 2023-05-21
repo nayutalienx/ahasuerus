@@ -35,6 +35,8 @@ func NewMenuScene() *MenuScene {
 
 func (m *MenuScene) Run() models.Scene {
 
+	rl.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2)
+
 	if m.paused {
 		m.resume()
 	}
@@ -42,7 +44,6 @@ func (m *MenuScene) Run() models.Scene {
 	for !m.menuShouldClose {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Gray)
-
 		
 		delta := rl.GetFrameTime()
 		m.menuContainer.Update(delta)
@@ -61,6 +62,9 @@ func (m *MenuScene) Run() models.Scene {
 			m.menuShouldClose = true
 			m.nextScene = nil
 		}
+
+		mouse := rl.GetMousePosition()
+		rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Green)
 
 		rl.EndDrawing()
 	}

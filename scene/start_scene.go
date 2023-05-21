@@ -9,18 +9,24 @@ import (
 )
 
 type StartScene struct {
-	worldContainer *container.ObjectResourceContainer
+	worldContainer       *container.ObjectResourceContainer
 	environmentContainer *container.ObjectResourceContainer
-	camera *rl.Camera2D
-	player *models.Player
+	camera               *rl.Camera2D
+	player               *models.Player
 
-	paused bool
+	paused          bool
+	editMode        bool
+	cameraEditPos   rl.Vector2
+	editCameraSpeed float32
+	editLabel       models.Object
 }
 
 func NewStartScene() *StartScene {
 	startScene := StartScene{
-		worldContainer: container.NewObjectResourceContainer(),
+		worldContainer:       container.NewObjectResourceContainer(),
 		environmentContainer: container.NewObjectResourceContainer(),
+		cameraEditPos:        rl.NewVector2(0, 0),
+		editCameraSpeed:      5,
 	}
 
 	beziers := []models.Bezier{
@@ -95,17 +101,67 @@ func (s *StartScene) Run() models.Scene {
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
+
 		delta := rl.GetFrameTime()
 		s.camera.Zoom += rl.GetMouseWheelMove() * 0.05
 
-		updateCameraSmooth(s.camera, s.player, delta)
+		if rl.IsKeyDown(rl.KeyF1) && !s.editMode {
+			s.editMode = true
+			s.cameraEditPos.X = s.player.Pos.X
+			s.cameraEditPos.Y = s.player.Pos.Y
+			s.player.Pause()
+
+			rl.SetMousePosition(int(s.camera.Target.X), int(HEIGHT)/2)
+
+			s.editLabel = models.NewText(10, 50).
+				SetFontSize(40).
+				SetColor(rl.Red).
+				SetUpdateCallback(func(t *models.Text) {
+					t.SetData(fmt.Sprintf("edit mode, camera speed %.1f", s.editCameraSpeed))
+				})
+
+			s.environmentContainer.AddObject(
+				s.editLabel,
+			)
+
+		}
+		if rl.IsKeyDown(rl.KeyF2) && s.editMode {
+			s.editMode = false
+			s.player.Resume()
+			s.environmentContainer.RemoveObject(s.editLabel)
+		}
+
+		if s.editMode {
+
+			if rl.IsKeyDown(rl.KeyRight) {
+				s.cameraEditPos.X += s.editCameraSpeed
+			}
+
+			if rl.IsKeyDown(rl.KeyLeft) {
+				s.cameraEditPos.X -= s.editCameraSpeed
+			}
+
+			if rl.IsKeyDown(rl.KeyEqual) {
+				s.editCameraSpeed++
+			}
+
+			if rl.IsKeyDown(rl.KeyMinus) {
+				s.editCameraSpeed--
+			}
+
+			updateCameraCenter(s.camera, s.cameraEditPos)
+		} else {
+			updateCameraSmooth(s.camera, s.player.Pos, delta)
+		}
 
 		s.environmentContainer.Update(delta)
 		s.environmentContainer.Draw()
-
 		rl.BeginMode2D(*s.camera)
 		s.worldContainer.Update(delta)
 		s.worldContainer.Draw()
+		if s.editMode {
+			s.updateEditor()
+		}
 		rl.EndMode2D()
 
 		rl.EndDrawing()
@@ -118,7 +174,18 @@ func (s *StartScene) Run() models.Scene {
 
 func (m *StartScene) Unload() {
 	m.environmentContainer.Unload()
-	m.worldContainer.Unload()	
+	m.worldContainer.Unload()
+}
+
+func (s *StartScene) updateEditor() {
+	mouse := rl.GetMousePosition()
+	rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Red)
+	s.worldContainer.ForEachObject(func(obj models.Object) {
+		editorItem, ok := obj.(models.EditorItem)
+		if ok {
+			editorItem.ReactOnCollision()
+		}
+	})
 }
 
 func (s *StartScene) pause() {

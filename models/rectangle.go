@@ -12,7 +12,7 @@ func NewRectangle(x, y float32) *Rectangle {
 	return &Rectangle{
 		pos:   rl.NewVector2(x, y),
 		box:   rl.NewVector2(20, 10),
-		color: rl.Blue,
+		color: rl.NewColor(0, 121, 241, 100),
 	}
 }
 
@@ -53,4 +53,14 @@ func (p *Rectangle) GetPos() *rl.Vector2 {
 
 func (p *Rectangle) GetBox() *rl.Vector2 {
 	return &p.box
+}
+
+func (p *Rectangle) ReactOnCollision() {
+	rec := rl.NewRectangle(p.pos.X, p.pos.Y, p.box.X, p.box.Y)
+	collission := rl.CheckCollisionPointRec(rl.GetMousePosition(), rec)
+	if collission {
+		rl.DrawRectangleLinesEx(rec, 3.0, rl.Red)
+
+		
+	}
 }

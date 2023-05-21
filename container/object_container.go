@@ -46,6 +46,13 @@ func (w ObjectContainer) Size() int {
 	return len(w.objects)
 }
 
+func (w ObjectContainer) ForEachObject(cb func (obj models.Object)) {
+	for i, _ := range w.objects {
+		o := w.objects[i]
+		cb(o)
+	}
+}
+
 func (w ObjectContainer) removeObject(s int) []models.Object {
     return append(w.objects[:s], w.objects[s+1:]...)
 }
