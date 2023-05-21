@@ -3,6 +3,7 @@ package models
 import rl "github.com/gen2brain/raylib-go/raylib"
 
 type Rectangle struct {
+	id string
 	pos   rl.Vector2
 	box   rl.Vector2
 	color rl.Color
@@ -11,11 +12,12 @@ type Rectangle struct {
 	editorEditSizeWithCursor bool
 }
 
-func NewRectangle(x, y float32) *Rectangle {
+func NewRectangle(id string, x, y, width, height float32, color rl.Color) *Rectangle {
 	return &Rectangle{
+		id: id,
 		pos:   rl.NewVector2(x, y),
-		box:   rl.NewVector2(20, 10),
-		color: rl.NewColor(0, 121, 241, 100),
+		box:   rl.NewVector2(width, height),
+		color: color,
 	}
 }
 
@@ -28,6 +30,10 @@ func (p *Rectangle) Draw() {
 
 	if p.editorMoveWithCursor {
 		rl.DrawText("ATTACHED TO CURSOR", int32(p.pos.X), int32(p.pos.Y) + 30, 20, rl.Red)
+	}
+
+	if p.editorEditSizeWithCursor {
+		rl.DrawText("SIZE ATTACHED TO CURSOR", int32(p.pos.X), int32(p.pos.Y) + 30, 20, rl.Red)
 	}
 }
 

@@ -3,10 +3,13 @@ package scene
 import (
 	"ahasuerus/container"
 	"ahasuerus/models"
+	"ahasuerus/repository"
 	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+const SCENE_COLLECTION = "start-scene"
 
 type StartScene struct {
 	worldContainer       *container.ObjectResourceContainer
@@ -43,13 +46,7 @@ func NewStartScene() *StartScene {
 		startScene.player.AddCollisionBezier(&bz)
 	}
 
-	rectangles := []models.Rectangle{
-		*models.NewRectangle(100, 350).SetWidth(200).SetHeight(20),
-		*models.NewRectangle(0, 600).SetWidth(WIDTH).SetHeight(100),
-		*models.NewRectangle(800, 450).SetWidth(300).SetHeight(20),
-		*models.NewRectangle(WIDTH+100, 800).SetWidth(WIDTH).SetHeight(100),
-		*models.NewRectangle(2*WIDTH+100, 600).SetWidth(WIDTH).SetHeight(100),
-	}
+	rectangles := repository.GetAllRectangles(SCENE_COLLECTION)
 
 	for i, _ := range rectangles {
 		rect := rectangles[i]

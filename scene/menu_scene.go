@@ -3,6 +3,7 @@ package scene
 import (
 	"ahasuerus/container"
 	"ahasuerus/models"
+	_ "ahasuerus/repository"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
