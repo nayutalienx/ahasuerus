@@ -21,6 +21,15 @@ func (w *ObjectContainer) AddObject(obj... models.Object) {
 	}
 }
 
+func (w *ObjectContainer) RemoveObject(obj models.Object) {
+	for i, _ := range w.objects {
+		o := w.objects[i]
+		if o == obj {
+			w.objects = w.removeObject(i)
+		}
+	}
+}
+
 func (w ObjectContainer) Draw() {
 	for _, o := range w.objects {
 		o.Draw()
@@ -31,4 +40,12 @@ func (w ObjectContainer) Update(delta float32) {
 	for _, o := range w.objects {
 		o.Update(delta)
 	}
+}
+
+func (w ObjectContainer) Size() int {
+	return len(w.objects)
+}
+
+func (w ObjectContainer) removeObject(s int) []models.Object {
+    return append(w.objects[:s], w.objects[s+1:]...)
 }
