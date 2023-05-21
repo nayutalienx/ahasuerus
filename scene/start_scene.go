@@ -54,7 +54,7 @@ func NewStartScene() *StartScene {
 	for i, _ := range rectangles {
 		rect := rectangles[i]
 		startScene.worldContainer.AddObject(&rect)
-		startScene.player.AddCollisionBox(rect)
+		startScene.player.AddCollisionBox(&rect)
 	}
 
 	startScene.worldContainer.AddObjectResource(startScene.player)
@@ -133,13 +133,19 @@ func (s *StartScene) Run() models.Scene {
 
 		if s.editMode {
 
+			mousePos := rl.GetMousePosition()
+
 			if rl.IsKeyDown(rl.KeyRight) {
 				s.cameraEditPos.X += s.editCameraSpeed
+				mousePos.X += s.editCameraSpeed
 			}
 
 			if rl.IsKeyDown(rl.KeyLeft) {
 				s.cameraEditPos.X -= s.editCameraSpeed
+				mousePos.X -= s.editCameraSpeed
 			}
+
+			rl.SetMousePosition(int(mousePos.X), int(mousePos.Y))
 
 			if rl.IsKeyDown(rl.KeyEqual) {
 				s.editCameraSpeed++
