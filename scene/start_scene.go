@@ -74,7 +74,7 @@ func NewStartScene() *StartScene {
 			SetFontSize(40).
 			SetColor(rl.White).
 			SetUpdateCallback(func(t *models.Text) {
-				t.SetData(fmt.Sprintf("fps: %d ", rl.GetFPS()))
+				t.SetData(fmt.Sprintf("fps: %d [movement(arrow keys), jump(space), edit mode(F1)]", rl.GetFPS()))
 			}))
 
 	startScene.environmentContainer.Load()
@@ -114,7 +114,7 @@ func (s *StartScene) Run() models.Scene {
 				SetFontSize(40).
 				SetColor(rl.Red).
 				SetUpdateCallback(func(t *models.Text) {
-					t.SetData(fmt.Sprintf("edit mode, camera speed %.1f", s.editCameraSpeed))
+					t.SetData(fmt.Sprintf("edit mode[movement(arrow keys), cam.speed(+,-,%.1f), save(P), exit(F2)]", s.editCameraSpeed))
 				})
 
 			s.environmentContainer.AddObject(
@@ -152,6 +152,10 @@ func (s *StartScene) Run() models.Scene {
 				s.editCameraSpeed--
 			}
 
+			if rl.IsKeyDown(rl.KeyP) {
+				s.saveEditor()
+			}
+
 			updateCameraCenter(s.camera, s.cameraEditPos)
 		} else {
 			updateCameraSmooth(s.camera, s.player.Pos, delta)
@@ -187,6 +191,18 @@ func (s *StartScene) updateEditor() {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
 			editorItem.ReactOnCollision()
+		}
+	})
+}
+
+func (s *StartScene) saveEditor() {
+	s.worldContainer.ForEachObject(func(obj models.Object) {
+		editorItem, ok := obj.(models.EditorItem)
+		if ok {
+			rect, ok := editorItem.(*models.Rectangle)
+			if ok {
+				repository.SaveRectangle(SCENE_COLLECTION, rect)
+			}
 		}
 	})
 }

@@ -64,7 +64,7 @@ func (p *Player) Load() {
 	p.runAnimation = NewAnimation("resources/heroes/tim_run.png", 27, 24)
 	p.runAnimation.Load()
 
-	p.stayAnimation = NewAnimation("resources/heroes/tim_stay.png", 22, 24)
+	p.stayAnimation = NewAnimation("resources/heroes/tim_stay.png", 22, 7)
 	p.stayAnimation.Load()
 
 	p.Box.X = float32(p.stayAnimation.StepInPixel)
@@ -87,12 +87,12 @@ func (p *Player) Pause() {
 func (p Player) Draw() {
 	p.currentAnimation.Draw()
 
-	p.debugText.Draw()
-	for _, colPoint := range p.collisionBezierChecks {
-		if colPoint.Colliding {
-			rl.DrawCircle(int32(colPoint.Point.X), int32(colPoint.Point.Y), 4, rl.Orange)
-		}
-	}
+	//p.debugText.Draw()
+	// for _, colPoint := range p.collisionBezierChecks {
+	// 	if colPoint.Colliding {
+	// 		rl.DrawCircle(int32(colPoint.Point.X), int32(colPoint.Point.Y), 4, rl.Orange)
+	// 	}
+	// }
 }
 
 func (p *Player) Update(delta float32) {
@@ -114,7 +114,7 @@ func (p *Player) Update(delta float32) {
 			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
-			rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
+			//rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
 		} else {
 			p.Pos.X -= p.speed
 		}
@@ -128,7 +128,7 @@ func (p *Player) Update(delta float32) {
 			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
-			rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
+			//rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
 		} else {
 			p.Pos.X += p.speed
 		}
@@ -190,7 +190,7 @@ func (p *Player) Update(delta float32) {
 	p.currentAnimation.Orientation = p.orientation
 	p.currentAnimation.Update(delta)
 
-	p.debugText.Update(delta)
+	//p.debugText.Update(delta)
 }
 
 func (p *Player) AddCollisionBox(cb CollisionBox) *Player {

@@ -22,20 +22,16 @@ func init() {
 	}
 }
 
-func SaveRectangle(collectionPrefix string, rect *models.Rectangle) {
-	r := Rectangle{
-		Id:     uuid.NewString(),
-		X:      int(rect.GetPos().X),
-		Y:      int(rect.GetPos().Y),
-		Width:  int(rect.GetBox().X),
-		Height: int(rect.GetBox().Y),
-		Color: Color{
-			R: int(rect.GetColor().R),
-			G: int(rect.GetColor().G),
-			B: int(rect.GetColor().B),
-			A: int(rect.GetColor().A),
-		},
+func AddNewRectangle(collectionPrefix string, rect *models.Rectangle) {
+	r := mapRectangle(uuid.NewString(), rect)
+	err := db.Write(formatKey(collectionPrefix, "rectangle"), r.Id, r)
+	if err != nil {
+		panic(err)
 	}
+}
+
+func SaveRectangle(collectionPrefix string, rect *models.Rectangle) {
+	r := mapRectangle(rect.Id, rect)
 	err := db.Write(formatKey(collectionPrefix, "rectangle"), r.Id, r)
 	if err != nil {
 		panic(err)
@@ -66,6 +62,23 @@ func GetAllRectangles(collectionPrefix string) []models.Rectangle {
 	}
 
 	return rectangles
+}
+
+func mapRectangle(id string, rect *models.Rectangle) Rectangle {
+	r := Rectangle{
+		Id:     id,
+		X:      int(rect.GetPos().X),
+		Y:      int(rect.GetPos().Y),
+		Width:  int(rect.GetBox().X),
+		Height: int(rect.GetBox().Y),
+		Color: Color{
+			R: int(rect.GetColor().R),
+			G: int(rect.GetColor().G),
+			B: int(rect.GetColor().B),
+			A: int(rect.GetColor().A),
+		},
+	}
+	return r
 }
 
 func formatKey(collectionPrefix, entity string) string {

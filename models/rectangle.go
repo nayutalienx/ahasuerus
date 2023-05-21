@@ -1,9 +1,11 @@
 package models
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 type Rectangle struct {
-	id string
+	Id string
 	pos   rl.Vector2
 	box   rl.Vector2
 	color rl.Color
@@ -14,7 +16,7 @@ type Rectangle struct {
 
 func NewRectangle(id string, x, y, width, height float32, color rl.Color) *Rectangle {
 	return &Rectangle{
-		id: id,
+		Id: id,
 		pos:   rl.NewVector2(x, y),
 		box:   rl.NewVector2(width, height),
 		color: color,
