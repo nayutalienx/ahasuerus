@@ -8,6 +8,7 @@ type Rectangle struct {
 	color rl.Color
 
 	editorMoveWithCursor bool
+	editorEditSizeWithCursor bool
 }
 
 func NewRectangle(x, y float32) *Rectangle {
@@ -36,6 +37,13 @@ func (p *Rectangle) Update(delta float32) {
 		offset := 10
 		p.pos.X = mousePos.X-float32(offset)
 		p.pos.Y = mousePos.Y-float32(offset)
+	}
+
+	if p.editorEditSizeWithCursor {
+		mousePos := rl.GetMousePosition()
+		offset := 10
+		p.box.X = mousePos.X+float32(offset) - p.pos.X 
+		p.box.Y = mousePos.Y+float32(offset) - p.pos.Y
 	}
 }
 
@@ -71,10 +79,33 @@ func (p *Rectangle) ReactOnCollision() {
 	mousePos := rl.GetMousePosition()
 	collission := rl.CheckCollisionPointRec(mousePos, rec)
 	if collission {
+		sizeEditorSquareSize := 20
+
 		rl.DrawRectangleLinesEx(rec, 3.0, rl.Red)
 
+		rl.DrawRectangle(
+			int32(p.pos.X) + int32(p.box.X-float32(sizeEditorSquareSize)), 
+			int32(p.pos.Y)+int32(p.box.Y-float32(sizeEditorSquareSize)), 
+			int32(sizeEditorSquareSize), 
+			int32(sizeEditorSquareSize), 
+			rl.Red)
+
+		collissionForEditSize := rl.CheckCollisionPointRec(
+			mousePos, 
+			rl.NewRectangle(
+				float32(int32(p.pos.X) + int32(p.box.X-float32(sizeEditorSquareSize))), 
+				float32(int32(p.pos.Y)+int32(p.box.Y-float32(sizeEditorSquareSize))),
+				float32(sizeEditorSquareSize),
+				float32(sizeEditorSquareSize),
+			),
+		)
+
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton){
-			p.editorMoveWithCursor = !p.editorMoveWithCursor
+			if collissionForEditSize {
+				p.editorEditSizeWithCursor = !p.editorEditSizeWithCursor
+			} else {
+				p.editorMoveWithCursor = !p.editorMoveWithCursor
+			}
 		}		
 	}
 }
