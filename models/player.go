@@ -23,6 +23,9 @@ type Player struct {
 	collisionBoxes     []CollisionBox
 	collisionBoxChecks []CollisionBoxCheck
 
+	collisionLines      []CollisionLine
+	collisionLineChecks []CollisionLineCheck
+
 	collisionBeziers      []CollisionBezier
 	collisionBezierChecks []CollisionBezierCheck
 
@@ -100,6 +103,7 @@ func (p *Player) Update(delta float32) {
 	p.currentAnimation = p.stayAnimation
 
 	hasCurveCollision, collisionedCurve := p.hasCurveCollision()
+	hasLineCollision, collisionedLine := p.hasLineCollision()
 
 	spacePressed := rl.IsKeyDown(rl.KeySpace)
 
@@ -110,11 +114,16 @@ func (p *Player) Update(delta float32) {
 	if rl.IsKeyDown(rl.KeyLeft) && p.canMoveLeft() && !p.paused {
 		p.currentAnimation = p.runAnimation
 		if hasCurveCollision {
-			prev, _ := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
+			prev, _ := CalculatePreviousNextPointsOfBezier(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
 			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 			//rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
+		} else if hasLineCollision {
+			prev, _ := CalculatePreviousAndNextPointOfLine(collisionedLine.Point, collisionedLine.Line.Start, collisionedLine.Line.End)	
+			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y+(2*p.speed)))
+			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
+			p.Pos = rl.Vector2Add(p.Pos, movement)
 		} else {
 			p.Pos.X -= p.speed
 		}
@@ -124,11 +133,16 @@ func (p *Player) Update(delta float32) {
 	if rl.IsKeyDown(rl.KeyRight) && p.canMoveRight() && !p.paused {
 		p.currentAnimation = p.runAnimation
 		if hasCurveCollision {
-			_, next := CalculatePreviousNextPoints(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
+			_, next := CalculatePreviousNextPointsOfBezier(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
 			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 			//rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
+		} else if hasLineCollision {
+			_, next := CalculatePreviousAndNextPointOfLine(collisionedLine.Point, collisionedLine.Line.Start, collisionedLine.Line.End)	
+			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y+(2*p.speed)))
+			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
+			p.Pos = rl.Vector2Add(p.Pos, movement)
 		} else {
 			p.Pos.X += p.speed
 		}
@@ -139,11 +153,11 @@ func (p *Player) Update(delta float32) {
 
 	shouldUpdateY := true
 
-	if hasCurveCollision {
+	if hasCurveCollision || hasLineCollision {
 		shouldUpdateY = false
 	}
 
-	if hasCurveCollision && spacePressed {
+	if (hasCurveCollision || hasLineCollision) && spacePressed {
 		shouldUpdateY = true
 	}
 
@@ -166,7 +180,7 @@ func (p *Player) Update(delta float32) {
 		}
 	}
 
-	if hasCurveCollision {
+	if hasCurveCollision || hasLineCollision {
 		p.fallSpeed = 0
 	}
 
@@ -196,6 +210,14 @@ func (p *Player) Update(delta float32) {
 func (p *Player) AddCollisionBox(cb CollisionBox) *Player {
 	p.collisionBoxes = append(p.collisionBoxes, cb)
 	p.collisionBoxChecks = append(p.collisionBoxChecks, CollisionBoxCheck{})
+	return p
+}
+
+func (p *Player) AddCollisionLine(line *Line) *Player {
+	p.collisionLines = append(p.collisionLines, line)
+	p.collisionLineChecks = append(p.collisionLineChecks, CollisionLineCheck{
+		Line: line,
+	})
 	return p
 }
 
@@ -261,6 +283,16 @@ func (p Player) hasCurveCollision() (bool, *CollisionBezierCheck) {
 	return false, nil
 }
 
+func (p Player) hasLineCollision() (bool, *CollisionLineCheck) {
+	for i, _ := range p.collisionLineChecks {
+		c := p.collisionLineChecks[i]
+		if c.Colliding {
+			return true, &c
+		}
+	}
+	return false, nil
+}
+
 func (p *Player) updateCollisions() {
 	for i, _ := range p.collisionBoxes {
 		cb := p.collisionBoxes[i]
@@ -273,6 +305,20 @@ func (p *Player) updateCollisions() {
 			p.collisionBoxChecks[i].Left = res.Left
 			p.collisionBoxChecks[i].X = res.X
 			p.collisionBoxChecks[i].Y = res.Y
+		})
+	}
+
+	for i, _ := range p.collisionLines {
+		l := p.collisionLines[i]
+		l.ResolveCollision(func(line *Line) {
+			startLine := rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y)
+			endLine := rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y)
+			pointCollision := rl.NewVector2(0, 0)
+			isCollision := rl.CheckCollisionLines(startLine, endLine, line.Start, line.End, &pointCollision)
+
+			p.collisionLineChecks[i].Colliding = isCollision
+			p.collisionLineChecks[i].Point.X = pointCollision.X
+			p.collisionLineChecks[i].Point.Y = pointCollision.Y
 		})
 	}
 
@@ -309,7 +355,7 @@ func (p *Player) normalDebug() func(t *Text) {
 			cp := p.collisionBezierChecks[i]
 			collisions += fmt.Sprintf("%d: %v %.1f %.1f \n", i, cp.Colliding, cp.Point.X, cp.Point.Y)
 			if cp.Colliding {
-				prev, next := CalculatePreviousNextPoints(cp.Point, cp.Curve.Start, cp.Curve.End)
+				prev, next := CalculatePreviousNextPointsOfBezier(cp.Point, cp.Curve.Start, cp.Curve.End)
 				collisions += fmt.Sprintf("prev {%.1f : %.1f} next {%.1f : %.1f} \n", prev.X, prev.Y, next.X, next.Y)
 			}
 		}

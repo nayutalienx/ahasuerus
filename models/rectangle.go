@@ -108,6 +108,10 @@ func (p *Rectangle) ReactOnCollision() {
 			),
 		)
 
+		if rl.IsKeyDown(rl.KeyR){
+			
+		}
+
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton){
 			if collissionForEditSize {
 				p.editorEditSizeWithCursor = !p.editorEditSizeWithCursor

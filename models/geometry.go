@@ -51,6 +51,12 @@ func DetectBoxCollision(boxPosition1, boxPosition2 BoxPosition) CollisionBoxChec
 	return collision
 }
 
+type CollisionLineCheck struct {
+	Point     rl.Vector2
+	Colliding bool
+	Line      *Line
+}
+
 type CollisionBezierCheck struct {
 	Point     rl.Vector2
 	Colliding bool
@@ -116,7 +122,27 @@ func CalculateCubicBezierPoint(t float64, p0, p1, p2, p3 rl.Vector2) rl.Vector2 
 	return p
 }
 
-func CalculatePreviousNextPoints(concretePoint, bezierStartPos, bezierEndPos rl.Vector2) (rl.Vector2, rl.Vector2) {
+func CalculatePreviousAndNextPointOfLine(point, start, end rl.Vector2) (rl.Vector2, rl.Vector2) {
+	// Calculate the direction vector of the line
+	direction := rl.Vector2{end.X - start.X, end.Y - start.Y}
+
+	// Calculate the length of the direction vector
+	length := direction.X*direction.X + direction.Y*direction.Y
+	length = length * length
+
+	// Calculate the normalized direction vector
+	normalizedDirection := rl.Vector2{direction.X / length, direction.Y / length}
+
+	// Calculate the previous point by subtracting the normalized direction vector from the current point
+	prevPoint := rl.Vector2{point.X - normalizedDirection.X, point.Y - normalizedDirection.Y}
+
+	// Calculate the next point by adding the normalized direction vector to the current point
+	nextPoint := rl.Vector2{point.X + normalizedDirection.X, point.Y + normalizedDirection.Y}
+
+	return prevPoint, nextPoint
+}
+
+func CalculatePreviousNextPointsOfBezier(concretePoint, bezierStartPos, bezierEndPos rl.Vector2) (rl.Vector2, rl.Vector2) {
 
 	// Calculate the control points of the cubic-bezier curve with ease-in-out motion
 	cp1 := rl.Vector2{X: bezierStartPos.X + (bezierEndPos.X-bezierStartPos.X)/3, Y: bezierStartPos.Y}
@@ -126,43 +152,43 @@ func CalculatePreviousNextPoints(concretePoint, bezierStartPos, bezierEndPos rl.
 }
 
 func calculatePreviousNextPoints(concretePoint, p0, p1, p2, p3 rl.Vector2) (rl.Vector2, rl.Vector2) {
-    // Calculate the t parameter for the concrete point on the curve
-    t := FindTParameter(concretePoint, p0, p1, p2, p3)
+	// Calculate the t parameter for the concrete point on the curve
+	t := FindTParameter(concretePoint, p0, p1, p2, p3)
 
-    // Calculate the t parameter for the previous point
-    tPrev := math.Max(t-0.01, 0.0) // Adjust the step size as needed
+	// Calculate the t parameter for the previous point
+	tPrev := math.Max(t-0.01, 0.0) // Adjust the step size as needed
 
-    // Calculate the t parameter for the next point
-    tNext := math.Min(t+0.01, 1.0) // Adjust the step size as needed
+	// Calculate the t parameter for the next point
+	tNext := math.Min(t+0.01, 1.0) // Adjust the step size as needed
 
-    // Calculate the previous and next points on the cubic-bezier curve
-    prevPoint := CalculateCubicBezierPoint(tPrev, p0, p1, p2, p3)
-    nextPoint := CalculateCubicBezierPoint(tNext, p0, p1, p2, p3)
+	// Calculate the previous and next points on the cubic-bezier curve
+	prevPoint := CalculateCubicBezierPoint(tPrev, p0, p1, p2, p3)
+	nextPoint := CalculateCubicBezierPoint(tNext, p0, p1, p2, p3)
 
-    return prevPoint, nextPoint
+	return prevPoint, nextPoint
 }
 
 func FindTParameter(concretePoint, p0, p1, p2, p3 rl.Vector2) float64 {
-    // Iterate and find the t parameter that yields the closest point to the concrete point
-    minDistance := math.Inf(1)
-    bestT := 0.0
+	// Iterate and find the t parameter that yields the closest point to the concrete point
+	minDistance := math.Inf(1)
+	bestT := 0.0
 
-    for t := 0.0; t <= 1.0; t += 0.001 { // Adjust the step size as needed
-        bezierPoint := CalculateCubicBezierPoint(t, p0, p1, p2, p3)
-        distance := CalculateDistance(bezierPoint, concretePoint)
+	for t := 0.0; t <= 1.0; t += 0.001 { // Adjust the step size as needed
+		bezierPoint := CalculateCubicBezierPoint(t, p0, p1, p2, p3)
+		distance := CalculateDistance(bezierPoint, concretePoint)
 
-        if distance < minDistance {
-            minDistance = distance
-            bestT = t
-        }
-    }
+		if distance < minDistance {
+			minDistance = distance
+			bestT = t
+		}
+	}
 
-    return bestT
+	return bestT
 }
 
 func CalculateDistance(p1, p2 rl.Vector2) float64 {
-    dx := p2.X - p1.X
-    dy := p2.Y - p1.Y
+	dx := p2.X - p1.X
+	dy := p2.Y - p1.Y
 
-    return math.Sqrt(float64(dx*dx + dy*dy))
+	return math.Sqrt(float64(dx*dx + dy*dy))
 }

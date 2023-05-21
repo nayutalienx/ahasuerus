@@ -38,12 +38,23 @@ func NewStartScene() *StartScene {
 		*models.NewBezier(rl.NewVector2(WIDTH+400, 800), rl.NewVector2(2*WIDTH+100, 600), 20.0),
 	}
 
+	lines := []models.Line{
+		*models.NewLine(rl.NewVector2(400, 300), rl.NewVector2(800, 350), 10),
+		*models.NewLine(rl.NewVector2(900, 400), rl.NewVector2(1400, 150), 10),
+	}
+
 	startScene.player = models.NewPlayer(100, 100)
 
 	for i, _ := range beziers {
 		bz := beziers[i]
 		startScene.worldContainer.AddObject(&bz)
 		startScene.player.AddCollisionBezier(&bz)
+	}
+
+	for i, _ := range lines {
+		l := lines[i]
+		startScene.worldContainer.AddObject(&l)
+		startScene.player.AddCollisionLine(&l)
 	}
 
 	rectangles := repository.GetAllRectangles(SCENE_COLLECTION)

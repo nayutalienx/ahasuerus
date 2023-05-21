@@ -22,18 +22,6 @@ type Scene interface {
 	Unload()
 }
 
-type CollisionBoxCallback func(pos BoxPosition)
-
-type CollisionBox interface {
-	ResolveCollision(callback CollisionBoxCallback)
-}
-
-type CollisionBezierCallback func(bezier *Bezier)
-
-type CollisionBezier interface {
-	ResolveCollision(callback CollisionBezierCallback)
-}
-
 type Object interface {
 	Draw()
 	Update(delta float32)
@@ -53,4 +41,25 @@ type ObjectResource interface {
 
 type EditorItem interface {
 	ReactOnCollision()
+}
+
+// Collision interfaces
+
+type CollisionBoxCallback func(pos BoxPosition)
+type CollisionBezierCallback func(bezier *Bezier)
+type CollisionLineCallback func(line *Line)
+
+type Collision interface {}
+
+type CollisionBox interface {
+	Collision
+	ResolveCollision(callback CollisionBoxCallback)
+}
+type CollisionBezier interface {
+	Collision
+	ResolveCollision(callback CollisionBezierCallback)
+}
+type CollisionLine interface {
+	Collision
+	ResolveCollision(callback CollisionLineCallback)
 }
