@@ -82,7 +82,12 @@ func (p *Rectangle) GetBox() *rl.Vector2 {
 	return &p.box
 }
 
-func (p *Rectangle) ReactOnCollision() {
+func (p *Rectangle) ProcessEditorSelection() bool {
+
+	return true
+}
+
+func (p *Rectangle) EditorResolveSelect() bool {
 	rec := rl.NewRectangle(p.pos.X, p.pos.Y, p.box.X, p.box.Y)
 	mousePos := rl.GetMousePosition()
 	collission := rl.CheckCollisionPointRec(mousePos, rec)
@@ -108,10 +113,6 @@ func (p *Rectangle) ReactOnCollision() {
 			),
 		)
 
-		if rl.IsKeyDown(rl.KeyR){
-			
-		}
-
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton){
 			if collissionForEditSize {
 				p.editorEditSizeWithCursor = !p.editorEditSizeWithCursor
@@ -120,4 +121,5 @@ func (p *Rectangle) ReactOnCollision() {
 			}
 		}		
 	}
+	return false
 }

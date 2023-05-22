@@ -40,7 +40,13 @@ type ObjectResource interface {
 }
 
 type EditorItem interface {
-	ReactOnCollision()
+	EditorResolveSelect() bool
+	ProcessEditorSelection() bool
+}
+
+type EditorSelectedItem struct {
+	Selected bool
+	Item EditorItem
 }
 
 // Collision interfaces
@@ -49,7 +55,7 @@ type CollisionBoxCallback func(pos BoxPosition)
 type CollisionBezierCallback func(bezier *Bezier)
 type CollisionLineCallback func(line *Line)
 
-type Collision interface {}
+type Collision interface{}
 
 type CollisionBox interface {
 	Collision

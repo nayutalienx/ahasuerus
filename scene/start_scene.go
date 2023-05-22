@@ -6,6 +6,7 @@ import (
 	"ahasuerus/repository"
 	"fmt"
 
+	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -17,11 +18,13 @@ type StartScene struct {
 	camera               *rl.Camera2D
 	player               *models.Player
 
-	paused          bool
-	editMode        bool
-	cameraEditPos   rl.Vector2
-	editCameraSpeed float32
-	editLabel       models.Object
+	paused           bool
+	editMode         bool
+	editModeShowMenu bool
+	cameraEditPos    rl.Vector2
+	editCameraSpeed  float32
+	editLabel        models.Object
+	selectedItem     []models.EditorSelectedItem
 }
 
 func NewStartScene() *StartScene {
@@ -30,6 +33,7 @@ func NewStartScene() *StartScene {
 		environmentContainer: container.NewObjectResourceContainer(),
 		cameraEditPos:        rl.NewVector2(0, 0),
 		editCameraSpeed:      5,
+		selectedItem:         make([]models.EditorSelectedItem, 0),
 	}
 
 	beziers := []models.Bezier{
@@ -102,6 +106,8 @@ func NewStartScene() *StartScene {
 
 func (s *StartScene) Run() models.Scene {
 
+	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 20)
+
 	if s.paused {
 		s.resume()
 	}
@@ -125,7 +131,7 @@ func (s *StartScene) Run() models.Scene {
 				SetFontSize(40).
 				SetColor(rl.Red).
 				SetUpdateCallback(func(t *models.Text) {
-					t.SetData(fmt.Sprintf("edit mode[movement(arrow keys), cam.speed(+,-,%.1f), save(P), exit(F2)]", s.editCameraSpeed))
+					t.SetData(fmt.Sprintf("edit mode[movement(arrow keys), cam.speed(+,-,%.1f), save(P), menu(M), off menu(N), exit(F2)]", s.editCameraSpeed))
 				})
 
 			s.environmentContainer.AddObject(
@@ -145,12 +151,16 @@ func (s *StartScene) Run() models.Scene {
 
 			if rl.IsKeyDown(rl.KeyRight) {
 				s.cameraEditPos.X += s.editCameraSpeed
-				mousePos.X += s.editCameraSpeed
+				if !s.editModeShowMenu {
+					mousePos.X += s.editCameraSpeed
+				}
 			}
 
 			if rl.IsKeyDown(rl.KeyLeft) {
 				s.cameraEditPos.X -= s.editCameraSpeed
-				mousePos.X -= s.editCameraSpeed
+				if !s.editModeShowMenu {
+					mousePos.X -= s.editCameraSpeed
+				}
 			}
 
 			rl.SetMousePosition(int(mousePos.X), int(mousePos.Y))
@@ -167,6 +177,20 @@ func (s *StartScene) Run() models.Scene {
 				s.saveEditor()
 			}
 
+			hasAnySelected, _ := s.hasAnySelectedEditorItem()
+
+			if (rl.IsKeyDown(rl.KeyM) || hasAnySelected) && !s.editModeShowMenu {
+				s.editModeShowMenu = true
+				rl.EnableCursor()
+				rl.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2)
+			}
+
+			if rl.IsKeyDown(rl.KeyN) && s.editModeShowMenu {
+				s.editModeShowMenu = false
+				rl.DisableCursor()
+				rl.SetMousePosition(int(s.cameraEditPos.X), int(s.cameraEditPos.Y))
+			}
+
 			updateCameraCenter(s.camera, s.cameraEditPos)
 		} else {
 			updateCameraSmooth(s.camera, s.player.Pos, delta)
@@ -174,11 +198,44 @@ func (s *StartScene) Run() models.Scene {
 
 		s.environmentContainer.Update(delta)
 		s.environmentContainer.Draw()
+
+		if s.editModeShowMenu {
+			hasAnySelected, editorItem := s.hasAnySelectedEditorItem()
+			if hasAnySelected {
+				
+				bezier, isBezier := editorItem.(*models.Bezier)
+
+				if isBezier {
+					changeStart := rg.Button(rl.NewRectangle(10, 110, 200, 100), "CHANGE START")
+					changeEnd := rg.Button(rl.NewRectangle(10, 220, 200, 100), "CHANGE END")
+					if changeStart || changeEnd {
+						if changeStart {
+							bezier.SetStartModeTrue()
+							rl.DisableCursor()
+							rl.SetMousePosition(int(bezier.Start.X-20), int(bezier.Start.Y-20))
+						}
+
+						if changeEnd {
+							bezier.SetEndModeTrue()
+							rl.DisableCursor()
+							rl.SetMousePosition(int(bezier.End.X+20), int(bezier.End.Y+20))
+						}
+					}
+				}
+
+			} else {
+				rg.Button(rl.NewRectangle(50, 100, 200, 100), "NEW RECTANGLE")
+			}
+		}
+
 		rl.BeginMode2D(*s.camera)
 		s.worldContainer.Update(delta)
 		s.worldContainer.Draw()
-		if s.editMode {
-			s.updateEditor()
+		if s.editMode && !s.editModeShowMenu {
+			s.resolveEditorSelection()
+		}
+		if s.editMode && s.editModeShowMenu {
+			s.processEditorSelection()
 		}
 		rl.EndMode2D()
 
@@ -195,15 +252,49 @@ func (m *StartScene) Unload() {
 	m.worldContainer.Unload()
 }
 
-func (s *StartScene) updateEditor() {
+func (s *StartScene) resolveEditorSelection() {
 	mouse := rl.GetMousePosition()
 	rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Red)
+
+	selectedItem := make([]models.EditorSelectedItem, 0)
+
 	s.worldContainer.ForEachObject(func(obj models.Object) {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
-			editorItem.ReactOnCollision()
+			selected := editorItem.EditorResolveSelect()
+			if selected {
+				selectedItem = append(selectedItem, models.EditorSelectedItem{
+					Selected: selected,
+					Item:     editorItem,
+				})
+			}
 		}
 	})
+
+	s.selectedItem = selectedItem
+}
+
+func (s *StartScene) processEditorSelection() {
+	for i, _ := range s.selectedItem {
+		ei := s.selectedItem[i]
+		if ei.Selected {
+			finishedProcessSelection := ei.Item.ProcessEditorSelection()
+			if finishedProcessSelection {
+				s.editModeShowMenu = false
+				s.selectedItem[i].Selected = false
+			}
+		}
+	}	
+}
+
+func (s StartScene) hasAnySelectedEditorItem() (bool, models.EditorItem) {
+	for i, _ := range s.selectedItem {
+		ei := s.selectedItem[i]
+		if ei.Selected {
+			return true, ei.Item
+		}
+	}
+	return false, nil
 }
 
 func (s *StartScene) saveEditor() {

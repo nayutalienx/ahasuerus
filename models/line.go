@@ -41,3 +41,19 @@ func (p *Line) SetColor(col rl.Color) *Line {
 	p.color = col
 	return p
 }
+
+func (p *Line) ProcessEditorSelection() bool {
+
+	return true
+}
+
+func (p *Line) EditorResolveSelect() bool {
+	mousePos := rl.GetMousePosition()
+	isCollision := rl.CheckCollisionPointLine(mousePos, p.Start, p.End, int32(p.Thick))
+	if isCollision {
+		p.color = rl.Red
+	} else {
+		p.color = rl.Gold
+	}
+	return false
+}
