@@ -36,11 +36,7 @@ func NewStartScene() *StartScene {
 		selectedItem:         make([]models.EditorSelectedItem, 0),
 	}
 
-	beziers := []models.Bezier{
-		*models.NewBezier(rl.NewVector2(0, 150), rl.NewVector2(300, 400), 20.0),
-		*models.NewBezier(rl.NewVector2(WIDTH, 600), rl.NewVector2(WIDTH+100, 800), 20.0),
-		*models.NewBezier(rl.NewVector2(WIDTH+400, 800), rl.NewVector2(2*WIDTH+100, 600), 20.0),
-	}
+	beziers := repository.GetAllBeziers(SCENE_COLLECTION)
 
 	lines := []models.Line{
 		*models.NewLine(rl.NewVector2(400, 300), rl.NewVector2(800, 350), 10),
@@ -304,6 +300,11 @@ func (s *StartScene) saveEditor() {
 			rect, ok := editorItem.(*models.Rectangle)
 			if ok {
 				repository.SaveRectangle(SCENE_COLLECTION, rect)
+			}
+
+			bez, ok := editorItem.(*models.Bezier)
+			if ok {
+				repository.SaveBezier(SCENE_COLLECTION, bez)
 			}
 		}
 	})

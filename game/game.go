@@ -22,7 +22,6 @@ func Start() {
 	rl.SetTargetFPS(FPS)
 	rl.InitAudioDevice()
 	rl.SetConfigFlags(rl.FlagMsaa4xHint)
-	rl.DisableCursor()
 
 	nextScene := scene.GetScene(scene.Menu)
 	for nextScene != nil {

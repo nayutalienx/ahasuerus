@@ -15,3 +15,13 @@ type Rectangle struct {
 	Height int    `json:"height"`
 	Color  Color  `json:"color"`
 }
+
+type Bezier struct {
+	Id     string `json:"id"`
+	StartX int    `json:"startX"`
+	StartY int    `json:"startY"`
+	EndX   int    `json:"endX"`
+	EndY   int    `json:"endY"`
+	Thick  int    `json:"thick"`
+	Color  Color  `json:"color"`
+}

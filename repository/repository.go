@@ -30,9 +30,25 @@ func AddNewRectangle(collectionPrefix string, rect *models.Rectangle) {
 	}
 }
 
+func AddNewBezier(collectionPrefix string, bez *models.Bezier) {
+	r := mapBezier(uuid.NewString(), bez)
+	err := db.Write(formatKey(collectionPrefix, "bezier"), r.Id, r)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func SaveRectangle(collectionPrefix string, rect *models.Rectangle) {
 	r := mapRectangle(rect.Id, rect)
 	err := db.Write(formatKey(collectionPrefix, "rectangle"), r.Id, r)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func SaveBezier(collectionPrefix string, bez *models.Bezier) {
+	r := mapBezier(bez.Id, bez)
+	err := db.Write(formatKey(collectionPrefix, "bezier"), r.Id, r)
 	if err != nil {
 		panic(err)
 	}
@@ -64,6 +80,31 @@ func GetAllRectangles(collectionPrefix string) []models.Rectangle {
 	return rectangles
 }
 
+func GetAllBeziers(collectionPrefix string) []models.Bezier {
+	records, err := db.ReadAll(formatKey(collectionPrefix, "bezier"))
+	if err != nil {
+		panic(err)
+	}
+
+	beziers := []models.Bezier{}
+	for _, f := range records {
+		bezFound := Bezier{}
+		if err := json.Unmarshal([]byte(f), &bezFound); err != nil {
+			panic(err)
+		}
+		c := bezFound.Color
+		beziers = append(beziers, *models.NewBezier(
+			bezFound.Id,
+			rl.NewVector2(float32(bezFound.StartX), float32(bezFound.StartY)),
+			rl.NewVector2(float32(bezFound.EndX), float32(bezFound.EndY)),
+			float32(bezFound.Thick),
+			rl.NewColor(uint8(c.R), uint8(c.G), uint8(c.B), uint8(c.A)),
+		))
+	}
+
+	return beziers
+}
+
 func mapRectangle(id string, rect *models.Rectangle) Rectangle {
 	r := Rectangle{
 		Id:     id,
@@ -77,6 +118,19 @@ func mapRectangle(id string, rect *models.Rectangle) Rectangle {
 			B: int(rect.GetColor().B),
 			A: int(rect.GetColor().A),
 		},
+	}
+	return r
+}
+
+func mapBezier(id string, bez *models.Bezier) Bezier {
+	r := Bezier{
+		Id:     id,
+		StartX: int(bez.Start.X),
+		StartY: int(bez.Start.Y),
+		EndX:   int(bez.End.X),
+		EndY:   int(bez.End.Y),
+		Thick:  int(bez.Thick),
+		Color:  Color{R: int(bez.GetColor().R), G: int(bez.GetColor().G), B: int(bez.GetColor().B), A: int(bez.GetColor().A)},
 	}
 	return r
 }

@@ -5,23 +5,25 @@ import (
 )
 
 type Bezier struct {
+	Id    string
 	Start rl.Vector2
-	End rl.Vector2
+	End   rl.Vector2
 
 	Thick float32
 	color rl.Color
 
-	editSelected bool
+	editSelected  bool
 	editStartMode bool
-	editEndMode bool
+	editEndMode   bool
 }
 
-func NewBezier(start, end rl.Vector2, thick float32) *Bezier {
+func NewBezier(id string, start, end rl.Vector2, thick float32, color rl.Color) *Bezier {
 	return &Bezier{
-		Start:    start,
-		End:    end,
+		Id:    id,
+		Start: start,
+		End:   end,
 		Thick: thick,
-		color: rl.Gold,
+		color: color,
 	}
 }
 
@@ -68,7 +70,7 @@ func (p *Bezier) ProcessEditorSelection() bool {
 	if p.editEndMode {
 		mousePos := rl.GetMousePosition()
 		p.End.X = mousePos.X - 20
-		p.End.Y = mousePos.Y - 20			
+		p.End.Y = mousePos.Y - 20
 	}
 
 	if (p.editStartMode || p.editEndMode) && rl.IsMouseButtonPressed(rl.MouseLeftButton) {
@@ -90,7 +92,7 @@ func (p *Bezier) EditorResolveSelect() bool {
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton) && !p.editSelected {
 			p.editSelected = true
 		}
-		
+
 	} else {
 		p.color = rl.Gold
 	}

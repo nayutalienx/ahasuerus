@@ -35,6 +35,8 @@ func NewMenuScene() *MenuScene {
 
 func (m *MenuScene) Run() models.Scene {
 
+	rl.DisableCursor()
+
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 70)
 
 	rl.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2)
