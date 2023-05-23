@@ -38,6 +38,14 @@ func AddNewBezier(collectionPrefix string, bez *models.Bezier) {
 	}
 }
 
+func AddNewLine(collectionPrefix string, line *models.Line) {
+	r := mapLine(uuid.NewString(), line)
+	err := db.Write(formatKey(collectionPrefix, "line"), r.Id, r)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func SaveRectangle(collectionPrefix string, rect *models.Rectangle) {
 	r := mapRectangle(rect.Id, rect)
 	err := db.Write(formatKey(collectionPrefix, "rectangle"), r.Id, r)
@@ -49,6 +57,14 @@ func SaveRectangle(collectionPrefix string, rect *models.Rectangle) {
 func SaveBezier(collectionPrefix string, bez *models.Bezier) {
 	r := mapBezier(bez.Id, bez)
 	err := db.Write(formatKey(collectionPrefix, "bezier"), r.Id, r)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func SaveLine(collectionPrefix string, line *models.Line) {
+	r := mapLine(line.Id, line)
+	err := db.Write(formatKey(collectionPrefix, "line"), r.Id, r)
 	if err != nil {
 		panic(err)
 	}
@@ -105,6 +121,31 @@ func GetAllBeziers(collectionPrefix string) []models.Bezier {
 	return beziers
 }
 
+func GetAllLines(collectionPrefix string) []models.Line {
+	records, err := db.ReadAll(formatKey(collectionPrefix, "line"))
+	if err != nil {
+		panic(err)
+	}
+
+	lines := []models.Line{}
+	for _, f := range records {
+		lineFound := Line{}
+		if err := json.Unmarshal([]byte(f), &lineFound); err != nil {
+			panic(err)
+		}
+		c := lineFound.Color
+		lines = append(lines, *models.NewLine(
+			lineFound.Id,
+			rl.NewVector2(float32(lineFound.StartX), float32(lineFound.StartY)),
+			rl.NewVector2(float32(lineFound.EndX), float32(lineFound.EndY)),
+			float32(lineFound.Thick),
+			rl.NewColor(uint8(c.R), uint8(c.G), uint8(c.B), uint8(c.A)),
+		))
+	}
+
+	return lines
+}
+
 func mapRectangle(id string, rect *models.Rectangle) Rectangle {
 	r := Rectangle{
 		Id:     id,
@@ -124,6 +165,19 @@ func mapRectangle(id string, rect *models.Rectangle) Rectangle {
 
 func mapBezier(id string, bez *models.Bezier) Bezier {
 	r := Bezier{
+		Id:     id,
+		StartX: int(bez.Start.X),
+		StartY: int(bez.Start.Y),
+		EndX:   int(bez.End.X),
+		EndY:   int(bez.End.Y),
+		Thick:  int(bez.Thick),
+		Color:  Color{R: int(bez.GetColor().R), G: int(bez.GetColor().G), B: int(bez.GetColor().B), A: int(bez.GetColor().A)},
+	}
+	return r
+}
+
+func mapLine(id string, bez *models.Line) Line {
+	r := Line{
 		Id:     id,
 		StartX: int(bez.Start.X),
 		StartY: int(bez.Start.Y),

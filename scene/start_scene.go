@@ -38,10 +38,7 @@ func NewStartScene() *StartScene {
 
 	beziers := repository.GetAllBeziers(SCENE_COLLECTION)
 
-	lines := []models.Line{
-		*models.NewLine(rl.NewVector2(400, 300), rl.NewVector2(800, 350), 10),
-		*models.NewLine(rl.NewVector2(900, 400), rl.NewVector2(1400, 150), 10),
-	}
+	lines := repository.GetAllLines(SCENE_COLLECTION)
 
 	startScene.player = models.NewPlayer(100, 100)
 

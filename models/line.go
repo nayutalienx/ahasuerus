@@ -5,6 +5,7 @@ import (
 )
 
 type Line struct {
+	Id string
 	Start rl.Vector2
 	End rl.Vector2
 
@@ -16,12 +17,13 @@ type Line struct {
 	editEndMode   bool
 }
 
-func NewLine(start, end rl.Vector2, thick float32) *Line {
+func NewLine(id string, start, end rl.Vector2, thick float32, color rl.Color) *Line {
 	return &Line{
+		Id: id,
 		Start:    start,
 		End:    end,
 		Thick: thick,
-		color: rl.Gold,
+		color: color,
 	}
 }
 
