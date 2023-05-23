@@ -30,13 +30,13 @@ func GetScene(id SceneId) models.Scene {
 	case Menu:
 		scene = NewMenuScene()
 	case Start:
-		scene = NewStartScene()
+		scene = NewGameScene("start-scene")
 	}
 
 	if scene == nil {
 		panic("scene not found")
 	}
-	
+
 	sceneMap[id] = scene
 
 	return scene

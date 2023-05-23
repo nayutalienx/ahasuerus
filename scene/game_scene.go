@@ -11,14 +11,13 @@ import (
 	"github.com/google/uuid"
 )
 
-const SCENE_COLLECTION = "start-scene"
-
-type StartScene struct {
+type GameScene struct {
 	worldContainer       *container.ObjectResourceContainer
 	environmentContainer *container.ObjectResourceContainer
 	camera               *rl.Camera2D
 	player               *models.Player
 
+	sceneName string
 	paused           bool
 	editMode         bool
 	editModeShowMenu bool
@@ -28,8 +27,9 @@ type StartScene struct {
 	selectedItem     []models.EditorSelectedItem
 }
 
-func NewStartScene() *StartScene {
-	startScene := StartScene{
+func NewGameScene(sceneName string) *GameScene {
+	startScene := GameScene{
+		sceneName: sceneName,
 		worldContainer:       container.NewObjectResourceContainer(),
 		environmentContainer: container.NewObjectResourceContainer(),
 		cameraEditPos:        rl.NewVector2(0, 0),
@@ -37,9 +37,9 @@ func NewStartScene() *StartScene {
 		selectedItem:         make([]models.EditorSelectedItem, 0),
 	}
 
-	beziers := repository.GetAllBeziers(SCENE_COLLECTION)
+	beziers := repository.GetAllBeziers(sceneName)
 
-	lines := repository.GetAllLines(SCENE_COLLECTION)
+	lines := repository.GetAllLines(sceneName)
 
 	startScene.player = models.NewPlayer(100, 100)
 
@@ -55,7 +55,7 @@ func NewStartScene() *StartScene {
 		startScene.player.AddCollisionLine(&l)
 	}
 
-	rectangles := repository.GetAllRectangles(SCENE_COLLECTION)
+	rectangles := repository.GetAllRectangles(sceneName)
 
 	for i, _ := range rectangles {
 		rect := rectangles[i]
@@ -98,7 +98,7 @@ func NewStartScene() *StartScene {
 	return &startScene
 }
 
-func (s *StartScene) Run() models.Scene {
+func (s *GameScene) Run() models.Scene {
 
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 20)
 
@@ -152,12 +152,12 @@ func (s *StartScene) Run() models.Scene {
 	return GetScene(Menu)
 }
 
-func (m *StartScene) Unload() {
+func (m *GameScene) Unload() {
 	m.environmentContainer.Unload()
 	m.worldContainer.Unload()
 }
 
-func (s *StartScene) resolveEditorSelection() {
+func (s *GameScene) resolveEditorSelection() {
 	mouse := rl.GetMousePosition()
 	rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Red)
 
@@ -179,7 +179,7 @@ func (s *StartScene) resolveEditorSelection() {
 	s.selectedItem = selectedItem
 }
 
-func (s *StartScene) processEditorSelection() {
+func (s *GameScene) processEditorSelection() {
 	for i, _ := range s.selectedItem {
 		ei := s.selectedItem[i]
 		if ei.Selected {
@@ -189,10 +189,10 @@ func (s *StartScene) processEditorSelection() {
 				s.selectedItem[i].Selected = false
 			}
 		}
-	}	
+	}
 }
 
-func (s StartScene) hasAnySelectedEditorItem() (bool, models.EditorItem) {
+func (s GameScene) hasAnySelectedEditorItem() (bool, models.EditorItem) {
 	for i, _ := range s.selectedItem {
 		ei := s.selectedItem[i]
 		if ei.Selected {
@@ -202,35 +202,35 @@ func (s StartScene) hasAnySelectedEditorItem() (bool, models.EditorItem) {
 	return false, nil
 }
 
-func (s *StartScene) saveEditor() {
+func (s *GameScene) saveEditor() {
 	s.worldContainer.ForEachObject(func(obj models.Object) {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
 			rect, ok := editorItem.(*models.Rectangle)
 			if ok {
-				repository.SaveRectangle(SCENE_COLLECTION, rect)
+				repository.SaveRectangle(s.sceneName, rect)
 			}
 
 			bez, ok := editorItem.(*models.Bezier)
 			if ok {
-				repository.SaveBezier(SCENE_COLLECTION, bez)
+				repository.SaveBezier(s.sceneName, bez)
 			}
 
 			line, ok := editorItem.(*models.Line)
 			if ok {
-				repository.SaveLine(SCENE_COLLECTION, line)
+				repository.SaveLine(s.sceneName, line)
 			}
 		}
 	})
 }
 
-func (s *StartScene) disableEditMode() {
+func (s *GameScene) disableEditMode() {
 	s.editMode = false
 	s.player.Resume()
 	s.environmentContainer.RemoveObject(s.editLabel)
 }
 
-func (s *StartScene) enableEditMode() {
+func (s *GameScene) enableEditMode() {
 	s.editMode = true
 	s.cameraEditPos.X = s.player.Pos.X
 	s.cameraEditPos.Y = s.player.Pos.Y
@@ -250,10 +250,10 @@ func (s *StartScene) enableEditMode() {
 	)
 }
 
-func (s *StartScene) processEditorMenuMode() {
+func (s *GameScene) processEditorMenuMode() {
 	hasAnySelected, editorItem := s.hasAnySelectedEditorItem()
 	if hasAnySelected {
-		
+
 		bezier, isBezier := editorItem.(*models.Bezier)
 
 		if isBezier {
@@ -308,7 +308,7 @@ func (s *StartScene) processEditorMenuMode() {
 			if changeSize {
 				rect.SetEditorSizeModeTrue()
 				rl.DisableCursor()
-				rl.SetMousePosition(int(rect.GetPos().X + rect.GetBox().X), int(rect.GetPos().Y + rect.GetBox().Y))
+				rl.SetMousePosition(int(rect.GetPos().X+rect.GetBox().X), int(rect.GetPos().Y+rect.GetBox().Y))
 			}
 		}
 
@@ -318,7 +318,7 @@ func (s *StartScene) processEditorMenuMode() {
 		newBezier := rg.Button(rl.NewRectangle(10, 330, 200, 100), "NEW BEZIER")
 
 		if newRectangle {
-			rect := models.NewRectangle(uuid.NewString(), s.camera.Target.X, s.camera.Target.Y,200, 100, rl.Blue)
+			rect := models.NewRectangle(uuid.NewString(), s.camera.Target.X, s.camera.Target.Y, 200, 100, rl.Blue)
 			s.worldContainer.AddObject(rect)
 			s.player.AddCollisionBox(rect)
 		}
@@ -337,7 +337,7 @@ func (s *StartScene) processEditorMenuMode() {
 	}
 }
 
-func (s *StartScene) processEditorMode() {
+func (s *GameScene) processEditorMode() {
 
 	mousePos := rl.GetMousePosition()
 
@@ -386,13 +386,13 @@ func (s *StartScene) processEditorMode() {
 	updateCameraCenter(s.camera, s.cameraEditPos)
 }
 
-func (s *StartScene) pause() {
+func (s *GameScene) pause() {
 	s.worldContainer.Pause()
 	s.environmentContainer.Pause()
 	s.paused = true
 }
 
-func (s *StartScene) resume() {
+func (s *GameScene) resume() {
 	s.worldContainer.Resume()
 	s.environmentContainer.Resume()
 	s.paused = false
