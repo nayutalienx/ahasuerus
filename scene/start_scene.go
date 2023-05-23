@@ -323,6 +323,11 @@ func (s *StartScene) saveEditor() {
 			if ok {
 				repository.SaveBezier(SCENE_COLLECTION, bez)
 			}
+
+			line, ok := editorItem.(*models.Line)
+			if ok {
+				repository.SaveLine(SCENE_COLLECTION, line)
+			}
 		}
 	})
 }
