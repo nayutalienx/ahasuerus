@@ -237,6 +237,24 @@ func (s *StartScene) Run() models.Scene {
 					}
 				}
 
+				rect, isRect := editorItem.(*models.Rectangle)
+				if isRect {
+					changePosition := rg.Button(rl.NewRectangle(10, 110, 200, 100), "CHANGE POSITION")
+					changeSize := rg.Button(rl.NewRectangle(10, 220, 200, 100), "CHANGE SIZE")
+
+					if changePosition {
+						rect.SetEditorMoveModeTrue()
+						rl.DisableCursor()
+						rl.SetMousePosition(int(rect.GetPos().X), int(rect.GetPos().Y))
+					}
+
+					if changeSize {
+						rect.SetEditorSizeModeTrue()
+						rl.DisableCursor()
+						rl.SetMousePosition(int(rect.GetPos().X + rect.GetBox().X), int(rect.GetPos().Y + rect.GetBox().Y))
+					}
+				}
+
 			} else {
 				newRectangle := rg.Button(rl.NewRectangle(10, 110, 200, 100), "NEW RECTANGLE")
 				newLine := rg.Button(rl.NewRectangle(10, 220, 200, 100), "NEW LINE")

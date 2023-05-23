@@ -10,6 +10,7 @@ type Rectangle struct {
 	box   rl.Vector2
 	color rl.Color
 
+	editSelected  bool
 	editorMoveWithCursor bool
 	editorEditSizeWithCursor bool
 }
@@ -29,30 +30,9 @@ func (p Rectangle) ResolveCollision(callback CollisionBoxCallback) {
 
 func (p *Rectangle) Draw() {
 	rl.DrawRectangle(int32(p.pos.X), int32(p.pos.Y), int32(p.box.X), int32(p.box.Y), p.color)
-
-	if p.editorMoveWithCursor {
-		rl.DrawText("ATTACHED TO CURSOR", int32(p.pos.X), int32(p.pos.Y) + 30, 20, rl.Red)
-	}
-
-	if p.editorEditSizeWithCursor {
-		rl.DrawText("SIZE ATTACHED TO CURSOR", int32(p.pos.X), int32(p.pos.Y) + 30, 20, rl.Red)
-	}
 }
 
 func (p *Rectangle) Update(delta float32) {
-	if p.editorMoveWithCursor {
-		mousePos := rl.GetMousePosition()
-		offset := 10
-		p.pos.X = mousePos.X-float32(offset)
-		p.pos.Y = mousePos.Y-float32(offset)
-	}
-
-	if p.editorEditSizeWithCursor {
-		mousePos := rl.GetMousePosition()
-		offset := 10
-		p.box.X = mousePos.X+float32(offset) - p.pos.X 
-		p.box.Y = mousePos.Y+float32(offset) - p.pos.Y
-	}
 }
 
 func (p Rectangle) GetColor() rl.Color {
@@ -82,9 +62,38 @@ func (p *Rectangle) GetBox() *rl.Vector2 {
 	return &p.box
 }
 
+func (p *Rectangle) SetEditorSizeModeTrue() {
+	p.editorEditSizeWithCursor = true
+}
+
+func (p *Rectangle) SetEditorMoveModeTrue() {
+	p.editorMoveWithCursor = true
+}
+
 func (p *Rectangle) ProcessEditorSelection() bool {
 
-	return true
+	if p.editorMoveWithCursor {
+		mousePos := rl.GetMousePosition()
+		offset := 10
+		p.pos.X = mousePos.X-float32(offset)
+		p.pos.Y = mousePos.Y-float32(offset)
+	}
+
+	if p.editorEditSizeWithCursor {
+		mousePos := rl.GetMousePosition()
+		offset := 10
+		p.box.X = mousePos.X+float32(offset) - p.pos.X 
+		p.box.Y = mousePos.Y+float32(offset) - p.pos.Y
+	}
+
+	if (p.editorMoveWithCursor || p.editorEditSizeWithCursor) && rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+		p.editorEditSizeWithCursor = false
+		p.editorMoveWithCursor = false
+		p.editSelected = false
+		return true
+	}
+
+	return false
 }
 
 func (p *Rectangle) EditorResolveSelect() bool {
@@ -92,34 +101,11 @@ func (p *Rectangle) EditorResolveSelect() bool {
 	mousePos := rl.GetMousePosition()
 	collission := rl.CheckCollisionPointRec(mousePos, rec)
 	if collission {
-		sizeEditorSquareSize := 20
-
 		rl.DrawRectangleLinesEx(rec, 3.0, rl.Red)
 
-		rl.DrawRectangle(
-			int32(p.pos.X) + int32(p.box.X-float32(sizeEditorSquareSize)), 
-			int32(p.pos.Y)+int32(p.box.Y-float32(sizeEditorSquareSize)), 
-			int32(sizeEditorSquareSize), 
-			int32(sizeEditorSquareSize), 
-			rl.Red)
-
-		collissionForEditSize := rl.CheckCollisionPointRec(
-			mousePos, 
-			rl.NewRectangle(
-				float32(int32(p.pos.X) + int32(p.box.X-float32(sizeEditorSquareSize))), 
-				float32(int32(p.pos.Y)+int32(p.box.Y-float32(sizeEditorSquareSize))),
-				float32(sizeEditorSquareSize),
-				float32(sizeEditorSquareSize),
-			),
-		)
-
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton){
-			if collissionForEditSize {
-				p.editorEditSizeWithCursor = !p.editorEditSizeWithCursor
-			} else {
-				p.editorMoveWithCursor = !p.editorMoveWithCursor
-			}
+			p.editSelected = true
 		}		
 	}
-	return false
+	return p.editSelected
 }
