@@ -8,6 +8,7 @@ import (
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"github.com/google/uuid"
 )
 
 const SCENE_COLLECTION = "start-scene"
@@ -237,7 +238,27 @@ func (s *StartScene) Run() models.Scene {
 				}
 
 			} else {
-				rg.Button(rl.NewRectangle(50, 100, 200, 100), "NEW RECTANGLE")
+				newRectangle := rg.Button(rl.NewRectangle(10, 110, 200, 100), "NEW RECTANGLE")
+				newLine := rg.Button(rl.NewRectangle(10, 220, 200, 100), "NEW LINE")
+				newBezier := rg.Button(rl.NewRectangle(10, 330, 200, 100), "NEW BEZIER")
+
+				if newRectangle {
+					rect := models.NewRectangle(uuid.NewString(), s.camera.Target.X, s.camera.Target.Y,200, 100, rl.Blue)
+					s.worldContainer.AddObject(rect)
+					s.player.AddCollisionBox(rect)
+				}
+
+				if newLine {
+					line := models.NewLine(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, rl.Gold)
+					s.worldContainer.AddObject(line)
+					s.player.AddCollisionLine(line)
+				}
+
+				if newBezier {
+					bez := models.NewBezier(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, rl.Gold)
+					s.worldContainer.AddObject(bez)
+					s.player.AddCollisionBezier(bez)
+				}
 			}
 		}
 
