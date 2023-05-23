@@ -10,6 +10,10 @@ type Line struct {
 
 	Thick float32
 	color rl.Color
+
+	editSelected  bool
+	editStartMode bool
+	editEndMode   bool
 }
 
 func NewLine(start, end rl.Vector2, thick float32) *Line {
@@ -42,9 +46,35 @@ func (p *Line) SetColor(col rl.Color) *Line {
 	return p
 }
 
-func (p *Line) ProcessEditorSelection() bool {
+func (p *Line) SetStartModeTrue() {
+	p.editStartMode = true
+}
 
-	return true
+func (p *Line) SetEndModeTrue() {
+	p.editEndMode = true
+}
+
+func (p *Line) ProcessEditorSelection() bool {
+	if p.editStartMode {
+		mousePos := rl.GetMousePosition()
+		p.Start.X = mousePos.X + 20
+		p.Start.Y = mousePos.Y + 20
+	}
+
+	if p.editEndMode {
+		mousePos := rl.GetMousePosition()
+		p.End.X = mousePos.X - 20
+		p.End.Y = mousePos.Y - 20
+	}
+
+	if (p.editStartMode || p.editEndMode) && rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+		p.editSelected = false
+		p.editStartMode = false
+		p.editEndMode = false
+		return true
+	}
+
+	return false
 }
 
 func (p *Line) EditorResolveSelect() bool {
@@ -52,8 +82,13 @@ func (p *Line) EditorResolveSelect() bool {
 	isCollision := rl.CheckCollisionPointLine(mousePos, p.Start, p.End, int32(p.Thick))
 	if isCollision {
 		p.color = rl.Red
+
+		if rl.IsMouseButtonPressed(rl.MouseLeftButton) && !p.editSelected {
+			p.editSelected = true
+		}
+
 	} else {
 		p.color = rl.Gold
 	}
-	return false
+	return p.editSelected
 }

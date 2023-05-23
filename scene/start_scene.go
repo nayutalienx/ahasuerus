@@ -219,6 +219,26 @@ func (s *StartScene) Run() models.Scene {
 					}
 				}
 
+				line, isLine := editorItem.(*models.Line)
+
+				if isLine {
+					changeStart := rg.Button(rl.NewRectangle(10, 110, 200, 100), "CHANGE START")
+					changeEnd := rg.Button(rl.NewRectangle(10, 220, 200, 100), "CHANGE END")
+					if changeStart || changeEnd {
+						if changeStart {
+							line.SetStartModeTrue()
+							rl.DisableCursor()
+							rl.SetMousePosition(int(line.Start.X-20), int(line.Start.Y-20))
+						}
+
+						if changeEnd {
+							line.SetEndModeTrue()
+							rl.DisableCursor()
+							rl.SetMousePosition(int(line.End.X+20), int(line.End.Y+20))
+						}
+					}
+				}
+
 			} else {
 				rg.Button(rl.NewRectangle(50, 100, 200, 100), "NEW RECTANGLE")
 			}
