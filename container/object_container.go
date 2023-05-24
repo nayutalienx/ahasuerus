@@ -54,6 +54,55 @@ func (w ObjectContainer) ForEachObject(cb func (obj models.Object)) {
 	}
 }
 
+func (w *ObjectContainer) MoveUp(obj models.Object) int {
+	var index int
+	for i, _ := range w.objects {
+		o := w.objects[i]
+		if o == obj {
+			index = i
+			break
+		}
+	}
+
+	if index == len(w.objects)-1 {
+		return index
+	}
+
+	swapIndex := index + 1	
+		
+	tempItem := w.objects[swapIndex]
+	w.objects[swapIndex] = w.objects[index]
+	w.objects[index] = tempItem
+
+	return swapIndex
+}
+
+func (w *ObjectContainer) MoveDown(obj models.Object) int {
+	var index int
+	for i, _ := range w.objects {
+		o := w.objects[i]
+		if o == obj {
+			index = i
+			break
+		}
+	}
+
+	if index == 0 {
+		return index
+	}
+
+	 
+	swapIndex := index - 1	
+	
+
+	tempItem := w.objects[swapIndex]
+	w.objects[swapIndex] = w.objects[index]
+	w.objects[index] = tempItem
+
+
+	return swapIndex
+}
+
 func (w ObjectContainer) removeObject(s int) []models.Object {
     return append(w.objects[:s], w.objects[s+1:]...)
 }

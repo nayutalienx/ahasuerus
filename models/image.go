@@ -1,11 +1,13 @@
 package models
 
 import (
+	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Image struct {
+	DrawIndex int
 	Id string
 	Texture      rl.Texture2D
 	Pos          rl.Vector2
@@ -17,8 +19,9 @@ type Image struct {
 	editorMoveWithCursor bool
 }
 
-func NewImage(id string, path string, x, y, scale float32) *Image {
+func NewImage(drawIndex int,id string, path string, x, y, scale float32) *Image {
 	return &Image{
+		DrawIndex: drawIndex,
 		Id: id,
 		ResourcePath: path,
 		Pos: rl.Vector2{
@@ -35,6 +38,9 @@ func (p *Image) Scale(scale float32) *Image {
 
 func (p *Image) Draw() {
 	rl.DrawTexture(p.Texture, int32(p.Pos.X), int32(p.Pos.Y), rl.White)
+	if p.editSelected {
+		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.Pos.X), int32(p.Pos.Y), 40, rl.Red)
+	}
 }
 
 func (p *Image) Update(delta float32) {
@@ -76,6 +82,13 @@ func (p *Image) EditorResolveSelect() bool {
 			p.editSelected = true
 		}		
 	}
+
+	if p.editSelected {
+		if rl.IsKeyDown(rl.KeyBackspace) {
+			p.editSelected = false
+		}
+	}
+
 	return p.editSelected
 }
 

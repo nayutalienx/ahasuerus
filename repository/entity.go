@@ -17,6 +17,7 @@ type Rectangle struct {
 }
 
 type Image struct {
+	DrawIndex int `json:"drawIndex"`
 	Id    string  `json:"id"`
 	Path  string  `json:"path"`
 	X     int     `json:"x"`

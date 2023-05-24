@@ -4,6 +4,7 @@ import (
 	"ahasuerus/models"
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/sdomino/scribble"
@@ -141,8 +142,12 @@ func GetAllImages(collectionPrefix string) []models.Image {
 		if err := json.Unmarshal([]byte(f), &imageFound); err != nil {
 			panic(err)
 		}
-		images = append(images, *models.NewImage(imageFound.Id, imageFound.Path, float32(imageFound.X), float32(imageFound.Y), imageFound.Scale))
+		images = append(images, *models.NewImage(imageFound.DrawIndex, imageFound.Id, imageFound.Path, float32(imageFound.X), float32(imageFound.Y), imageFound.Scale))
 	}
+
+	sort.Slice(images, func(i, j int) bool {
+		return images[i].DrawIndex < images[j].DrawIndex
+	})
 
 	return images
 }
@@ -192,11 +197,12 @@ func mapLine(id string, bez *models.Line) Line {
 
 func mapImage(id string, img *models.Image) Image {
 	return Image{
-		Id:    id,
-		Path:  img.ResourcePath,
-		X:     int(img.Pos.X),
-		Y:     int(img.Pos.Y),
-		Scale: img.ScaleTex,
+		DrawIndex: img.DrawIndex,
+		Id:        id,
+		Path:      img.ResourcePath,
+		X:         int(img.Pos.X),
+		Y:         int(img.Pos.Y),
+		Scale:     img.ScaleTex,
 	}
 }
 

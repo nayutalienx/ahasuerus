@@ -407,7 +407,7 @@ func (s *GameScene) processEditorMenuMode() {
 
 				path := "resources" + strings.Split(files[0], "resources")[1]
 
-				image := models.NewImage(uuid.NewString(), path, 0, 0, 0).
+				image := models.NewImage(s.environmentContainer.Size(), uuid.NewString(), path, 0, 0, 0).
 					AfterLoadPreset(func(girl *models.Image) {
 						girl.Pos.X = WIDTH / 2
 						girl.Pos.Y = HEIGHT / 2
@@ -457,12 +457,27 @@ func (s *GameScene) processEditorMenuMode() {
 				bgImage, isImage := backgroundSelectedItem.(*models.Image)
 				if isImage {
 
-					moveBgButton := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "MOVE BG")
+					changeBgPosButton := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "CHANGE BG POS")
+					
+					moveUpper := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "MOVE UPPER")
+					moveDown := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "MOVE DOWN")
 
-					if moveBgButton {
+					if changeBgPosButton {
 						bgImage.SetEditorMoveWithCursorTrue()
 						rl.SetMousePosition(int(bgImage.Pos.X), int(bgImage.Pos.Y))
 					}
+
+					if moveUpper {
+						drawIndex := s.environmentContainer.MoveUp(bgImage)
+						bgImage.DrawIndex = drawIndex
+					}
+
+					if moveDown {
+						drawIndex := s.environmentContainer.MoveDown(bgImage)
+						bgImage.DrawIndex = drawIndex
+					}
+
+
 				}
 
 			}
