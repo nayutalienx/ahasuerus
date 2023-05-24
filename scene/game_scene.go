@@ -470,11 +470,13 @@ func (s *GameScene) processEditorMenuMode() {
 					if moveUpper {
 						drawIndex := s.environmentContainer.MoveUp(bgImage)
 						bgImage.DrawIndex = drawIndex
+						s.syncDrawIndex()
 					}
 
 					if moveDown {
 						drawIndex := s.environmentContainer.MoveDown(bgImage)
 						bgImage.DrawIndex = drawIndex
+						s.syncDrawIndex()
 					}
 
 
@@ -541,6 +543,17 @@ func (s *GameScene) processEditorMode() {
 	}
 
 	updateCameraCenter(s.camera, s.cameraEditPos)
+}
+
+func (s *GameScene) syncDrawIndex() {
+	index := 0
+	s.environmentContainer.ForEachObject(func(obj models.Object) {
+		image, ok := obj.(*models.Image)
+		if ok {
+			image.DrawIndex = index
+		}
+		index++
+	})
 }
 
 func (s *GameScene) pause() {
