@@ -16,6 +16,14 @@ type Rectangle struct {
 	Color  Color  `json:"color"`
 }
 
+type Image struct {
+	Id    string  `json:"id"`
+	Path  string  `json:"path"`
+	X     int     `json:"x"`
+	Y     int     `json:"y"`
+	Scale float32 `json:"scale"`
+}
+
 type Bezier struct {
 	Id     string `json:"id"`
 	StartX int    `json:"startX"`

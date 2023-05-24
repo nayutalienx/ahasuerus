@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
-	"github.com/google/uuid"
 	"github.com/sdomino/scribble"
 )
 
@@ -17,30 +16,6 @@ var (
 func init() {
 	var err error
 	db, err = scribble.New("data", nil)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func AddNewRectangle(collectionPrefix string, rect *models.Rectangle) {
-	r := mapRectangle(uuid.NewString(), rect)
-	err := db.Write(formatKey(collectionPrefix, "rectangle"), r.Id, r)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func AddNewBezier(collectionPrefix string, bez *models.Bezier) {
-	r := mapBezier(uuid.NewString(), bez)
-	err := db.Write(formatKey(collectionPrefix, "bezier"), r.Id, r)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func AddNewLine(collectionPrefix string, line *models.Line) {
-	r := mapLine(uuid.NewString(), line)
-	err := db.Write(formatKey(collectionPrefix, "line"), r.Id, r)
 	if err != nil {
 		panic(err)
 	}
@@ -65,6 +40,14 @@ func SaveBezier(collectionPrefix string, bez *models.Bezier) {
 func SaveLine(collectionPrefix string, line *models.Line) {
 	r := mapLine(line.Id, line)
 	err := db.Write(formatKey(collectionPrefix, "line"), r.Id, r)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func SaveImage(collectionPrefix string, img *models.Image) {
+	i := mapImage(img.Id, img)
+	err := db.Write(formatKey(collectionPrefix, "image"), i.Id, i)
 	if err != nil {
 		panic(err)
 	}
@@ -146,6 +129,24 @@ func GetAllLines(collectionPrefix string) []models.Line {
 	return lines
 }
 
+func GetAllImages(collectionPrefix string) []models.Image {
+	records, err := db.ReadAll(formatKey(collectionPrefix, "image"))
+	if err != nil {
+		panic(err)
+	}
+
+	images := []models.Image{}
+	for _, f := range records {
+		imageFound := Image{}
+		if err := json.Unmarshal([]byte(f), &imageFound); err != nil {
+			panic(err)
+		}
+		images = append(images, *models.NewImage(imageFound.Id, imageFound.Path, float32(imageFound.X), float32(imageFound.Y), imageFound.Scale))
+	}
+
+	return images
+}
+
 func mapRectangle(id string, rect *models.Rectangle) Rectangle {
 	r := Rectangle{
 		Id:     id,
@@ -187,6 +188,16 @@ func mapLine(id string, bez *models.Line) Line {
 		Color:  Color{R: int(bez.GetColor().R), G: int(bez.GetColor().G), B: int(bez.GetColor().B), A: int(bez.GetColor().A)},
 	}
 	return r
+}
+
+func mapImage(id string, img *models.Image) Image {
+	return Image{
+		Id:    id,
+		Path:  img.ResourcePath,
+		X:     int(img.Pos.X),
+		Y:     int(img.Pos.Y),
+		Scale: img.ScaleTex,
+	}
 }
 
 func formatKey(collectionPrefix, entity string) string {

@@ -26,14 +26,14 @@ type GameScene struct {
 	editCameraSpeed         float32
 	editLabel               models.Object
 	selectedGameObjectsItem []models.EditorSelectedItem
-	selectedBackgroundItem   []models.EditorSelectedItem
+	selectedBackgroundItem  []models.EditorSelectedItem
 
 	editMenuBgImageDropMode bool
 	editHideGameObjectsMode bool
 }
 
 func NewGameScene(sceneName string) *GameScene {
-	startScene := GameScene{
+	scene := GameScene{
 		sceneName:               sceneName,
 		worldContainer:          container.NewObjectResourceContainer(),
 		environmentContainer:    container.NewObjectResourceContainer(),
@@ -46,44 +46,45 @@ func NewGameScene(sceneName string) *GameScene {
 
 	lines := repository.GetAllLines(sceneName)
 
-	startScene.player = models.NewPlayer(100, 100)
+	scene.player = models.NewPlayer(100, 100)
 
 	for i, _ := range beziers {
 		bz := beziers[i]
-		startScene.worldContainer.AddObject(&bz)
-		startScene.player.AddCollisionBezier(&bz)
+		scene.worldContainer.AddObject(&bz)
+		scene.player.AddCollisionBezier(&bz)
 	}
 
 	for i, _ := range lines {
 		l := lines[i]
-		startScene.worldContainer.AddObject(&l)
-		startScene.player.AddCollisionLine(&l)
+		scene.worldContainer.AddObject(&l)
+		scene.player.AddCollisionLine(&l)
 	}
 
 	rectangles := repository.GetAllRectangles(sceneName)
 
 	for i, _ := range rectangles {
 		rect := rectangles[i]
-		startScene.worldContainer.AddObject(&rect)
-		startScene.player.AddCollisionBox(&rect)
+		scene.worldContainer.AddObject(&rect)
+		scene.player.AddCollisionBox(&rect)
 	}
 
-	startScene.worldContainer.AddObjectResource(startScene.player)
+	scene.worldContainer.AddObjectResource(scene.player)
+
+	images := repository.GetAllImages(scene.sceneName)
+
+	for i, _ := range images {
+		img := images[i]
+		scene.environmentContainer.AddObjectResource(&img)
+	}
 
 	// startScene.environmentContainer.AddObjectResource(
 	// 	models.NewImage("resources/bg/1.jpg", 0, 0).AfterLoadPreset(func(i *models.Image) {
 	// 		i.Texture.Width = int32(WIDTH)
 	// 		i.Texture.Height = int32(HEIGHT)
 	// 	}),
-	// 	models.NewImage("resources/heroes/girl1.png", 0, 0).
-	// 		Scale(1.3).
-	// 		AfterLoadPreset(func(girl *models.Image) {
-	// 			girl.Pos.X = WIDTH - WIDTH/12 - float32(girl.Texture.Width)
-	// 			girl.Pos.Y = HEIGHT - float32(girl.Texture.Height)
-	// 		}),
 	// 	models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
 
-	startScene.environmentContainer.AddObject(
+	scene.environmentContainer.AddObject(
 		models.NewText(10, 10).
 			SetFontSize(40).
 			SetColor(rl.White).
@@ -91,16 +92,16 @@ func NewGameScene(sceneName string) *GameScene {
 				t.SetData(fmt.Sprintf("fps: %d [movement(arrow keys), jump(space), edit mode(F1)]", rl.GetFPS()))
 			}))
 
-	startScene.environmentContainer.Load()
-	startScene.worldContainer.Load()
+	scene.environmentContainer.Load()
+	scene.worldContainer.Load()
 
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT/2),
 		rl.NewVector2(0, 0),
 		0, 1)
-	startScene.camera = &camera
+	scene.camera = &camera
 
-	return &startScene
+	return &scene
 }
 
 func (s *GameScene) Run() models.Scene {
@@ -182,7 +183,7 @@ func (s *GameScene) resolveEditorBackgroundImageSelection() {
 					Item:     editorItem,
 				})
 			}
-		}		
+		}
 	})
 
 	s.selectedBackgroundItem = selectedItem
@@ -272,6 +273,15 @@ func (s *GameScene) saveEditor() {
 			line, ok := editorItem.(*models.Line)
 			if ok {
 				repository.SaveLine(s.sceneName, line)
+			}
+		}
+	})
+	s.environmentContainer.ForEachObject(func(obj models.Object) {
+		editorItem, ok := obj.(models.EditorItem)
+		if ok {
+			image, ok := editorItem.(*models.Image)
+			if ok {
+				repository.SaveImage(s.sceneName, image)
 			}
 		}
 	})
@@ -397,7 +407,7 @@ func (s *GameScene) processEditorMenuMode() {
 
 				path := "resources" + strings.Split(files[0], "resources")[1]
 
-				image := models.NewImage(path, 0, 0).
+				image := models.NewImage(uuid.NewString(), path, 0, 0, 0).
 					AfterLoadPreset(func(girl *models.Image) {
 						girl.Pos.X = WIDTH / 2
 						girl.Pos.Y = HEIGHT / 2

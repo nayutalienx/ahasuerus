@@ -7,6 +7,7 @@ import (
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"github.com/google/uuid"
 )
 
 type MenuScene struct {
@@ -23,7 +24,7 @@ func NewMenuScene() *MenuScene {
 	}
 	menuScene.menuContainer.AddObjectResource(
 		models.NewMusicStream("resources/music/menu_theme.mp3"),
-		models.NewImage("resources/bg/menu-bg.png", 0, 0).AfterLoadPreset(func(i *models.Image) {
+		models.NewImage(uuid.NewString(),"resources/bg/menu-bg.png", 0, 0, 0).AfterLoadPreset(func(i *models.Image) {
 			i.Texture.Width = int32(WIDTH)
 			i.Texture.Height = int32(HEIGHT)
 		}),

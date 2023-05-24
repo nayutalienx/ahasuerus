@@ -6,19 +6,21 @@ import (
 )
 
 type Image struct {
+	Id string
 	Texture      rl.Texture2D
 	Pos          rl.Vector2
-	resourcePath string
-	scale float32
+	ResourcePath string
+	ScaleTex float32
 	preset func (i *Image)
 
 	editSelected  bool
 	editorMoveWithCursor bool
 }
 
-func NewImage(path string, x, y float32) *Image {
+func NewImage(id string, path string, x, y, scale float32) *Image {
 	return &Image{
-		resourcePath: path,
+		Id: id,
+		ResourcePath: path,
 		Pos: rl.Vector2{
 			X: x,
 			Y: y,
@@ -27,7 +29,7 @@ func NewImage(path string, x, y float32) *Image {
 }
 
 func (p *Image) Scale(scale float32) *Image {
-	p.scale = scale
+	p.ScaleTex = scale
 	return p
 }
 
@@ -39,12 +41,12 @@ func (p *Image) Update(delta float32) {
 }
 
 func (p *Image) Load() {
-	img := rl.LoadImage(p.resourcePath)        // load img to RAM
+	img := rl.LoadImage(p.ResourcePath)        // load img to RAM
 	p.Texture = rl.LoadTextureFromImage(img) // move img to VRAM
 	rl.UnloadImage(img)                        // clear ram
-	if p.scale > 0 { // scale image
-		p.Texture.Width = int32(float32(p.Texture.Width)*p.scale)
-		p.Texture.Height = int32(float32(p.Texture.Height)*p.scale)
+	if p.ScaleTex > 0 { // scale image
+		p.Texture.Width = int32(float32(p.Texture.Width)*p.ScaleTex)
+		p.Texture.Height = int32(float32(p.Texture.Height)*p.ScaleTex)
 	}
 	if p.preset != nil {
 		p.preset(p)
