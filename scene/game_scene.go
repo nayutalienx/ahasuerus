@@ -17,7 +17,7 @@ type GameScene struct {
 	camera               *rl.Camera2D
 	player               *models.Player
 
-	sceneName string
+	sceneName        string
 	paused           bool
 	editMode         bool
 	editModeShowMenu bool
@@ -25,11 +25,13 @@ type GameScene struct {
 	editCameraSpeed  float32
 	editLabel        models.Object
 	selectedItem     []models.EditorSelectedItem
+
+	editMenuBgImageDropMode bool
 }
 
 func NewGameScene(sceneName string) *GameScene {
 	startScene := GameScene{
-		sceneName: sceneName,
+		sceneName:            sceneName,
 		worldContainer:       container.NewObjectResourceContainer(),
 		environmentContainer: container.NewObjectResourceContainer(),
 		cameraEditPos:        rl.NewVector2(0, 0),
@@ -65,18 +67,18 @@ func NewGameScene(sceneName string) *GameScene {
 
 	startScene.worldContainer.AddObjectResource(startScene.player)
 
-	startScene.environmentContainer.AddObjectResource(
-		models.NewImage("resources/bg/1.jpg", 0, 0).AfterLoadPreset(func(i *models.Image) {
-			i.Texture.Width = int32(WIDTH)
-			i.Texture.Height = int32(HEIGHT)
-		}),
-		models.NewImage("resources/heroes/girl1.png", 0, 0).
-			Scale(1.3).
-			AfterLoadPreset(func(girl *models.Image) {
-				girl.Pos.X = WIDTH - WIDTH/12 - float32(girl.Texture.Width)
-				girl.Pos.Y = HEIGHT - float32(girl.Texture.Height)
-			}),
-		models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
+	// startScene.environmentContainer.AddObjectResource(
+	// 	models.NewImage("resources/bg/1.jpg", 0, 0).AfterLoadPreset(func(i *models.Image) {
+	// 		i.Texture.Width = int32(WIDTH)
+	// 		i.Texture.Height = int32(HEIGHT)
+	// 	}),
+	// 	models.NewImage("resources/heroes/girl1.png", 0, 0).
+	// 		Scale(1.3).
+	// 		AfterLoadPreset(func(girl *models.Image) {
+	// 			girl.Pos.X = WIDTH - WIDTH/12 - float32(girl.Texture.Width)
+	// 			girl.Pos.Y = HEIGHT - float32(girl.Texture.Height)
+	// 		}),
+	// 	models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
 
 	startScene.environmentContainer.AddObject(
 		models.NewText(10, 10).
@@ -313,9 +315,44 @@ func (s *GameScene) processEditorMenuMode() {
 		}
 
 	} else {
-		newRectangle := rg.Button(rl.NewRectangle(10, 110, 200, 100), "NEW RECTANGLE")
-		newLine := rg.Button(rl.NewRectangle(10, 220, 200, 100), "NEW LINE")
-		newBezier := rg.Button(rl.NewRectangle(10, 330, 200, 100), "NEW BEZIER")
+		buttonWidth := 200
+		buttonHeight := 50
+		startMenuPosY := 110
+		
+		newRectangle := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight), float32(buttonWidth), float32(buttonHeight)), "NEW RECTANGLE")
+		newLine := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*2), float32(buttonWidth), float32(buttonHeight)), "NEW LINE")
+		newBezier := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*3), float32(buttonWidth), float32(buttonHeight)), "NEW BEZIER")
+		newBgImage := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*4), float32(buttonWidth), float32(buttonHeight)), "NEW BG IMAGE")
+
+		if s.editMenuBgImageDropMode {
+
+			rl.DrawText("DROP IMAGE or BACKSPACE TO LEAVE", int32(WIDTH)/2, int32(HEIGHT)/2, 60, rl.Red)
+
+			if rl.IsKeyDown(rl.KeyBackspace) {
+				s.editMenuBgImageDropMode = false
+			}
+
+			if rl.IsFileDropped() {
+				files := rl.LoadDroppedFiles()
+
+				path := files[0]
+
+				image := models.NewImage(path, 0, 0).
+					AfterLoadPreset(func(girl *models.Image) {
+						girl.Pos.X = WIDTH - WIDTH/12 - float32(girl.Texture.Width)
+						girl.Pos.Y = HEIGHT - float32(girl.Texture.Height)
+					})
+
+				image.Load()
+
+				s.environmentContainer.AddObjectResource(
+					image,
+				)
+
+				s.editMenuBgImageDropMode = false
+			}
+
+		}
 
 		if newRectangle {
 			rect := models.NewRectangle(uuid.NewString(), s.camera.Target.X, s.camera.Target.Y, 200, 100, rl.Blue)
@@ -333,6 +370,10 @@ func (s *GameScene) processEditorMenuMode() {
 			bez := models.NewBezier(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, rl.Gold)
 			s.worldContainer.AddObject(bez)
 			s.player.AddCollisionBezier(bez)
+		}
+
+		if newBgImage {
+			s.editMenuBgImageDropMode = true
 		}
 	}
 }

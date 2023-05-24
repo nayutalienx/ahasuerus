@@ -26,6 +26,7 @@ func (w *ObjectContainer) RemoveObject(obj models.Object) {
 		o := w.objects[i]
 		if o == obj {
 			w.objects = w.removeObject(i)
+			break
 		}
 	}
 }
