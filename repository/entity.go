@@ -22,7 +22,8 @@ type Image struct {
 	Path  string  `json:"path"`
 	X     int     `json:"x"`
 	Y     int     `json:"y"`
-	Scale float32 `json:"scale"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
 }
 
 type Bezier struct {

@@ -83,7 +83,7 @@ func (p *Bezier) ProcessEditorSelection() bool {
 	return false
 }
 
-func (p *Bezier) EditorResolveSelect() bool {
+func (p *Bezier) EditorResolveSelect() (bool, bool) {
 	mousePos := rl.GetMousePosition()
 	isCollision := rl.CheckCollisionPointLine(mousePos, p.Start, p.End, int32(p.Thick))
 	if isCollision {
@@ -96,5 +96,5 @@ func (p *Bezier) EditorResolveSelect() bool {
 	} else {
 		p.color = rl.Gold
 	}
-	return p.editSelected
+	return p.editSelected, isCollision
 }

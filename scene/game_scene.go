@@ -30,6 +30,7 @@ type GameScene struct {
 
 	editMenuBgImageDropMode bool
 	editHideGameObjectsMode bool
+	editBgImageEditorMode bool
 }
 
 func NewGameScene(sceneName string) *GameScene {
@@ -152,7 +153,7 @@ func (s *GameScene) Run() models.Scene {
 		}
 		rl.EndMode2D()
 
-		if s.editHideGameObjectsMode {
+		if s.editHideGameObjectsMode && s.editBgImageEditorMode {
 			s.resolveEditorBackgroundImageSelection()
 			s.processEditorBackgroundSelection()
 		}
@@ -173,19 +174,22 @@ func (m *GameScene) Unload() {
 func (s *GameScene) resolveEditorBackgroundImageSelection() {
 	selectedItem := make([]models.EditorSelectedItem, 0)
 
-	s.environmentContainer.ForEachObject(func(obj models.Object) {
+	s.environmentContainer.ForEachObjectReverseWithPredicate(func(obj models.Object) bool {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
-			selected := editorItem.EditorResolveSelect()
-			if selected {
+			selected, collissioned := editorItem.EditorResolveSelect()
+			if selected && collissioned {
 				selectedItem = append(selectedItem, models.EditorSelectedItem{
 					Selected: selected,
 					Item:     editorItem,
 				})
 			}
+			if collissioned {
+				return true
+			}
 		}
+		return false
 	})
-
 	s.selectedBackgroundItem = selectedItem
 }
 
@@ -198,7 +202,7 @@ func (s *GameScene) resolveEditorGameObjectsSelection() {
 	s.worldContainer.ForEachObject(func(obj models.Object) {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
-			selected := editorItem.EditorResolveSelect()
+			selected, _ := editorItem.EditorResolveSelect()
 			if selected {
 				selectedItem = append(selectedItem, models.EditorSelectedItem{
 					Selected: selected,
@@ -394,6 +398,22 @@ func (s *GameScene) processEditorMenuMode() {
 		}
 		toggleHideGameObjects := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth*2), float32(buttonHeight)), toggleHideGameObjectsText)
 
+		toggleBgImageEditorText := "ENABLE BG IMAGE EDITOR [PRESS B]"
+		if s.editBgImageEditorMode {
+			toggleBgImageEditorText = "DISABLE BG IMAGE EDITOR [PRESS V]"
+		}
+		
+		if rl.IsKeyDown(rl.KeyB) {
+			s.editBgImageEditorMode = true
+		}
+		if rl.IsKeyDown(rl.KeyV) {
+			s.editBgImageEditorMode = false
+		}
+		
+		rl.DrawText(toggleBgImageEditorText, 10, int32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), 30, rl.Red)
+
+
+
 		if s.editMenuBgImageDropMode {
 
 			rl.DrawText("DROP IMAGE or BACKSPACE TO LEAVE", int32(WIDTH)/2, int32(HEIGHT)/2, 60, rl.Red)
@@ -407,7 +427,7 @@ func (s *GameScene) processEditorMenuMode() {
 
 				path := "resources" + strings.Split(files[0], "resources")[1]
 
-				image := models.NewImage(s.environmentContainer.Size(), uuid.NewString(), path, 0, 0, 0).
+				image := models.NewImage(s.environmentContainer.Size(), uuid.NewString(), path, 0, 0, 0, 0).
 					AfterLoadPreset(func(girl *models.Image) {
 						girl.Pos.X = WIDTH / 2
 						girl.Pos.Y = HEIGHT / 2
@@ -450,7 +470,7 @@ func (s *GameScene) processEditorMenuMode() {
 			s.editHideGameObjectsMode = !s.editHideGameObjectsMode
 		}
 
-		if s.editHideGameObjectsMode {
+		if s.editHideGameObjectsMode && s.editBgImageEditorMode {
 			hasAnySelectedBackgroundItem, backgroundSelectedItem := s.hasAnySelectedBackgroundEditorItem()
 			if hasAnySelectedBackgroundItem {
 
@@ -458,13 +478,19 @@ func (s *GameScene) processEditorMenuMode() {
 				if isImage {
 
 					changeBgPosButton := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "CHANGE BG POS")
-					
+					resizeBgButton := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "RESIZE IMG")
+
 					moveUpper := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "MOVE UPPER")
 					moveDown := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "MOVE DOWN")
 
 					if changeBgPosButton {
 						bgImage.SetEditorMoveWithCursorTrue()
 						rl.SetMousePosition(int(bgImage.Pos.X), int(bgImage.Pos.Y))
+					}
+
+					if resizeBgButton {
+						bgImage.SetEditorResizeWithCursorTrue()
+						rl.SetMousePosition(int(bgImage.Pos.X+bgImage.Box.X), int(bgImage.Pos.Y+bgImage.Box.Y))
 					}
 
 					if moveUpper {
@@ -478,7 +504,6 @@ func (s *GameScene) processEditorMenuMode() {
 						bgImage.DrawIndex = drawIndex
 						s.syncDrawIndex()
 					}
-
 
 				}
 
@@ -519,12 +544,12 @@ func (s *GameScene) processEditorMode() {
 		s.saveEditor()
 		s.environmentContainer.AddObject(
 			models.NewText(int32(WIDTH)/2, int32(HEIGHT)/4).
-			SetData("DATA SAVED").
-			SetFontSize(60).
-			SetColor(rl.Red).
-			WithExpire(3, func(t *models.Text) {
-				s.environmentContainer.RemoveObject(t)
-			}),
+				SetData("DATA SAVED").
+				SetFontSize(60).
+				SetColor(rl.Red).
+				WithExpire(3, func(t *models.Text) {
+					s.environmentContainer.RemoveObject(t)
+				}),
 		)
 	}
 

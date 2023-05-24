@@ -24,7 +24,7 @@ func NewMenuScene() *MenuScene {
 	}
 	menuScene.menuContainer.AddObjectResource(
 		models.NewMusicStream("resources/music/menu_theme.mp3"),
-		models.NewImage(0,uuid.NewString(),"resources/bg/menu-bg.png", 0, 0, 0).AfterLoadPreset(func(i *models.Image) {
+		models.NewImage(0,uuid.NewString(),"resources/bg/menu-bg.png", 0, 0, 0, 0).AfterLoadPreset(func(i *models.Image) {
 			i.Texture.Width = int32(WIDTH)
 			i.Texture.Height = int32(HEIGHT)
 		}),

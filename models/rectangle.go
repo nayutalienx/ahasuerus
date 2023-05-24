@@ -96,7 +96,7 @@ func (p *Rectangle) ProcessEditorSelection() bool {
 	return false
 }
 
-func (p *Rectangle) EditorResolveSelect() bool {
+func (p *Rectangle) EditorResolveSelect() (bool, bool) {
 	rec := rl.NewRectangle(p.pos.X, p.pos.Y, p.box.X, p.box.Y)
 	mousePos := rl.GetMousePosition()
 	collission := rl.CheckCollisionPointRec(mousePos, rec)
@@ -107,5 +107,5 @@ func (p *Rectangle) EditorResolveSelect() bool {
 			p.editSelected = true
 		}		
 	}
-	return p.editSelected
+	return p.editSelected, collission
 }

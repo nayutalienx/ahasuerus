@@ -54,6 +54,16 @@ func (w ObjectContainer) ForEachObject(cb func (obj models.Object)) {
 	}
 }
 
+func (w ObjectContainer) ForEachObjectReverseWithPredicate(cb func (obj models.Object) bool) {
+	for i, _ := range w.objects {
+		o := w.objects[len(w.objects) - 1 - i]
+		shouldLeave := cb(o)
+		if shouldLeave {
+			break
+		}
+	}
+}
+
 func (w *ObjectContainer) MoveUp(obj models.Object) int {
 	var index int
 	for i, _ := range w.objects {

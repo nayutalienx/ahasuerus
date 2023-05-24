@@ -142,7 +142,7 @@ func GetAllImages(collectionPrefix string) []models.Image {
 		if err := json.Unmarshal([]byte(f), &imageFound); err != nil {
 			panic(err)
 		}
-		images = append(images, *models.NewImage(imageFound.DrawIndex, imageFound.Id, imageFound.Path, float32(imageFound.X), float32(imageFound.Y), imageFound.Scale))
+		images = append(images, *models.NewImage(imageFound.DrawIndex, imageFound.Id, imageFound.Path, float32(imageFound.X), float32(imageFound.Y), float32(imageFound.Width), float32(imageFound.Height)))
 	}
 
 	sort.Slice(images, func(i, j int) bool {
@@ -196,14 +196,20 @@ func mapLine(id string, bez *models.Line) Line {
 }
 
 func mapImage(id string, img *models.Image) Image {
-	return Image{
+	i := Image{
 		DrawIndex: img.DrawIndex,
 		Id:        id,
 		Path:      img.ResourcePath,
 		X:         int(img.Pos.X),
 		Y:         int(img.Pos.Y),
-		Scale:     img.ScaleTex,
 	}
+
+	if img.Box.X > 0 && img.Box.Y > 0 {
+		i.Width = int(img.Box.X)
+		i.Height = int(img.Box.Y)
+	}
+
+	return i
 }
 
 func formatKey(collectionPrefix, entity string) string {

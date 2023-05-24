@@ -1,8 +1,9 @@
 {
-	"drawIndex": 3,
+	"drawIndex": 4,
 	"id": "20857594-f2f0-40b1-bbe6-2a5132dbee5b",
 	"path": "resources\\heroes\\girl5.png",
 	"x": 30,
 	"y": 564,
-	"scale": 0
+	"width": 591,
+	"height": 1002
 }

@@ -40,7 +40,7 @@ type ObjectResource interface {
 }
 
 type EditorItem interface {
-	EditorResolveSelect() bool
+	EditorResolveSelect() (bool, bool)
 	ProcessEditorSelection() bool
 }
 
