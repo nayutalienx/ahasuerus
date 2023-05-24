@@ -1,6 +1,7 @@
 package models
 
 import (
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -10,6 +11,9 @@ type Image struct {
 	resourcePath string
 	scale float32
 	preset func (i *Image)
+
+	editSelected  bool
+	editorMoveWithCursor bool
 }
 
 func NewImage(path string, x, y float32) *Image {
@@ -53,6 +57,42 @@ func (p *Image) Resume() {
 
 func (p *Image) Pause() {
 	
+}
+
+func (p *Image) SetEditorMoveWithCursorTrue() {
+	p.editorMoveWithCursor = true
+}
+
+func (p *Image) EditorResolveSelect() bool {
+	rec := rl.NewRectangle(p.Pos.X, p.Pos.Y, float32(p.Texture.Width), float32(p.Texture.Height))
+	mousePos := rl.GetMousePosition()
+	collission := rl.CheckCollisionPointRec(mousePos, rec)
+	if collission {
+		rl.DrawRectangleLinesEx(rec, 3.0, rl.Red)
+
+		if rl.IsMouseButtonPressed(rl.MouseLeftButton){
+			p.editSelected = true
+		}		
+	}
+	return p.editSelected
+}
+
+func (p *Image) ProcessEditorSelection() bool {
+
+	if p.editorMoveWithCursor {
+		mousePos := rl.GetMousePosition()
+		offset := 10
+		p.Pos.X = mousePos.X-float32(offset)
+		p.Pos.Y = mousePos.Y-float32(offset)
+	}
+
+	if (p.editorMoveWithCursor) && rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+		p.editorMoveWithCursor = false
+		p.editSelected = false
+		return true
+	}
+
+	return false
 }
 
 func (p *Image) Unload() {

@@ -18,27 +18,28 @@ type GameScene struct {
 	camera               *rl.Camera2D
 	player               *models.Player
 
-	sceneName        string
-	paused           bool
-	editMode         bool
-	editModeShowMenu bool
-	cameraEditPos    rl.Vector2
-	editCameraSpeed  float32
-	editLabel        models.Object
-	selectedItem     []models.EditorSelectedItem
+	sceneName               string
+	paused                  bool
+	editMode                bool
+	editModeShowMenu        bool
+	cameraEditPos           rl.Vector2
+	editCameraSpeed         float32
+	editLabel               models.Object
+	selectedGameObjectsItem []models.EditorSelectedItem
+	selectedBackgroundItem   []models.EditorSelectedItem
 
 	editMenuBgImageDropMode bool
-	editHideGameObjectsMode        bool
+	editHideGameObjectsMode bool
 }
 
 func NewGameScene(sceneName string) *GameScene {
 	startScene := GameScene{
-		sceneName:            sceneName,
-		worldContainer:       container.NewObjectResourceContainer(),
-		environmentContainer: container.NewObjectResourceContainer(),
-		cameraEditPos:        rl.NewVector2(0, 0),
-		editCameraSpeed:      5,
-		selectedItem:         make([]models.EditorSelectedItem, 0),
+		sceneName:               sceneName,
+		worldContainer:          container.NewObjectResourceContainer(),
+		environmentContainer:    container.NewObjectResourceContainer(),
+		cameraEditPos:           rl.NewVector2(0, 0),
+		editCameraSpeed:         5,
+		selectedGameObjectsItem: make([]models.EditorSelectedItem, 0),
 	}
 
 	beziers := repository.GetAllBeziers(sceneName)
@@ -142,13 +143,18 @@ func (s *GameScene) Run() models.Scene {
 			s.worldContainer.Update(delta)
 			s.worldContainer.Draw()
 			if s.editMode && !s.editModeShowMenu {
-				s.resolveEditorSelection()
+				s.resolveEditorGameObjectsSelection()
 			}
 			if s.editMode && s.editModeShowMenu {
-				s.processEditorSelection()
+				s.processEditorGameObjectSelection()
 			}
 		}
 		rl.EndMode2D()
+
+		if s.editHideGameObjectsMode {
+			s.resolveEditorBackgroundImageSelection()
+			s.processEditorBackgroundSelection()
+		}
 
 		rl.EndDrawing()
 	}
@@ -163,7 +169,26 @@ func (m *GameScene) Unload() {
 	m.worldContainer.Unload()
 }
 
-func (s *GameScene) resolveEditorSelection() {
+func (s *GameScene) resolveEditorBackgroundImageSelection() {
+	selectedItem := make([]models.EditorSelectedItem, 0)
+
+	s.environmentContainer.ForEachObject(func(obj models.Object) {
+		editorItem, ok := obj.(models.EditorItem)
+		if ok {
+			selected := editorItem.EditorResolveSelect()
+			if selected {
+				selectedItem = append(selectedItem, models.EditorSelectedItem{
+					Selected: selected,
+					Item:     editorItem,
+				})
+			}
+		}		
+	})
+
+	s.selectedBackgroundItem = selectedItem
+}
+
+func (s *GameScene) resolveEditorGameObjectsSelection() {
 	mouse := rl.GetMousePosition()
 	rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Red)
 
@@ -182,25 +207,47 @@ func (s *GameScene) resolveEditorSelection() {
 		}
 	})
 
-	s.selectedItem = selectedItem
+	s.selectedGameObjectsItem = selectedItem
 }
 
-func (s *GameScene) processEditorSelection() {
-	for i, _ := range s.selectedItem {
-		ei := s.selectedItem[i]
+func (s *GameScene) processEditorGameObjectSelection() {
+	for i, _ := range s.selectedGameObjectsItem {
+		ei := s.selectedGameObjectsItem[i]
 		if ei.Selected {
 			finishedProcessSelection := ei.Item.ProcessEditorSelection()
 			if finishedProcessSelection {
 				s.editModeShowMenu = false
-				s.selectedItem[i].Selected = false
+				s.selectedGameObjectsItem[i].Selected = false
 			}
 		}
 	}
 }
 
-func (s GameScene) hasAnySelectedEditorItem() (bool, models.EditorItem) {
-	for i, _ := range s.selectedItem {
-		ei := s.selectedItem[i]
+func (s *GameScene) processEditorBackgroundSelection() {
+	for i, _ := range s.selectedBackgroundItem {
+		ei := s.selectedBackgroundItem[i]
+		if ei.Selected {
+			finishedProcessSelection := ei.Item.ProcessEditorSelection()
+			if finishedProcessSelection {
+				s.selectedBackgroundItem[i].Selected = false
+			}
+		}
+	}
+}
+
+func (s GameScene) hasAnySelectedGameObjectEditorItem() (bool, models.EditorItem) {
+	for i, _ := range s.selectedGameObjectsItem {
+		ei := s.selectedGameObjectsItem[i]
+		if ei.Selected {
+			return true, ei.Item
+		}
+	}
+	return false, nil
+}
+
+func (s GameScene) hasAnySelectedBackgroundEditorItem() (bool, models.EditorItem) {
+	for i, _ := range s.selectedBackgroundItem {
+		ei := s.selectedBackgroundItem[i]
 		if ei.Selected {
 			return true, ei.Item
 		}
@@ -257,7 +304,7 @@ func (s *GameScene) enableEditMode() {
 }
 
 func (s *GameScene) processEditorMenuMode() {
-	hasAnySelected, editorItem := s.hasAnySelectedEditorItem()
+	hasAnySelected, editorItem := s.hasAnySelectedGameObjectEditorItem()
 	if hasAnySelected {
 
 		bezier, isBezier := editorItem.(*models.Bezier)
@@ -319,21 +366,23 @@ func (s *GameScene) processEditorMenuMode() {
 		}
 
 	} else {
-		
+
 		buttonWidth := 200
 		buttonHeight := 50
 		startMenuPosY := 110
 
-		newRectangle := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight), float32(buttonWidth), float32(buttonHeight)), "NEW RECTANGLE")
-		newLine := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*2), float32(buttonWidth), float32(buttonHeight)), "NEW LINE")
-		newBezier := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*3), float32(buttonWidth), float32(buttonHeight)), "NEW BEZIER")
-		newBgImage := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*4), float32(buttonWidth), float32(buttonHeight)), "NEW BG IMAGE")
-		
+		buttonCounter := models.NewCounter()
+
+		newRectangle := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW RECTANGLE")
+		newLine := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW LINE")
+		newBezier := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW BEZIER")
+		newBgImage := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW BG IMAGE")
+
 		toggleHideGameObjectsText := "HIDE GAME OBJECTS"
 		if s.editHideGameObjectsMode {
 			toggleHideGameObjectsText = "SHOW GAME OBJECTS"
 		}
-		toggleHideGameObjects := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*5), float32(buttonWidth*2), float32(buttonHeight)), toggleHideGameObjectsText)
+		toggleHideGameObjects := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth*2), float32(buttonHeight)), toggleHideGameObjectsText)
 
 		if s.editMenuBgImageDropMode {
 
@@ -390,6 +439,24 @@ func (s *GameScene) processEditorMenuMode() {
 		if toggleHideGameObjects {
 			s.editHideGameObjectsMode = !s.editHideGameObjectsMode
 		}
+
+		if s.editHideGameObjectsMode {
+			hasAnySelectedBackgroundItem, backgroundSelectedItem := s.hasAnySelectedBackgroundEditorItem()
+			if hasAnySelectedBackgroundItem {
+
+				bgImage, isImage := backgroundSelectedItem.(*models.Image)
+				if isImage {
+
+					moveBgButton := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "MOVE BG")
+
+					if moveBgButton {
+						bgImage.SetEditorMoveWithCursorTrue()
+						rl.SetMousePosition(int(bgImage.Pos.X), int(bgImage.Pos.Y))
+					}
+				}
+
+			}
+		}
 	}
 }
 
@@ -425,7 +492,7 @@ func (s *GameScene) processEditorMode() {
 		s.saveEditor()
 	}
 
-	hasAnySelected, _ := s.hasAnySelectedEditorItem()
+	hasAnySelected, _ := s.hasAnySelectedGameObjectEditorItem()
 
 	if (rl.IsKeyDown(rl.KeyM) || hasAnySelected) && !s.editModeShowMenu {
 		s.editModeShowMenu = true
