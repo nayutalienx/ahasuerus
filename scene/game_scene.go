@@ -5,6 +5,7 @@ import (
 	"ahasuerus/models"
 	"ahasuerus/repository"
 	"fmt"
+	"strings"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -27,6 +28,7 @@ type GameScene struct {
 	selectedItem     []models.EditorSelectedItem
 
 	editMenuBgImageDropMode bool
+	editHideGameObjectsMode        bool
 }
 
 func NewGameScene(sceneName string) *GameScene {
@@ -136,13 +138,15 @@ func (s *GameScene) Run() models.Scene {
 		}
 
 		rl.BeginMode2D(*s.camera)
-		s.worldContainer.Update(delta)
-		s.worldContainer.Draw()
-		if s.editMode && !s.editModeShowMenu {
-			s.resolveEditorSelection()
-		}
-		if s.editMode && s.editModeShowMenu {
-			s.processEditorSelection()
+		if !s.editHideGameObjectsMode {
+			s.worldContainer.Update(delta)
+			s.worldContainer.Draw()
+			if s.editMode && !s.editModeShowMenu {
+				s.resolveEditorSelection()
+			}
+			if s.editMode && s.editModeShowMenu {
+				s.processEditorSelection()
+			}
 		}
 		rl.EndMode2D()
 
@@ -315,14 +319,21 @@ func (s *GameScene) processEditorMenuMode() {
 		}
 
 	} else {
+		
 		buttonWidth := 200
 		buttonHeight := 50
 		startMenuPosY := 110
-		
+
 		newRectangle := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight), float32(buttonWidth), float32(buttonHeight)), "NEW RECTANGLE")
 		newLine := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*2), float32(buttonWidth), float32(buttonHeight)), "NEW LINE")
 		newBezier := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*3), float32(buttonWidth), float32(buttonHeight)), "NEW BEZIER")
 		newBgImage := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*4), float32(buttonWidth), float32(buttonHeight)), "NEW BG IMAGE")
+		
+		toggleHideGameObjectsText := "HIDE GAME OBJECTS"
+		if s.editHideGameObjectsMode {
+			toggleHideGameObjectsText = "SHOW GAME OBJECTS"
+		}
+		toggleHideGameObjects := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*5), float32(buttonWidth*2), float32(buttonHeight)), toggleHideGameObjectsText)
 
 		if s.editMenuBgImageDropMode {
 
@@ -335,12 +346,12 @@ func (s *GameScene) processEditorMenuMode() {
 			if rl.IsFileDropped() {
 				files := rl.LoadDroppedFiles()
 
-				path := files[0]
+				path := "resources" + strings.Split(files[0], "resources")[1]
 
 				image := models.NewImage(path, 0, 0).
 					AfterLoadPreset(func(girl *models.Image) {
-						girl.Pos.X = WIDTH - WIDTH/12 - float32(girl.Texture.Width)
-						girl.Pos.Y = HEIGHT - float32(girl.Texture.Height)
+						girl.Pos.X = WIDTH / 2
+						girl.Pos.Y = HEIGHT / 2
 					})
 
 				image.Load()
@@ -374,6 +385,10 @@ func (s *GameScene) processEditorMenuMode() {
 
 		if newBgImage {
 			s.editMenuBgImageDropMode = true
+		}
+
+		if toggleHideGameObjects {
+			s.editHideGameObjectsMode = !s.editHideGameObjectsMode
 		}
 	}
 }
