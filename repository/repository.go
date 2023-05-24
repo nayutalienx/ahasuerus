@@ -46,9 +46,9 @@ func SaveLine(collectionPrefix string, line *models.Line) {
 	}
 }
 
-func SaveImage(collectionPrefix string, img *models.Image) {
+func SaveImage(collectionPrefix string, container string, img *models.Image) {
 	i := mapImage(img.Id, img)
-	err := db.Write(formatKey(collectionPrefix, "image"), i.Id, i)
+	err := db.Write(formatKey(collectionPrefix, fmt.Sprintf("image-%s", container)), i.Id, i)
 	if err != nil {
 		panic(err)
 	}
@@ -130,8 +130,8 @@ func GetAllLines(collectionPrefix string) []models.Line {
 	return lines
 }
 
-func GetAllImages(collectionPrefix string) []models.Image {
-	records, err := db.ReadAll(formatKey(collectionPrefix, "image"))
+func GetAllImages(collectionPrefix string, container string) []models.Image {
+	records, err := db.ReadAll(formatKey(collectionPrefix, fmt.Sprintf("image-%s", container)))
 	if err != nil {
 		panic(err)
 	}

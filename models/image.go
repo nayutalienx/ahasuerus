@@ -98,6 +98,7 @@ func (p *Image) ProcessEditorSelection() bool {
 
 	if p.editorMoveWithCursor {
 		mousePos := rl.GetMousePosition()
+		rl.DrawCircle(int32(mousePos.X), int32(mousePos.Y), 10, rl.Red)
 		offset := 10
 		p.Pos.X = mousePos.X - float32(offset)
 		p.Pos.Y = mousePos.Y - float32(offset)
@@ -105,6 +106,7 @@ func (p *Image) ProcessEditorSelection() bool {
 
 	if p.editorResizeWithCursor {
 		mousePos := rl.GetMousePosition()
+		rl.DrawCircle(int32(mousePos.X), int32(mousePos.Y), 10, rl.Red)
 		offset := 10
 		p.Box.X = mousePos.X + float32(offset) - p.Pos.X
 		p.Box.Y = mousePos.Y + float32(offset) - p.Pos.Y
