@@ -13,6 +13,11 @@ type Text struct {
 	color rl.Color
 	fontSize int32
 	updateCallback textUpdateCallback
+
+	expireMode bool
+	expireCounter int
+	expireFrames int
+	expireCallback func(*Text)
 }
 
 func NewText(x int32, y int32) *Text {
@@ -34,8 +39,27 @@ func (p *Text) SetUpdateCallback(callback textUpdateCallback) *Text {
 	return p
 }
 
+func (p *Text) WithExpire(liveSeconds int, expireCallback func(text *Text)) *Text {
+	p.expireFrames = liveSeconds*int(FPS)
+	p.expireMode = true
+	p.expireCallback = expireCallback
+	return p
+}
+
 func (p *Text) Update(delta float32) {
 	p.updateCallback(p)
+	if p.expireMode {
+		p.expireCounter++
+		if p.expireCounter >= p.expireFrames {
+			p.expireMode = false
+			p.expireCounter = 0
+			p.expireCallback(p)
+		} else {
+			frameDiff := p.expireFrames - p.expireCounter
+			percentage := float32(frameDiff)/float32(p.expireFrames)
+			p.color.A = uint8(float32(255)*percentage)
+		}
+	}
 }
 
 func (p Text) GetX() int32 {

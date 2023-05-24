@@ -500,6 +500,15 @@ func (s *GameScene) processEditorMode() {
 
 	if rl.IsKeyDown(rl.KeyP) {
 		s.saveEditor()
+		s.environmentContainer.AddObject(
+			models.NewText(int32(WIDTH)/2, int32(HEIGHT)/4).
+			SetData("DATA SAVED").
+			SetFontSize(60).
+			SetColor(rl.Red).
+			WithExpire(3, func(t *models.Text) {
+				s.environmentContainer.RemoveObject(t)
+			}),
+		)
 	}
 
 	hasAnySelected, _ := s.hasAnySelectedGameObjectEditorItem()
