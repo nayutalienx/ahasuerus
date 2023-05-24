@@ -154,7 +154,10 @@ func (s *GameScene) Run() models.Scene {
 		rl.EndMode2D()
 
 		if s.editHideGameObjectsMode && s.editBgImageEditorMode {
-			s.resolveEditorBackgroundImageSelection()
+			hasAnySelection, _ :=s.hasAnySelectedBackgroundEditorItem()
+			if !hasAnySelection {
+				s.resolveEditorBackgroundImageSelection()
+			}
 			s.processEditorBackgroundSelection()
 		}
 
