@@ -79,10 +79,6 @@ func NewGameScene(sceneName string) *GameScene {
 	}
 
 	// startScene.environmentContainer.AddObjectResource(
-	// 	models.NewImage("resources/bg/1.jpg", 0, 0).AfterLoadPreset(func(i *models.Image) {
-	// 		i.Texture.Width = int32(WIDTH)
-	// 		i.Texture.Height = int32(HEIGHT)
-	// 	}),
 	// 	models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
 
 	scene.environmentContainer.AddObject(
@@ -123,7 +119,7 @@ func (s *GameScene) Run() models.Scene {
 		if rl.IsKeyDown(rl.KeyF1) && !s.editMode {
 			s.enableEditMode()
 		}
-		if rl.IsKeyDown(rl.KeyF2) && s.editMode {
+		if rl.IsKeyDown(rl.KeyF2) && s.editMode && !s.editModeShowMenu {
 			s.disableEditMode()
 		}
 
@@ -390,30 +386,40 @@ func (s *GameScene) processEditorMenuMode() {
 
 		buttonCounter := models.NewCounter()
 
-		newRectangle := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW RECTANGLE")
-		newLine := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW LINE")
-		newBezier := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW BEZIER")
-		newBgImage := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW BG IMAGE")
+		newRectangle := false
+		newLine := false
+		newBezier := false
+		newBgImage := false
 
 		toggleHideGameObjectsText := "HIDE GAME OBJECTS"
 		if s.editHideGameObjectsMode {
 			toggleHideGameObjectsText = "SHOW GAME OBJECTS"
-		}
-		toggleHideGameObjects := rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth*2), float32(buttonHeight)), toggleHideGameObjectsText)
+			toggleBgImageEditorText := "ENABLE BG IMAGE EDITOR [PRESS B]"
+			if s.editBgImageEditorMode {
+				toggleBgImageEditorText = "DISABLE BG IMAGE EDITOR [PRESS V]"
+			}
+			
+			if rl.IsKeyDown(rl.KeyB) {
+				s.editBgImageEditorMode = true
+			}
+			if rl.IsKeyDown(rl.KeyV) {
+				s.editBgImageEditorMode = false
+			}
+			
+			rl.DrawText(toggleBgImageEditorText, 10, int32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), 30, rl.Red)
 
-		toggleBgImageEditorText := "ENABLE BG IMAGE EDITOR [PRESS B]"
-		if s.editBgImageEditorMode {
-			toggleBgImageEditorText = "DISABLE BG IMAGE EDITOR [PRESS V]"
+			if !s.editBgImageEditorMode {
+				newBgImage = rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW BG IMAGE")
+			}
+		} else {
+			newRectangle = rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW RECTANGLE")
+			newLine = rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW LINE")
+			newBezier = rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth), float32(buttonHeight)), "NEW BEZIER")
 		}
-		
-		if rl.IsKeyDown(rl.KeyB) {
-			s.editBgImageEditorMode = true
+		toggleHideGameObjects := false
+		if !s.editBgImageEditorMode {
+			toggleHideGameObjects = rg.Button(rl.NewRectangle(10, float32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), float32(buttonWidth*2), float32(buttonHeight)), toggleHideGameObjectsText)
 		}
-		if rl.IsKeyDown(rl.KeyV) {
-			s.editBgImageEditorMode = false
-		}
-		
-		rl.DrawText(toggleBgImageEditorText, 10, int32(startMenuPosY+buttonHeight*buttonCounter.GetAndIncrement()), 30, rl.Red)
 
 
 

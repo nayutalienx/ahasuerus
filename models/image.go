@@ -91,12 +91,6 @@ func (p *Image) EditorResolveSelect() (bool, bool) {
 		}
 	}
 
-	if p.editSelected {
-		if rl.IsKeyDown(rl.KeyBackspace) {
-			p.editSelected = false
-		}
-	}
-
 	return p.editSelected, collission
 }
 
@@ -122,6 +116,15 @@ func (p *Image) ProcessEditorSelection() bool {
 		p.editorResizeWithCursor = false
 		p.editSelected = false
 		return true
+	}
+
+	if p.editSelected {
+		if rl.IsKeyDown(rl.KeyBackspace) {
+			p.editorMoveWithCursor = false
+			p.editorResizeWithCursor = false
+			p.editSelected = false
+			return true
+		}
 	}
 
 	return false
