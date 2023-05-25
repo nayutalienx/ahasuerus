@@ -56,7 +56,7 @@ func (p *Line) SetEndModeTrue() {
 	p.editEndMode = true
 }
 
-func (p *Line) ProcessEditorSelection() bool {
+func (p *Line) ProcessEditorSelection() EditorItemProcessSelectionResult {
 	if p.editStartMode {
 		mousePos := rl.GetMousePosition()
 		p.Start.X = mousePos.X + 20
@@ -73,13 +73,32 @@ func (p *Line) ProcessEditorSelection() bool {
 		p.editSelected = false
 		p.editStartMode = false
 		p.editEndMode = false
-		return true
+		return EditorItemProcessSelectionResult{
+			Finished:      true,
+		}
 	}
 
-	return false
+	if p.editSelected {
+		if rl.IsKeyDown(rl.KeyBackspace) {
+			p.editSelected = false
+			p.editStartMode = false
+			p.editEndMode = false
+			return EditorItemProcessSelectionResult{
+				Finished:      true,
+				DisableCursor: true,
+				CursorForcePosition: true,
+				CursorX: int(p.Start.X),
+				CursorY: int(p.Start.Y),
+			}
+		}
+	}
+
+	return EditorItemProcessSelectionResult{
+		Finished:      false,
+	}
 }
 
-func (p *Line) EditorResolveSelect() (bool, bool) {
+func (p *Line) EditorResolveSelect() (EditorItemResolveSelectionResult) {
 	mousePos := rl.GetMousePosition()
 	isCollision := rl.CheckCollisionPointLine(mousePos, p.Start, p.End, int32(p.Thick))
 	if isCollision {
@@ -92,5 +111,8 @@ func (p *Line) EditorResolveSelect() (bool, bool) {
 	} else {
 		p.color = rl.Gold
 	}
-	return p.editSelected, isCollision
+	return EditorItemResolveSelectionResult{
+		Selected:  p.editSelected,
+		Collision: isCollision,
+	}
 }

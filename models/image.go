@@ -79,7 +79,7 @@ func (p *Image) SetEditorResizeWithCursorTrue() {
 	p.editorResizeWithCursor = true
 }
 
-func (p *Image) EditorResolveSelect() (bool, bool) {
+func (p *Image) EditorResolveSelect() (EditorItemResolveSelectionResult) {
 	rec := rl.NewRectangle(p.Pos.X, p.Pos.Y, float32(p.Texture.Width), float32(p.Texture.Height))
 	mousePos := rl.GetMousePosition()
 	collission := rl.CheckCollisionPointRec(mousePos, rec)
@@ -91,10 +91,13 @@ func (p *Image) EditorResolveSelect() (bool, bool) {
 		}
 	}
 
-	return p.editSelected, collission
+	return EditorItemResolveSelectionResult{
+		Selected:  p.editSelected,
+		Collision: collission,
+	}
 }
 
-func (p *Image) ProcessEditorSelection() bool {
+func (p *Image) ProcessEditorSelection() EditorItemProcessSelectionResult {
 
 	if p.editorMoveWithCursor {
 		mousePos := rl.GetMousePosition()
@@ -117,7 +120,9 @@ func (p *Image) ProcessEditorSelection() bool {
 		p.editorMoveWithCursor = false
 		p.editorResizeWithCursor = false
 		p.editSelected = false
-		return true
+		return EditorItemProcessSelectionResult{
+			Finished:      true,
+		}
 	}
 
 	if p.editSelected {
@@ -125,11 +130,19 @@ func (p *Image) ProcessEditorSelection() bool {
 			p.editorMoveWithCursor = false
 			p.editorResizeWithCursor = false
 			p.editSelected = false
-			return true
+			return EditorItemProcessSelectionResult{
+				Finished:      true,
+				DisableCursor: true,
+				CursorForcePosition: true,
+				CursorX: int(p.Pos.X),
+				CursorY: int(p.Pos.Y),
+			}
 		}
 	}
 
-	return false
+	return EditorItemProcessSelectionResult{
+		Finished:      false,
+	}
 }
 
 func (p *Image) Unload() {
@@ -139,6 +152,10 @@ func (p *Image) Unload() {
 func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
 	p.preset = preset
 	return p
+}
+
+func (p Image) Replicate(id string,x, y float32) *Image {
+	return NewImage(p.DrawIndex, id, p.ResourcePath, x, y, p.Box.X, p.Box.Y)
 }
 
 func (p *Image) syncBoxWithTexture() {

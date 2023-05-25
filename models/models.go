@@ -39,14 +39,29 @@ type ObjectResource interface {
 	Resource
 }
 
+type EditorItemProcessSelectionResult struct {
+	Finished      bool
+	EnableCursor  bool
+	DisableCursor bool
+	
+	CursorForcePosition bool
+	CursorX int
+	CursorY int
+}
+
+type EditorItemResolveSelectionResult struct {
+	Selected  bool
+	Collision bool
+}
+
 type EditorItem interface {
-	EditorResolveSelect() (bool, bool)
-	ProcessEditorSelection() bool
+	EditorResolveSelect() EditorItemResolveSelectionResult
+	ProcessEditorSelection() EditorItemProcessSelectionResult
 }
 
 type EditorSelectedItem struct {
 	Selected bool
-	Item EditorItem
+	Item     EditorItem
 }
 
 // Collision interfaces

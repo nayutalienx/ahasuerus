@@ -2,6 +2,7 @@ package scene
 
 import (
 	"ahasuerus/container"
+	"ahasuerus/controls"
 	"ahasuerus/models"
 	"ahasuerus/repository"
 	"fmt"
@@ -190,14 +191,14 @@ func (s *GameScene) resolveEditorBackgroundImageSelection() {
 	s.environmentContainer.ForEachObjectReverseWithPredicate(func(obj models.Object) bool {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
-			selected, collisioned := editorItem.EditorResolveSelect()
-			if selected && collisioned {
+			resolveResult := editorItem.EditorResolveSelect()
+			if resolveResult.Selected && resolveResult.Collision {
 				selectedItem = append(selectedItem, models.EditorSelectedItem{
-					Selected: selected,
+					Selected: resolveResult.Selected,
 					Item:     editorItem,
 				})
 			}
-			if collisioned {
+			if resolveResult.Collision {
 				return true
 			}
 		}
@@ -216,14 +217,14 @@ func (s *GameScene) resolveEditorGameObjectsSelection() {
 	s.worldContainer.ForEachObjectReverseWithPredicate(func(obj models.Object) bool {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
-			selected, collisioned := editorItem.EditorResolveSelect()
-			if selected && collisioned {
+			resolveResult := editorItem.EditorResolveSelect()
+			if resolveResult.Selected && resolveResult.Collision {
 				selectedItem = append(selectedItem, models.EditorSelectedItem{
-					Selected: selected,
+					Selected: resolveResult.Selected,
 					Item:     editorItem,
 				})
 			}
-			if collisioned {
+			if resolveResult.Collision {
 				return true
 			}
 		}
@@ -237,10 +238,16 @@ func (s *GameScene) processEditorGameObjectSelection() {
 	for i, _ := range s.selectedGameObjectsItem {
 		ei := s.selectedGameObjectsItem[i]
 		if ei.Selected {
-			finishedProcessSelection := ei.Item.ProcessEditorSelection()
-			if finishedProcessSelection {
+			processResult := ei.Item.ProcessEditorSelection()
+			if processResult.Finished {
 				s.editModeShowMenu = false
 				s.selectedGameObjectsItem[i].Selected = false
+				if processResult.DisableCursor {
+					controls.DisableCursor(246)
+				}
+				if processResult.CursorForcePosition {
+					controls.SetMousePosition(processResult.CursorX, processResult.CursorY, 249)
+				}
 			}
 		}
 	}
@@ -250,8 +257,8 @@ func (s *GameScene) processEditorBackgroundSelection() {
 	for i, _ := range s.selectedBackgroundItem {
 		ei := s.selectedBackgroundItem[i]
 		if ei.Selected {
-			finishedProcessSelection := ei.Item.ProcessEditorSelection()
-			if finishedProcessSelection {
+			processResult := ei.Item.ProcessEditorSelection()
+			if processResult.Finished {
 				s.selectedBackgroundItem[i].Selected = false
 			}
 		}
@@ -329,7 +336,7 @@ func (s *GameScene) enableEditMode() {
 	s.cameraEditPos.Y = s.player.Pos.Y
 	s.player.Pause()
 
-	rl.SetMousePosition(int(s.camera.Target.X), int(HEIGHT)/2)
+	controls.SetMousePosition(int(s.camera.Target.X), int(HEIGHT)/2, 333)
 
 	s.editLabel = models.NewText(10, 50).
 		SetFontSize(40).
@@ -487,22 +494,24 @@ func (s *GameScene) reactOnImageEditorSelection(container *container.ObjectResou
 	moveUpper := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "MOVE UPPER")
 	moveDown := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "MOVE DOWN")
 
+	replicate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "REPLICATE")
+
 	shouldDisableCursor := container == s.worldContainer
 
 	if changeBgPosButton {
 		image.SetEditorMoveWithCursorTrue()
 		if shouldDisableCursor {
-			rl.DisableCursor()
+			controls.DisableCursor(498)
 		}
-		rl.SetMousePosition(int(image.Pos.X), int(image.Pos.Y))
+		controls.SetMousePosition(int(image.Pos.X), int(image.Pos.Y), 500)
 	}
 
 	if resizeBgButton {
 		image.SetEditorResizeWithCursorTrue()
 		if shouldDisableCursor {
-			rl.DisableCursor()
+			controls.DisableCursor(506)
 		}
-		rl.SetMousePosition(int(image.Pos.X+image.Box.X), int(image.Pos.Y+image.Box.Y))
+		controls.SetMousePosition(int(image.Pos.X+image.Box.X), int(image.Pos.Y+image.Box.Y), 508)
 	}
 
 	if moveUpper {
@@ -515,6 +524,12 @@ func (s *GameScene) reactOnImageEditorSelection(container *container.ObjectResou
 		drawIndex := container.MoveDown(image)
 		image.DrawIndex = drawIndex
 		s.syncDrawIndex(container)
+	}
+
+	if replicate {
+		imageReplica := image.Replicate(uuid.NewString(), image.Pos.X-100, image.Pos.Y-100)
+		imageReplica.Load()
+		container.AddObjectResource(imageReplica)
 	}
 
 }
@@ -531,14 +546,14 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 		if changeStart || changeEnd {
 			if changeStart {
 				bezier.SetStartModeTrue()
-				rl.DisableCursor()
-				rl.SetMousePosition(int(bezier.Start.X-20), int(bezier.Start.Y-20))
+				controls.DisableCursor(543)
+				controls.SetMousePosition(int(bezier.Start.X-20), int(bezier.Start.Y-20), 544)
 			}
 
 			if changeEnd {
 				bezier.SetEndModeTrue()
-				rl.DisableCursor()
-				rl.SetMousePosition(int(bezier.End.X+20), int(bezier.End.Y+20))
+				controls.DisableCursor(549)
+				controls.SetMousePosition(int(bezier.End.X+20), int(bezier.End.Y+20), 550)
 			}
 		}
 	}
@@ -551,14 +566,14 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 		if changeStart || changeEnd {
 			if changeStart {
 				line.SetStartModeTrue()
-				rl.DisableCursor()
-				rl.SetMousePosition(int(line.Start.X-20), int(line.Start.Y-20))
+				controls.DisableCursor(563)
+				controls.SetMousePosition(int(line.Start.X-20), int(line.Start.Y-20), 564)
 			}
 
 			if changeEnd {
 				line.SetEndModeTrue()
-				rl.DisableCursor()
-				rl.SetMousePosition(int(line.End.X+20), int(line.End.Y+20))
+				controls.DisableCursor(569)
+				controls.SetMousePosition(int(line.End.X+20), int(line.End.Y+20),570)
 			}
 		}
 	}
@@ -570,14 +585,14 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 
 		if changePosition {
 			rect.SetEditorMoveModeTrue()
-			rl.DisableCursor()
-			rl.SetMousePosition(int(rect.GetPos().X), int(rect.GetPos().Y))
+			controls.DisableCursor(582)
+			controls.SetMousePosition(int(rect.GetPos().X), int(rect.GetPos().Y), 583)
 		}
 
 		if changeSize {
 			rect.SetEditorSizeModeTrue()
-			rl.DisableCursor()
-			rl.SetMousePosition(int(rect.GetPos().X+rect.GetBox().X), int(rect.GetPos().Y+rect.GetBox().Y))
+			controls.DisableCursor(588)
+			controls.SetMousePosition(int(rect.GetPos().X+rect.GetBox().X), int(rect.GetPos().Y+rect.GetBox().Y), 589)
 		}
 	}
 
@@ -592,10 +607,13 @@ func (s *GameScene) processEditorMode() {
 
 	mousePos := rl.GetMousePosition()
 
+	updateMouse := false
+
 	if rl.IsKeyDown(rl.KeyRight) {
 		s.cameraEditPos.X += s.editCameraSpeed
 		if !s.editModeShowMenu {
 			mousePos.X += s.editCameraSpeed
+			updateMouse = true
 		}
 	}
 
@@ -603,10 +621,13 @@ func (s *GameScene) processEditorMode() {
 		s.cameraEditPos.X -= s.editCameraSpeed
 		if !s.editModeShowMenu {
 			mousePos.X -= s.editCameraSpeed
+			updateMouse = true
 		}
 	}
 
-	rl.SetMousePosition(int(mousePos.X), int(mousePos.Y))
+	if updateMouse {
+		controls.SetMousePosition(int(mousePos.X), int(mousePos.Y), 618)
+	}
 
 	if rl.IsKeyDown(rl.KeyEqual) {
 		s.editCameraSpeed++
@@ -631,16 +652,27 @@ func (s *GameScene) processEditorMode() {
 
 	hasAnySelected, _ := s.hasAnySelectedGameObjectEditorItem()
 
-	if (rl.IsKeyDown(rl.KeyM) || hasAnySelected) && !s.editModeShowMenu {
-		s.editModeShowMenu = true
-		rl.EnableCursor()
-		rl.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2)
-	}
+	if hasAnySelected {
 
-	if rl.IsKeyDown(rl.KeyN) && s.editModeShowMenu {
-		s.editModeShowMenu = false
-		rl.DisableCursor()
-		rl.SetMousePosition(int(s.cameraEditPos.X), int(s.cameraEditPos.Y))
+		if !s.editModeShowMenu {
+			s.editModeShowMenu = true
+			controls.EnableCursor(653)
+		}
+
+	} else {
+
+		if (rl.IsKeyDown(rl.KeyM)) && !s.editModeShowMenu {
+			s.editModeShowMenu = true
+			controls.EnableCursor(660)
+			controls.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2, 655)
+		}
+
+		if rl.IsKeyDown(rl.KeyN) && s.editModeShowMenu {
+			s.editModeShowMenu = false
+			controls.DisableCursor(666)
+			controls.SetMousePosition(int(s.cameraEditPos.X), int(s.cameraEditPos.Y), 661)
+		}
+
 	}
 
 	updateCameraCenter(s.camera, s.cameraEditPos)

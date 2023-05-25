@@ -2,6 +2,7 @@ package scene
 
 import (
 	"ahasuerus/container"
+	"ahasuerus/controls"
 	"ahasuerus/models"
 	_ "ahasuerus/repository"
 
@@ -40,7 +41,7 @@ func (m *MenuScene) Run() models.Scene {
 
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 70)
 
-	rl.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2)
+	controls.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2, 43)
 
 	if m.paused {
 		m.resume()

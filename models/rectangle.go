@@ -70,7 +70,7 @@ func (p *Rectangle) SetEditorMoveModeTrue() {
 	p.editorMoveWithCursor = true
 }
 
-func (p *Rectangle) ProcessEditorSelection() bool {
+func (p *Rectangle) ProcessEditorSelection() EditorItemProcessSelectionResult {
 
 	if p.editorMoveWithCursor {
 		mousePos := rl.GetMousePosition()
@@ -90,13 +90,30 @@ func (p *Rectangle) ProcessEditorSelection() bool {
 		p.editorEditSizeWithCursor = false
 		p.editorMoveWithCursor = false
 		p.editSelected = false
-		return true
+		return EditorItemProcessSelectionResult{
+			Finished:      true,
+		}
 	}
 
-	return false
+	if rl.IsKeyDown(rl.KeyBackspace) {
+		p.editorEditSizeWithCursor = false
+		p.editorMoveWithCursor = false
+		p.editSelected = false
+		return EditorItemProcessSelectionResult{
+			Finished:      true,
+			DisableCursor: true,
+			CursorForcePosition: true,
+			CursorX: int(p.pos.X),
+			CursorY: int(p.pos.Y),
+		}
+	}
+
+	return EditorItemProcessSelectionResult{
+		Finished:      false,
+	}
 }
 
-func (p *Rectangle) EditorResolveSelect() (bool, bool) {
+func (p *Rectangle) EditorResolveSelect() (EditorItemResolveSelectionResult) {
 	rec := rl.NewRectangle(p.pos.X, p.pos.Y, p.box.X, p.box.Y)
 	mousePos := rl.GetMousePosition()
 	collission := rl.CheckCollisionPointRec(mousePos, rec)
@@ -107,5 +124,8 @@ func (p *Rectangle) EditorResolveSelect() (bool, bool) {
 			p.editSelected = true
 		}		
 	}
-	return p.editSelected, collission
+	return EditorItemResolveSelectionResult{
+		Selected:  p.editSelected,
+		Collision: collission,
+	}
 }
