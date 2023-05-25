@@ -413,7 +413,7 @@ func (s *GameScene) drawNonGameFocusedMenu() {
 
 			path := "resources" + strings.Split(files[0], "resources")[1]
 
-			image := models.NewImage(s.environmentContainer.Size(), uuid.NewString(), path, 0, 0, 0, 0).
+			image := models.NewImage(s.environmentContainer.Size(), uuid.NewString(), path, 0, 0, 0, 0, 0).
 				AfterLoadPreset(func(i *models.Image) {
 					if s.editMenuBgImageDropMode {
 						i.Pos.X = WIDTH / 2

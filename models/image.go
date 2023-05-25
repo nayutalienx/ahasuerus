@@ -22,7 +22,7 @@ type Image struct {
 	editorRotateMode       bool
 }
 
-func NewImage(drawIndex int, id string, path string, x, y, width, height float32) *Image {
+func NewImage(drawIndex int, id string, path string, x, y, width, height, rotation float32) *Image {
 	img := &Image{
 		DrawIndex:    drawIndex,
 		Id:           id,
@@ -35,6 +35,7 @@ func NewImage(drawIndex int, id string, path string, x, y, width, height float32
 			X: width,
 			Y: height,
 		},
+		Rotation: rotation,
 	}
 	return img
 }
@@ -45,7 +46,7 @@ func (p *Image) Draw() {
 		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.Pos.X), int32(p.Pos.Y), 40, rl.Red)
 	}
 	if p.editorRotateMode {
-		rl.DrawText(fmt.Sprintf("Rotate on [R and T]: %.1f", p.Rotation), int32(p.Pos.X+p.Box.X), int32(p.Pos.Y), 40, rl.Red)
+		rl.DrawText(fmt.Sprintf("Rotate on [R and T]: %.1f", p.Rotation), int32(p.Pos.X), int32(p.Pos.Y+40), 40, rl.Red)
 	}
 }
 
@@ -186,7 +187,7 @@ func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
 }
 
 func (p Image) Replicate(id string, x, y float32) *Image {
-	return NewImage(p.DrawIndex, id, p.ResourcePath, x, y, p.Box.X, p.Box.Y)
+	return NewImage(p.DrawIndex, id, p.ResourcePath, x, y, p.Box.X, p.Box.Y, p.Rotation)
 }
 
 func (p *Image) syncBoxWithTexture() {

@@ -17,13 +17,14 @@ type Rectangle struct {
 }
 
 type Image struct {
-	DrawIndex int `json:"drawIndex"`
-	Id    string  `json:"id"`
-	Path  string  `json:"path"`
-	X     int     `json:"x"`
-	Y     int     `json:"y"`
-	Width  int    `json:"width"`
-	Height int    `json:"height"`
+	DrawIndex int    `json:"drawIndex"`
+	Id        string `json:"id"`
+	Path      string `json:"path"`
+	X         int    `json:"x"`
+	Y         int    `json:"y"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	Rotation  int    `json:"rotation"`
 }
 
 type Bezier struct {
