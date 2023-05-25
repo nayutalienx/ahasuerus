@@ -13,11 +13,13 @@ type Image struct {
 	Pos          rl.Vector2
 	Box          rl.Vector2
 	ResourcePath string
+	Rotation     float32
 	preset       func(i *Image)
 
 	editSelected           bool
 	editorMoveWithCursor   bool
 	editorResizeWithCursor bool
+	editorRotateMode       bool
 }
 
 func NewImage(drawIndex int, id string, path string, x, y, width, height float32) *Image {
@@ -38,9 +40,12 @@ func NewImage(drawIndex int, id string, path string, x, y, width, height float32
 }
 
 func (p *Image) Draw() {
-	rl.DrawTexture(p.Texture, int32(p.Pos.X), int32(p.Pos.Y), rl.White)
+	rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, 1, rl.White)
 	if p.editSelected {
 		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.Pos.X), int32(p.Pos.Y), 40, rl.Red)
+	}
+	if p.editorRotateMode {
+		rl.DrawText(fmt.Sprintf("Rotate on [R and T]: %.1f", p.Rotation), int32(p.Pos.X+p.Box.X), int32(p.Pos.Y), 40, rl.Red)
 	}
 }
 
@@ -79,12 +84,21 @@ func (p *Image) SetEditorResizeWithCursorTrue() {
 	p.editorResizeWithCursor = true
 }
 
-func (p *Image) EditorResolveSelect() (EditorItemResolveSelectionResult) {
-	rec := rl.NewRectangle(p.Pos.X, p.Pos.Y, float32(p.Texture.Width), float32(p.Texture.Height))
+func (p *Image) SetEditorRotateModeTrue() {
+	p.editorRotateMode = true
+}
+
+func (p *Image) EditorResolveSelect() EditorItemResolveSelectionResult {
 	mousePos := rl.GetMousePosition()
-	collission := rl.CheckCollisionPointRec(mousePos, rec)
+	triangle1 := []rl.Vector2{p.Pos, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y), rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y)}
+	triangle2 := []rl.Vector2{p.Pos, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y), rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y)}
+	RotateTriangleByA(&triangle1[0], &triangle1[1], &triangle1[2], float64(p.Rotation))
+	RotateTriangleByA(&triangle2[0], &triangle2[1], &triangle2[2], float64(p.Rotation))
+	collission := rl.CheckCollisionPointTriangle(mousePos, triangle1[0], triangle1[1], triangle1[2]) ||
+			rl.CheckCollisionPointTriangle(mousePos, triangle2[0], triangle2[1], triangle2[2])
 	if collission {
-		rl.DrawRectangleLinesEx(rec, 3.0, rl.Red)
+		rl.DrawTriangleLines(triangle1[0], triangle1[1], triangle1[2], rl.Red)
+		rl.DrawTriangleLines(triangle2[0], triangle2[1], triangle2[2], rl.Red)
 
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 			p.editSelected = true
@@ -116,12 +130,28 @@ func (p *Image) ProcessEditorSelection() EditorItemProcessSelectionResult {
 		p.syncBoxWithTexture()
 	}
 
+	if p.editorRotateMode {
+		if rl.IsKeyDown(rl.KeyT) {
+			p.Rotation++
+		}
+		if rl.IsKeyDown(rl.KeyR) {
+			p.Rotation--
+		}
+		if p.Rotation < 0 {
+			p.Rotation = 360
+		}
+		if p.Rotation > 360 {
+			p.Rotation = 0
+		}
+	}
+
 	if (p.editorMoveWithCursor || p.editorResizeWithCursor) && rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 		p.editorMoveWithCursor = false
 		p.editorResizeWithCursor = false
 		p.editSelected = false
+		p.editorRotateMode = false
 		return EditorItemProcessSelectionResult{
-			Finished:      true,
+			Finished: true,
 		}
 	}
 
@@ -130,18 +160,19 @@ func (p *Image) ProcessEditorSelection() EditorItemProcessSelectionResult {
 			p.editorMoveWithCursor = false
 			p.editorResizeWithCursor = false
 			p.editSelected = false
+			p.editorRotateMode = false
 			return EditorItemProcessSelectionResult{
-				Finished:      true,
-				DisableCursor: true,
+				Finished:            true,
+				DisableCursor:       true,
 				CursorForcePosition: true,
-				CursorX: int(p.Pos.X),
-				CursorY: int(p.Pos.Y),
+				CursorX:             int(p.Pos.X),
+				CursorY:             int(p.Pos.Y),
 			}
 		}
 	}
 
 	return EditorItemProcessSelectionResult{
-		Finished:      false,
+		Finished: false,
 	}
 }
 
@@ -154,11 +185,11 @@ func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
 	return p
 }
 
-func (p Image) Replicate(id string,x, y float32) *Image {
+func (p Image) Replicate(id string, x, y float32) *Image {
 	return NewImage(p.DrawIndex, id, p.ResourcePath, x, y, p.Box.X, p.Box.Y)
 }
 
 func (p *Image) syncBoxWithTexture() {
-	p.Texture.Width = int32(p.Box.X)	
-	p.Texture.Height = int32(p.Box.Y)	
+	p.Texture.Width = int32(p.Box.X)
+	p.Texture.Height = int32(p.Box.Y)
 }

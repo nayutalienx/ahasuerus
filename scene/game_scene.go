@@ -495,6 +495,7 @@ func (s *GameScene) reactOnImageEditorSelection(container *container.ObjectResou
 	moveDown := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "MOVE DOWN")
 
 	replicate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "REPLICATE")
+	rotateMode := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "ROTATE MODE")
 
 	shouldDisableCursor := container == s.worldContainer
 
@@ -512,6 +513,10 @@ func (s *GameScene) reactOnImageEditorSelection(container *container.ObjectResou
 			controls.DisableCursor(506)
 		}
 		controls.SetMousePosition(int(image.Pos.X+image.Box.X), int(image.Pos.Y+image.Box.Y), 508)
+	}
+
+	if rotateMode {
+		image.SetEditorRotateModeTrue()
 	}
 
 	if moveUpper {
