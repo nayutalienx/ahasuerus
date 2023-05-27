@@ -74,6 +74,8 @@ func (p *Image) Load() {
 
 	if p.ImageShader != resources.UndefinedShader {
 		p.Shader = resources.LoadShader(p.ImageShader)
+		textureLoc := rl.GetShaderLocation(p.Shader, "texture0")
+		rl.SetShaderValueTexture(p.Shader, textureLoc, p.Texture)
 	}
 
 	if p.preset != nil {

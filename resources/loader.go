@@ -24,8 +24,10 @@ const (
 type GameShader string
 
 const (
-	UndefinedShader   GameShader = ""
-	BloomShader GameShader = "resources/shader/bloom.fs"
+	UndefinedShader GameShader = ""
+	BloomShader     GameShader = "resources/shader/bloom.fs"
+	BlurShader      GameShader = "resources/shader/blur.fs"
+	TextureShader   GameShader = "resources/shader/texture.fs"
 )
 
 var (
@@ -57,6 +59,7 @@ func UnloadTexture(gameTexture GameTexture) {
 }
 
 func LoadShader(gameShader GameShader) rl.Shader {
+	fmt.Println("INFO: Load shader " + gameShader)
 	loadedShader, ok := shaderCache[gameShader]
 	if ok {
 		fmt.Println("WARN: Shader already loaded. Using cache")
@@ -69,6 +72,7 @@ func LoadShader(gameShader GameShader) rl.Shader {
 }
 
 func UnloadShader(gameShader GameShader) {
+	fmt.Println("INFO: Unload shader " + gameShader)
 	shader, ok := shaderCache[gameShader]
 	if ok {
 		rl.UnloadShader(shader)

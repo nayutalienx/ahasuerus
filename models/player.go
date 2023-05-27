@@ -65,7 +65,14 @@ func NewPlayer(x float32, y float32) *Player {
 }
 
 func (p *Player) Load() {
-	p.runAnimation = NewAnimation(resources.PlayerRun, 27, 24)
+	p.runAnimation = NewAnimation(resources.PlayerRun, 27, 24).
+		WithShader(resources.BlurShader).
+		AfterLoadPreset(func(a *Animation) {
+			w := rl.GetShaderLocation(a.Shader, "renderWidth")
+			h := rl.GetShaderLocation(a.Shader, "renderHeight")
+			rl.SetShaderValue(a.Shader, w, []float32{3600}, rl.ShaderUniformFloat)
+			rl.SetShaderValue(a.Shader, h, []float32{1800}, rl.ShaderUniformFloat)
+		})
 	p.runAnimation.Load()
 
 	p.stayAnimation = NewAnimation(resources.PlayerStay, 22, 7)

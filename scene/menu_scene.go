@@ -26,10 +26,12 @@ func NewMenuScene() *MenuScene {
 	}
 	menuScene.menuContainer.AddObjectResource(
 		models.NewMusicStream("resources/music/menu_theme.mp3"),
-		models.NewImage(0, uuid.NewString(), resources.MenuBg, 0, 0, 0, 0, 0).AfterLoadPreset(func(i *models.Image) {
-			i.Texture.Width = int32(WIDTH)
-			i.Texture.Height = int32(HEIGHT)
-		}),
+		models.NewImage(0, uuid.NewString(), resources.MenuBg, 0, 0, 0, 0, 0).
+			WithShader(resources.BlurShader).
+			AfterLoadPreset(func(i *models.Image) {
+				i.Texture.Width = int32(WIDTH)
+				i.Texture.Height = int32(HEIGHT)
+			}),
 	)
 
 	menuScene.menuContainer.Load()
@@ -50,7 +52,7 @@ func (m *MenuScene) Run() models.Scene {
 
 	for !m.menuShouldClose {
 		rl.BeginDrawing()
-		rl.ClearBackground(rl.Gray)
+		rl.ClearBackground(rl.Blank)
 
 		delta := rl.GetFrameTime()
 		m.menuContainer.Update(delta)

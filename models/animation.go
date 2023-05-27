@@ -20,6 +20,7 @@ var (
 
 type Animation struct {
 	Texture     rl.Texture2D
+	Shader      rl.Shader
 	Pos         rl.Vector2
 	StepInPixel int32
 	Orientation Orientation
@@ -29,8 +30,11 @@ type Animation struct {
 	framesCounter int32
 
 	GameTexture     resources.GameTexture
+	GameShader      resources.GameShader
 	steps           int32
 	framesPerSecond int32
+
+	preset func(*Animation)
 }
 
 func NewAnimation(gameTexture resources.GameTexture, steps int32, framesPerSecond int32) *Animation {
@@ -42,7 +46,13 @@ func NewAnimation(gameTexture resources.GameTexture, steps int32, framesPerSecon
 }
 
 func (a Animation) Draw() {
-	rl.DrawTextureRec(a.Texture, a.frame, a.Pos, rl.White)
+	if a.GameShader != resources.UndefinedShader {
+		rl.BeginShaderMode(a.Shader)
+		rl.DrawTextureRec(a.Texture, a.frame, a.Pos, rl.White)
+		rl.EndShaderMode()
+	} else {
+		rl.DrawTextureRec(a.Texture, a.frame, a.Pos, rl.White)
+	}
 }
 
 func (a *Animation) Update(delta float32) {
@@ -70,12 +80,33 @@ func (a *Animation) Stop() {
 	a.frame.X = float32(a.StepInPixel)
 }
 
+func (a *Animation) WithShader(gs resources.GameShader) *Animation {
+	a.GameShader = gs
+	return a
+}
+
 func (a *Animation) Load() {
 	a.Texture = resources.LoadTexture(a.GameTexture)
 	a.StepInPixel = a.Texture.Width / a.steps
 	a.frame = rl.NewRectangle(0, 0, float32(a.StepInPixel), float32(a.Texture.Height))
+	if a.GameShader != resources.UndefinedShader {
+		a.Shader = resources.LoadShader(a.GameShader)
+		textureLoc := rl.GetShaderLocation(a.Shader, "texture0")
+		rl.SetShaderValueTexture(a.Shader, textureLoc, a.Texture)
+	}
+	if a.preset != nil {
+		a.preset(a)
+	}
 }
 
 func (a *Animation) Unload() {
 	resources.UnloadTexture(a.GameTexture)
+	if a.GameShader != resources.UndefinedShader {
+		resources.UnloadShader(a.GameShader)
+	}
+}
+
+func (a *Animation) AfterLoadPreset(cb func(*Animation)) *Animation{
+	a.preset = cb
+	return a
 }
