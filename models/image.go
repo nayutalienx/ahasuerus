@@ -65,12 +65,16 @@ func (p *Image) Draw() {
 }
 
 func (p *Image) Update(delta float32) {
-	for i, _ := range p.LightPoints {
-		lp := p.LightPoints[i]
-
+	if p.ImageShader == resources.TextureLightShader {
+		lightPoints := make([]float32, 0)
+		for i, _ := range p.LightPoints {
+			lp := p.LightPoints[i]
+			lightPoints = append(lightPoints, float32(lp.Pos.X), float32(lp.Pos.Y))
+		}
 		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{p.Pos.X, p.Pos.Y + p.Box.Y}, rl.ShaderUniformVec2)
 		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.Box.X, p.Box.Y}, rl.ShaderUniformVec2)
-		rl.SetShaderValue(p.Shader, p.shaderLocs[2], []float32{lp.Pos.X, lp.Pos.Y}, rl.ShaderUniformVec2)
+		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.LightPoints)))
+		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.LightPoints))}, rl.ShaderUniformFloat)
 	}
 }
 
@@ -89,11 +93,12 @@ func (p *Image) Load() {
 		textureLoc := rl.GetShaderLocation(p.Shader, "texture0")
 		rl.SetShaderValueTexture(p.Shader, textureLoc, p.Texture)
 
-		if p.ImageShader == resources.TextureBrightnessShader {
+		if p.ImageShader == resources.TextureLightShader {
 			p.shaderLocs = []int32{
 				rl.GetShaderLocation(p.Shader, "objectPosBottomLeft"),
 				rl.GetShaderLocation(p.Shader, "objectSize"),
 				rl.GetShaderLocation(p.Shader, "lightPos"),
+				rl.GetShaderLocation(p.Shader, "lightPosSize"),
 			}
 		}
 

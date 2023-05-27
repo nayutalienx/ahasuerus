@@ -82,20 +82,24 @@ func NewGameScene(sceneName string) *GameScene {
 
 	scene.worldContainer.AddObjectResource(scene.player)
 
-	envImages := repository.GetAllImages(scene.sceneName, envContainer)
-	for i, _ := range envImages {
-		img := envImages[i]
-		scene.environmentContainer.AddObjectResource(&img)
-	}
+	// envImages := repository.GetAllImages(scene.sceneName, envContainer)
+	// for i, _ := range envImages {
+	// 	img := envImages[i]
+	// 	scene.environmentContainer.AddObjectResource(&img)
+	// }
 
-	lightPoint := models.NewLightPoint(rl.NewVector2(200, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
-	scene.worldContainer.AddObject(lightPoint)
+	lightPoint1 := models.NewLightPoint(rl.NewVector2(200, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
+	scene.worldContainer.AddObject(lightPoint1)
+
+	lightPoint2 := models.NewLightPoint(rl.NewVector2(3000, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
+	scene.worldContainer.AddObject(lightPoint2)
 
 	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
 	for i, _ := range worldImages {
 		img := worldImages[i]
-		img.WithShader(resources.TextureBrightnessShader).
-			AddLightPoint(lightPoint)
+		img.WithShader(resources.TextureLightShader).
+			AddLightPoint(lightPoint1).
+			AddLightPoint(lightPoint2)
 		scene.worldContainer.AddObjectResource(&img)
 	}
 

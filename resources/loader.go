@@ -24,11 +24,11 @@ const (
 type GameShader string
 
 const (
-	UndefinedShader         GameShader = ""
-	BloomShader             GameShader = "resources/shader/bloom.fs"
-	BlurShader              GameShader = "resources/shader/blur.fs"
-	TextureShader           GameShader = "resources/shader/texture.fs"
-	TextureBrightnessShader GameShader = "resources/shader/texture_brightness.fs"
+	UndefinedShader    GameShader = ""
+	BloomShader        GameShader = "resources/shader/bloom.fs"
+	BlurShader         GameShader = "resources/shader/blur.fs"
+	TextureShader      GameShader = "resources/shader/texture.fs"
+	TextureLightShader GameShader = "resources/shader/texture_light.fs"
 )
 
 var (
