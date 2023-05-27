@@ -26,7 +26,7 @@ func NewMenuScene() *MenuScene {
 	}
 	menuScene.menuContainer.AddObjectResource(
 		models.NewMusicStream("resources/music/menu_theme.mp3"),
-		models.NewImage(0, uuid.NewString(), resources.MenuBg, 0, 0, 0, 0, 0).
+		models.NewImage(0, uuid.NewString(), resources.MenuBgTexture, 0, 0, 0, 0, 0).
 			WithShader(resources.BlurShader).
 			AfterLoadPreset(func(i *models.Image) {
 				i.Texture.Width = int32(WIDTH)

@@ -9,16 +9,16 @@ import (
 type GameTexture string
 
 const (
-	PlayerStay GameTexture = "resources/heroes/tim_stay.png"
-	PlayerRun  GameTexture = "resources/heroes/tim_run.png"
-	Girl1      GameTexture = "resources/heroes/girl1.png"
-	Girl2      GameTexture = "resources/heroes/girl2.png"
-	Girl3      GameTexture = "resources/heroes/girl3.png"
-	Girl4      GameTexture = "resources/heroes/girl4.png"
-	Girl5      GameTexture = "resources/heroes/girl5.png"
-	GameBg     GameTexture = "resources/bg/1.jpg"
-	MenuBg     GameTexture = "resources/bg/menu-bg.png"
-	GameRoad   GameTexture = "resources/game/road.png"
+	PlayerStayTexture GameTexture = "resources/heroes/tim_stay.png"
+	PlayerRunTexture  GameTexture = "resources/heroes/tim_run.png"
+	Girl1Texture      GameTexture = "resources/heroes/girl1.png"
+	Girl2Texture      GameTexture = "resources/heroes/girl2.png"
+	Girl3Texture      GameTexture = "resources/heroes/girl3.png"
+	Girl4Texture      GameTexture = "resources/heroes/girl4.png"
+	Girl5Texture      GameTexture = "resources/heroes/girl5.png"
+	GameBgTexture     GameTexture = "resources/bg/1.jpg"
+	MenuBgTexture     GameTexture = "resources/bg/menu-bg.png"
+	GameRoadTexture   GameTexture = "resources/game/road.png"
 )
 
 type GameShader string
