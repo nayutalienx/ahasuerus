@@ -2,6 +2,7 @@
 	"drawIndex": 19,
 	"id": "4c5c051d-8437-4114-9383-dc1badd65f5e",
 	"path": "resources\\game\\road.png",
+	"shader": "",
 	"x": 5185,
 	"y": 34,
 	"width": 402,

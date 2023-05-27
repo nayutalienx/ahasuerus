@@ -20,6 +20,7 @@ type Image struct {
 	DrawIndex int    `json:"drawIndex"`
 	Id        string `json:"id"`
 	Path      string `json:"path"`
+	Shader    string `json:"shader"`
 	X         int    `json:"x"`
 	Y         int    `json:"y"`
 	Width     int    `json:"width"`

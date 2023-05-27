@@ -21,8 +21,16 @@ const (
 	GameRoad   GameTexture = "resources/game/road.png"
 )
 
+type GameShader string
+
+const (
+	UndefinedShader   GameShader = ""
+	BloomShader GameShader = "resources/shader/bloom.fs"
+)
+
 var (
 	textureCache = make(map[GameTexture]rl.Texture2D)
+	shaderCache  = make(map[GameShader]rl.Shader)
 )
 
 func LoadTexture(gameTexture GameTexture) rl.Texture2D {
@@ -45,5 +53,27 @@ func UnloadTexture(gameTexture GameTexture) {
 		delete(textureCache, gameTexture)
 	} else {
 		fmt.Println("WARN: Texture not found for unload")
+	}
+}
+
+func LoadShader(gameShader GameShader) rl.Shader {
+	loadedShader, ok := shaderCache[gameShader]
+	if ok {
+		fmt.Println("WARN: Shader already loaded. Using cache")
+		return loadedShader
+	}
+
+	shader := rl.LoadShader("", string(gameShader))
+	shaderCache[gameShader] = shader
+	return shader
+}
+
+func UnloadShader(gameShader GameShader) {
+	shader, ok := shaderCache[gameShader]
+	if ok {
+		rl.UnloadShader(shader)
+		delete(shaderCache, gameShader)
+	} else {
+		fmt.Println("WARN: Shader not found for unload")
 	}
 }

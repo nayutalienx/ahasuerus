@@ -11,10 +11,11 @@ type Image struct {
 	DrawIndex    int
 	Id           string
 	Texture      rl.Texture2D
-	Shader       *rl.Shader
+	Shader       rl.Shader
 	Pos          rl.Vector2
 	Box          rl.Vector2
 	ImageTexture resources.GameTexture
+	ImageShader  resources.GameShader
 	Rotation     float32
 	preset       func(i *Image)
 
@@ -43,8 +44,8 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 }
 
 func (p *Image) Draw() {
-	if p.Shader != nil {
-		rl.BeginShaderMode(*p.Shader)
+	if p.ImageShader != resources.UndefinedShader {
+		rl.BeginShaderMode(p.Shader)
 		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, 1, rl.White)
 		rl.EndShaderMode()
 	} else {
@@ -70,6 +71,11 @@ func (p *Image) Load() {
 		p.Box.X = float32(p.Texture.Width)
 		p.Box.Y = float32(p.Texture.Height)
 	}
+
+	if p.ImageShader != resources.UndefinedShader {
+		p.Shader = resources.LoadShader(p.ImageShader)
+	}
+
 	if p.preset != nil {
 		p.preset(p)
 	}
@@ -185,6 +191,14 @@ func (p *Image) ProcessEditorSelection() EditorItemProcessSelectionResult {
 
 func (p *Image) Unload() {
 	resources.UnloadTexture(p.ImageTexture)
+	if p.ImageShader != resources.UndefinedShader {
+		resources.UnloadShader(p.ImageShader)
+	}
+}
+
+func (p *Image) WithShader(gs resources.GameShader) *Image {
+	p.ImageShader = gs
+	return p
 }
 
 func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
