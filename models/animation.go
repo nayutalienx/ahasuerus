@@ -102,7 +102,7 @@ func (a *Animation) Load() {
 func (a *Animation) Unload() {
 	resources.UnloadTexture(a.GameTexture)
 	if a.GameShader != resources.UndefinedShader {
-		resources.UnloadShader(a.GameShader)
+		resources.UnloadShader(a.Shader)
 	}
 }
 

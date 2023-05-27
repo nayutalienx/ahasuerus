@@ -24,15 +24,15 @@ const (
 type GameShader string
 
 const (
-	UndefinedShader GameShader = ""
-	BloomShader     GameShader = "resources/shader/bloom.fs"
-	BlurShader      GameShader = "resources/shader/blur.fs"
-	TextureShader   GameShader = "resources/shader/texture.fs"
+	UndefinedShader         GameShader = ""
+	BloomShader             GameShader = "resources/shader/bloom.fs"
+	BlurShader              GameShader = "resources/shader/blur.fs"
+	TextureShader           GameShader = "resources/shader/texture.fs"
+	TextureBrightnessShader GameShader = "resources/shader/texture_brightness.fs"
 )
 
 var (
 	textureCache = make(map[GameTexture]rl.Texture2D)
-	shaderCache  = make(map[GameShader]rl.Shader)
 )
 
 func LoadTexture(gameTexture GameTexture) rl.Texture2D {
@@ -60,24 +60,10 @@ func UnloadTexture(gameTexture GameTexture) {
 
 func LoadShader(gameShader GameShader) rl.Shader {
 	fmt.Println("INFO: Load shader " + gameShader)
-	loadedShader, ok := shaderCache[gameShader]
-	if ok {
-		fmt.Println("WARN: Shader already loaded. Using cache")
-		return loadedShader
-	}
-
 	shader := rl.LoadShader("", string(gameShader))
-	shaderCache[gameShader] = shader
 	return shader
 }
 
-func UnloadShader(gameShader GameShader) {
-	fmt.Println("INFO: Unload shader " + gameShader)
-	shader, ok := shaderCache[gameShader]
-	if ok {
-		rl.UnloadShader(shader)
-		delete(shaderCache, gameShader)
-	} else {
-		fmt.Println("WARN: Shader not found for unload")
-	}
+func UnloadShader(shader rl.Shader) {
+	rl.UnloadShader(shader)
 }

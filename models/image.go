@@ -17,7 +17,10 @@ type Image struct {
 	ImageTexture resources.GameTexture
 	ImageShader  resources.GameShader
 	Rotation     float32
+	LightPoints  []*LightPoint
 	preset       func(i *Image)
+
+	shaderLocs []int32
 
 	editSelected           bool
 	editorMoveWithCursor   bool
@@ -38,7 +41,9 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 			X: width,
 			Y: height,
 		},
-		Rotation: rotation,
+		Rotation:    rotation,
+		LightPoints: make([]*LightPoint, 0),
+		shaderLocs:  make([]int32, 0),
 	}
 	return img
 }
@@ -60,6 +65,13 @@ func (p *Image) Draw() {
 }
 
 func (p *Image) Update(delta float32) {
+	for i, _ := range p.LightPoints {
+		lp := p.LightPoints[i]
+
+		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{p.Pos.X, p.Pos.Y + p.Box.Y}, rl.ShaderUniformVec2)
+		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.Box.X, p.Box.Y}, rl.ShaderUniformVec2)
+		rl.SetShaderValue(p.Shader, p.shaderLocs[2], []float32{lp.Pos.X, lp.Pos.Y}, rl.ShaderUniformVec2)
+	}
 }
 
 func (p *Image) Load() {
@@ -76,6 +88,15 @@ func (p *Image) Load() {
 		p.Shader = resources.LoadShader(p.ImageShader)
 		textureLoc := rl.GetShaderLocation(p.Shader, "texture0")
 		rl.SetShaderValueTexture(p.Shader, textureLoc, p.Texture)
+
+		if p.ImageShader == resources.TextureBrightnessShader {
+			p.shaderLocs = []int32{
+				rl.GetShaderLocation(p.Shader, "objectPosBottomLeft"),
+				rl.GetShaderLocation(p.Shader, "objectSize"),
+				rl.GetShaderLocation(p.Shader, "lightPos"),
+			}
+		}
+
 	}
 
 	if p.preset != nil {
@@ -194,12 +215,17 @@ func (p *Image) ProcessEditorSelection() EditorItemProcessSelectionResult {
 func (p *Image) Unload() {
 	resources.UnloadTexture(p.ImageTexture)
 	if p.ImageShader != resources.UndefinedShader {
-		resources.UnloadShader(p.ImageShader)
+		resources.UnloadShader(p.Shader)
 	}
 }
 
 func (p *Image) WithShader(gs resources.GameShader) *Image {
 	p.ImageShader = gs
+	return p
+}
+
+func (p *Image) AddLightPoint(lp *LightPoint) *Image {
+	p.LightPoints = append(p.LightPoints, lp)
 	return p
 }
 

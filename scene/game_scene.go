@@ -88,9 +88,14 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.environmentContainer.AddObjectResource(&img)
 	}
 
+	lightPoint := models.NewLightPoint(rl.NewVector2(200, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
+	scene.worldContainer.AddObject(lightPoint)
+
 	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
 	for i, _ := range worldImages {
 		img := worldImages[i]
+		img.WithShader(resources.TextureBrightnessShader).
+			AddLightPoint(lightPoint)
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
