@@ -2,6 +2,7 @@ package models
 
 import (
 	"ahasuerus/config"
+	"ahasuerus/resources"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -21,20 +22,20 @@ type Animation struct {
 	Texture     rl.Texture2D
 	Pos         rl.Vector2
 	StepInPixel int32
-	Orientation     Orientation	
+	Orientation Orientation
 
 	frame         rl.Rectangle
 	currentFrame  int32
 	framesCounter int32
 
-	texturePath     string
+	GameTexture     resources.GameTexture
 	steps           int32
 	framesPerSecond int32
 }
 
-func NewAnimation(texturePath string, steps int32, framesPerSecond int32) *Animation {
+func NewAnimation(gameTexture resources.GameTexture, steps int32, framesPerSecond int32) *Animation {
 	return &Animation{
-		texturePath:     texturePath,
+		GameTexture:     gameTexture,
 		steps:           steps,
 		framesPerSecond: framesPerSecond,
 	}
@@ -70,11 +71,11 @@ func (a *Animation) Stop() {
 }
 
 func (a *Animation) Load() {
-	a.Texture = rl.LoadTexture(a.texturePath)
+	a.Texture = resources.LoadTexture(a.GameTexture)
 	a.StepInPixel = a.Texture.Width / a.steps
 	a.frame = rl.NewRectangle(0, 0, float32(a.StepInPixel), float32(a.Texture.Height))
 }
 
 func (a *Animation) Unload() {
-	rl.UnloadTexture(a.Texture)
+	resources.UnloadTexture(a.GameTexture)
 }

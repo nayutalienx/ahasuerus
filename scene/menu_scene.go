@@ -5,6 +5,7 @@ import (
 	"ahasuerus/controls"
 	"ahasuerus/models"
 	_ "ahasuerus/repository"
+	"ahasuerus/resources"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -12,9 +13,9 @@ import (
 )
 
 type MenuScene struct {
-	menuContainer *container.ObjectResourceContainer
+	menuContainer   *container.ObjectResourceContainer
 	menuShouldClose bool
-	nextScene models.Scene
+	nextScene       models.Scene
 
 	paused bool
 }
@@ -25,7 +26,7 @@ func NewMenuScene() *MenuScene {
 	}
 	menuScene.menuContainer.AddObjectResource(
 		models.NewMusicStream("resources/music/menu_theme.mp3"),
-		models.NewImage(0,uuid.NewString(),"resources/bg/menu-bg.png", 0, 0, 0, 0, 0).AfterLoadPreset(func(i *models.Image) {
+		models.NewImage(0, uuid.NewString(), resources.MenuBg, 0, 0, 0, 0, 0).AfterLoadPreset(func(i *models.Image) {
 			i.Texture.Width = int32(WIDTH)
 			i.Texture.Height = int32(HEIGHT)
 		}),
@@ -50,7 +51,7 @@ func (m *MenuScene) Run() models.Scene {
 	for !m.menuShouldClose {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Gray)
-		
+
 		delta := rl.GetFrameTime()
 		m.menuContainer.Update(delta)
 		m.menuContainer.Draw()

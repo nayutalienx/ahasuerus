@@ -1,6 +1,7 @@
 package models
 
 import (
+	"ahasuerus/resources"
 	"fmt"
 	"math"
 
@@ -64,10 +65,10 @@ func NewPlayer(x float32, y float32) *Player {
 }
 
 func (p *Player) Load() {
-	p.runAnimation = NewAnimation("resources/heroes/tim_run.png", 27, 24)
+	p.runAnimation = NewAnimation(resources.PlayerRun, 27, 24)
 	p.runAnimation.Load()
 
-	p.stayAnimation = NewAnimation("resources/heroes/tim_stay.png", 22, 7)
+	p.stayAnimation = NewAnimation(resources.PlayerStay, 22, 7)
 	p.stayAnimation.Load()
 
 	p.Box.X = float32(p.stayAnimation.StepInPixel)
@@ -120,7 +121,7 @@ func (p *Player) Update(delta float32) {
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 			//rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
 		} else if hasLineCollision {
-			prev, _ := CalculatePreviousAndNextPointOfLine(collisionedLine.Point, collisionedLine.Line.Start, collisionedLine.Line.End)	
+			prev, _ := CalculatePreviousAndNextPointOfLine(collisionedLine.Point, collisionedLine.Line.Start, collisionedLine.Line.End)
 			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y+(2*p.speed)))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
@@ -139,7 +140,7 @@ func (p *Player) Update(delta float32) {
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 			//rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
 		} else if hasLineCollision {
-			_, next := CalculatePreviousAndNextPointOfLine(collisionedLine.Point, collisionedLine.Line.Start, collisionedLine.Line.End)	
+			_, next := CalculatePreviousAndNextPointOfLine(collisionedLine.Point, collisionedLine.Line.Start, collisionedLine.Line.End)
 			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y+(2*p.speed)))
 			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)

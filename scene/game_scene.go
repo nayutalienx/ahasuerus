@@ -5,6 +5,7 @@ import (
 	"ahasuerus/controls"
 	"ahasuerus/models"
 	"ahasuerus/repository"
+	"ahasuerus/resources"
 	"fmt"
 	"strings"
 
@@ -331,6 +332,8 @@ func (s *GameScene) disableEditMode() {
 }
 
 func (s *GameScene) enableEditMode() {
+	s.player.Pos.X = 100
+	s.player.Pos.Y = 100
 	s.editMode = true
 	s.cameraEditPos.X = s.player.Pos.X
 	s.cameraEditPos.Y = s.player.Pos.Y
@@ -413,7 +416,7 @@ func (s *GameScene) drawNonGameFocusedMenu() {
 
 			path := "resources" + strings.Split(files[0], "resources")[1]
 
-			image := models.NewImage(s.environmentContainer.Size(), uuid.NewString(), path, 0, 0, 0, 0, 0).
+			image := models.NewImage(s.environmentContainer.Size(), uuid.NewString(), resources.GameTexture(path), 0, 0, 0, 0, 0).
 				AfterLoadPreset(func(i *models.Image) {
 					if s.editMenuBgImageDropMode {
 						i.Pos.X = WIDTH / 2
@@ -578,7 +581,7 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 			if changeEnd {
 				line.SetEndModeTrue()
 				controls.DisableCursor(569)
-				controls.SetMousePosition(int(line.End.X+20), int(line.End.Y+20),570)
+				controls.SetMousePosition(int(line.End.X+20), int(line.End.Y+20), 570)
 			}
 		}
 	}

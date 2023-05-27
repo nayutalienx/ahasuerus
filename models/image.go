@@ -1,6 +1,7 @@
 package models
 
 import (
+	"ahasuerus/resources"
 	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -10,9 +11,10 @@ type Image struct {
 	DrawIndex    int
 	Id           string
 	Texture      rl.Texture2D
+	Shader       *rl.Shader
 	Pos          rl.Vector2
 	Box          rl.Vector2
-	ResourcePath string
+	ImageTexture resources.GameTexture
 	Rotation     float32
 	preset       func(i *Image)
 
@@ -22,11 +24,11 @@ type Image struct {
 	editorRotateMode       bool
 }
 
-func NewImage(drawIndex int, id string, path string, x, y, width, height, rotation float32) *Image {
+func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y, width, height, rotation float32) *Image {
 	img := &Image{
 		DrawIndex:    drawIndex,
 		Id:           id,
-		ResourcePath: path,
+		ImageTexture: imageTexture,
 		Pos: rl.Vector2{
 			X: x,
 			Y: y,
@@ -41,7 +43,13 @@ func NewImage(drawIndex int, id string, path string, x, y, width, height, rotati
 }
 
 func (p *Image) Draw() {
-	rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, 1, rl.White)
+	if p.Shader != nil {
+		rl.BeginShaderMode(*p.Shader)
+		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, 1, rl.White)
+		rl.EndShaderMode()
+	} else {
+		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, 1, rl.White)
+	}
 	if p.editSelected {
 		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.Pos.X), int32(p.Pos.Y), 40, rl.Red)
 	}
@@ -54,10 +62,8 @@ func (p *Image) Update(delta float32) {
 }
 
 func (p *Image) Load() {
-	img := rl.LoadImage(p.ResourcePath)      // load img to RAM
-	p.Texture = rl.LoadTextureFromImage(img) // move img to VRAM
-	rl.UnloadImage(img)                      // clear ram
-	if p.Box.X > 0 && p.Box.Y > 0 {          // scale image
+	p.Texture = resources.LoadTexture(p.ImageTexture)
+	if p.Box.X > 0 && p.Box.Y > 0 { // scale image
 		p.Texture.Width = int32(p.Box.X)
 		p.Texture.Height = int32(p.Box.Y)
 	} else {
@@ -96,7 +102,7 @@ func (p *Image) EditorResolveSelect() EditorItemResolveSelectionResult {
 	RotateTriangleByA(&triangle1[0], &triangle1[1], &triangle1[2], float64(p.Rotation))
 	RotateTriangleByA(&triangle2[0], &triangle2[1], &triangle2[2], float64(p.Rotation))
 	collission := rl.CheckCollisionPointTriangle(mousePos, triangle1[0], triangle1[1], triangle1[2]) ||
-			rl.CheckCollisionPointTriangle(mousePos, triangle2[0], triangle2[1], triangle2[2])
+		rl.CheckCollisionPointTriangle(mousePos, triangle2[0], triangle2[1], triangle2[2])
 	if collission {
 		rl.DrawTriangleLines(triangle1[0], triangle1[1], triangle1[2], rl.Red)
 		rl.DrawTriangleLines(triangle2[0], triangle2[1], triangle2[2], rl.Red)
@@ -178,7 +184,7 @@ func (p *Image) ProcessEditorSelection() EditorItemProcessSelectionResult {
 }
 
 func (p *Image) Unload() {
-	rl.UnloadTexture(p.Texture) // clear VRAM
+	resources.UnloadTexture(p.ImageTexture)
 }
 
 func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
@@ -187,7 +193,7 @@ func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
 }
 
 func (p Image) Replicate(id string, x, y float32) *Image {
-	return NewImage(p.DrawIndex, id, p.ResourcePath, x, y, p.Box.X, p.Box.Y, p.Rotation)
+	return NewImage(p.DrawIndex, id, p.ImageTexture, x, y, p.Box.X, p.Box.Y, p.Rotation)
 }
 
 func (p *Image) syncBoxWithTexture() {
