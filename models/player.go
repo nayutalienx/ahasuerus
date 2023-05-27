@@ -35,6 +35,11 @@ type Player struct {
 	stayAnimation    *Animation
 	orientation      Orientation
 
+	Shader      rl.Shader
+	ImageShader resources.GameShader
+	LightPoints []*LightPoint
+	shaderLocs  []int32
+
 	paused bool
 
 	debugText Text
@@ -65,14 +70,7 @@ func NewPlayer(x float32, y float32) *Player {
 }
 
 func (p *Player) Load() {
-	p.runAnimation = NewAnimation(resources.PlayerRunTexture, 27, 24).
-		WithShader(resources.BlurShader).
-		AfterLoadPreset(func(a *Animation) {
-			w := rl.GetShaderLocation(a.Shader, "renderWidth")
-			h := rl.GetShaderLocation(a.Shader, "renderHeight")
-			rl.SetShaderValue(a.Shader, w, []float32{3600}, rl.ShaderUniformFloat)
-			rl.SetShaderValue(a.Shader, h, []float32{1800}, rl.ShaderUniformFloat)
-		})
+	p.runAnimation = NewAnimation(resources.PlayerRunTexture, 27, 24)
 	p.runAnimation.Load()
 
 	p.stayAnimation = NewAnimation(resources.PlayerStayTexture, 22, 7)
@@ -80,11 +78,27 @@ func (p *Player) Load() {
 
 	p.Box.X = float32(p.stayAnimation.StepInPixel)
 	p.Box.Y = float32(p.stayAnimation.Texture.Height)
+
+	if p.ImageShader != resources.UndefinedShader {
+		p.Shader = resources.LoadShader(p.ImageShader)
+		if p.ImageShader == resources.TextureLightShader {
+			p.shaderLocs = []int32{
+				rl.GetShaderLocation(p.Shader, "objectPosBottomLeft"),
+				rl.GetShaderLocation(p.Shader, "objectSize"),
+				rl.GetShaderLocation(p.Shader, "lightPos"),
+				rl.GetShaderLocation(p.Shader, "lightPosSize"),
+				rl.GetShaderLocation(p.Shader, "texture0"),
+			}
+		}
+	}
 }
 
 func (p *Player) Unload() {
 	p.runAnimation.Unload()
 	p.stayAnimation.Unload()
+	if p.ImageShader != resources.UndefinedShader {
+		resources.UnloadShader(p.Shader)
+	}
 }
 
 func (p *Player) Resume() {
@@ -96,7 +110,14 @@ func (p *Player) Pause() {
 }
 
 func (p Player) Draw() {
-	p.currentAnimation.Draw()
+
+	if p.ImageShader != resources.UndefinedShader {
+		rl.BeginShaderMode(p.Shader)
+		p.currentAnimation.Draw()
+		rl.EndShaderMode()
+	} else {
+		p.currentAnimation.Draw()
+	}
 
 	//p.debugText.Draw()
 	// for _, colPoint := range p.collisionBezierChecks {
@@ -212,6 +233,20 @@ func (p *Player) Update(delta float32) {
 	p.currentAnimation.Orientation = p.orientation
 	p.currentAnimation.Update(delta)
 
+	if p.ImageShader == resources.TextureLightShader {
+		lightPoints := make([]float32, 0)
+		for i, _ := range p.LightPoints {
+			lp := p.LightPoints[i]
+			lightPoints = append(lightPoints, float32(lp.Pos.X), float32(lp.Pos.Y))
+		}
+		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{p.Pos.X, p.Pos.Y + p.Box.Y}, rl.ShaderUniformVec2)
+		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.Box.X, p.Box.Y}, rl.ShaderUniformVec2)
+		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.LightPoints)))
+		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.LightPoints))}, rl.ShaderUniformFloat)
+
+		rl.SetShaderValueTexture(p.Shader, p.shaderLocs[4], p.currentAnimation.Texture)
+	}
+
 	//p.debugText.Update(delta)
 }
 
@@ -301,6 +336,11 @@ func (p Player) hasLineCollision() (bool, *CollisionLineCheck) {
 	return false, nil
 }
 
+func (p *Player) AddLightPoint(lp *LightPoint) *Player {
+	p.LightPoints = append(p.LightPoints, lp)
+	return p
+}
+
 func (p *Player) updateCollisions() {
 	for i, _ := range p.collisionBoxes {
 		cb := p.collisionBoxes[i]
@@ -348,6 +388,11 @@ func (p *Player) updateCollisions() {
 			p.collisionBezierChecks[i].Point.Y = colPoint.Point.Y
 		})
 	}
+}
+
+func (p *Player) WithShader(gs resources.GameShader) *Player {
+	p.ImageShader = gs
+	return p
 }
 
 func (p *Player) normalDebug() func(t *Text) {

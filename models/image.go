@@ -17,9 +17,9 @@ type Image struct {
 	ImageTexture resources.GameTexture
 	ImageShader  resources.GameShader
 	Rotation     float32
-	LightPoints  []*LightPoint
 	preset       func(i *Image)
 
+	LightPoints  []*LightPoint
 	shaderLocs []int32
 
 	editSelected           bool

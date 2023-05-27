@@ -58,7 +58,7 @@ func NewGameScene(sceneName string) *GameScene {
 
 	lines := repository.GetAllLines(sceneName)
 
-	scene.player = models.NewPlayer(100, 100)
+	scene.player = models.NewPlayer(100, 100).WithShader(resources.TextureLightShader)
 
 	for i, _ := range beziers {
 		bz := beziers[i]
@@ -94,6 +94,9 @@ func NewGameScene(sceneName string) *GameScene {
 	lightPoint2 := models.NewLightPoint(rl.NewVector2(3000, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
 	scene.worldContainer.AddObject(lightPoint2)
 
+	scene.player.AddLightPoint(lightPoint1)
+	scene.player.AddLightPoint(lightPoint2)
+
 	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
 	for i, _ := range worldImages {
 		img := worldImages[i]
@@ -103,8 +106,10 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
-	// startScene.environmentContainer.AddObjectResource(
+	// scene.environmentContainer.AddObjectResource(
 	// 	models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
+
+	scene.environmentContainer.AddObjectResource(models.NewMusicStream("resources/music/menu_theme.mp3"))
 
 	scene.environmentContainer.AddObject(
 		models.NewText(10, 10).
