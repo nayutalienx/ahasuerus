@@ -102,6 +102,7 @@ func (p *Player) Unload() {
 }
 
 func (p *Player) Resume() {
+	p.fallSpeed = 0
 	p.paused = false
 }
 
