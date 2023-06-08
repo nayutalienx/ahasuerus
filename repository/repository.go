@@ -55,6 +55,13 @@ func SaveImage(collectionPrefix string, container string, img *models.Image) {
 	}
 }
 
+func DeleteImage(collectionPrefix string, container string, img *models.Image) {
+	err := db.Delete(formatKey(collectionPrefix, fmt.Sprintf("image-%s", container)), img.Id)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func GetAllRectangles(collectionPrefix string) []models.Rectangle {
 	records, err := db.ReadAll(formatKey(collectionPrefix, "rectangle"))
 	if err != nil {

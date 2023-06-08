@@ -100,7 +100,8 @@ func NewGameScene(sceneName string) *GameScene {
 	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
 	for i, _ := range worldImages {
 		img := worldImages[i]
-		img.WithShader(resources.TextureLightShader).
+		img.
+			//WithShader(resources.TextureLightShader).
 			AddLightPoint(lightPoint1).
 			AddLightPoint(lightPoint2)
 		scene.worldContainer.AddObjectResource(&img)
@@ -513,6 +514,8 @@ func (s *GameScene) reactOnImageEditorSelection(container *container.ObjectResou
 
 	replicate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "REPLICATE")
 	rotateMode := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "ROTATE MODE")
+	
+	deleteImage := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
 
 	shouldDisableCursor := container == s.worldContainer
 
@@ -552,6 +555,12 @@ func (s *GameScene) reactOnImageEditorSelection(container *container.ObjectResou
 		imageReplica := image.Replicate(uuid.NewString(), image.Pos.X-100, image.Pos.Y-100)
 		imageReplica.Load()
 		container.AddObjectResource(imageReplica)
+	}
+
+	if deleteImage {
+		image.SetEditorDeletedTrue()
+		container.RemoveObject(image)
+		repository.DeleteImage(s.sceneName, worldContainer, image)
 	}
 
 }

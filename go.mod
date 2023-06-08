@@ -4,6 +4,8 @@ go 1.19
 
 require github.com/gen2brain/raylib-go/raylib v0.0.0-20230511170620-d84e4cc82f8d
 
+require github.com/solovev/gopsd v0.0.0-20181214122442-2696276ae52e // indirect
+
 require (
 	github.com/gen2brain/raylib-go/raygui v0.0.0-20230511170620-d84e4cc82f8d // indirect
 	github.com/google/uuid v1.3.0
