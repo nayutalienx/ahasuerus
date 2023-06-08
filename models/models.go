@@ -1,16 +1,5 @@
 package models
 
-import (
-	rl "github.com/gen2brain/raylib-go/raylib"
-)
-
-type Position interface {
-	GetPos() *rl.Vector2
-}
-
-type Box interface {
-	GetBox() *rl.Vector2
-}
 
 type Scene interface {
 	Run() Scene
@@ -58,7 +47,3 @@ type EditorSelectedItem struct {
 	Selected bool
 	Item     EditorItem
 }
-
-// Collision interfaces
-type Collision interface{}
-
