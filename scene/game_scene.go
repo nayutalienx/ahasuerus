@@ -161,10 +161,6 @@ func (s *GameScene) Run() models.Scene {
 			updateCameraSmooth(s.camera, s.player.Pos, delta)
 		}
 
-		if s.editModeShowMenu {
-			s.processEditorMenuMode()
-		}
-
 		rl.BeginMode2D(*s.camera)
 		if !s.editHideGameObjectsMode {
 			s.worldContainer.Update(delta)
@@ -177,6 +173,10 @@ func (s *GameScene) Run() models.Scene {
 			}
 		}
 		rl.EndMode2D()
+
+		if s.editModeShowMenu {
+			s.processEditorMenuMode()
+		}
 
 		if s.editHideGameObjectsMode && s.editBgImageEditorMode {
 			hasAnySelection, _ := s.hasAnySelectedBackgroundEditorItem()
