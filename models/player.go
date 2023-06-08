@@ -11,6 +11,8 @@ import (
 const (
 	JUMP_SPEED = 350
 	GRAVITY    = 400
+	MOVE_SPEED = 280
+	MAX_FALL_SPEED = JUMP_SPEED
 )
 
 type Player struct {
@@ -48,7 +50,7 @@ type Player struct {
 func NewPlayer(x float32, y float32) *Player {
 	p := &Player{
 		Pos:   rl.NewVector2(x, y),
-		speed: 5,
+		speed: MOVE_SPEED,
 
 		fallSpeed: 0,
 
@@ -141,21 +143,27 @@ func (p *Player) Update(delta float32) {
 		p.fallSpeed = -JUMP_SPEED
 	}
 
+	if p.fallSpeed > MAX_FALL_SPEED {
+		p.fallSpeed = MAX_FALL_SPEED
+	}
+
+	calculatedSpeed := p.speed*delta
+
 	if rl.IsKeyDown(rl.KeyLeft) && p.canMoveLeft() && !p.paused {
 		p.currentAnimation = p.runAnimation
 		if hasCurveCollision {
 			prev, _ := CalculatePreviousNextPointsOfBezier(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
 			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y))
-			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
+			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), calculatedSpeed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 			//rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
 		} else if hasLineCollision {
 			prev, _ := CalculatePreviousAndNextPointOfLine(collisionedLine.Point, collisionedLine.Line.Start, collisionedLine.Line.End)
-			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y+(2*p.speed)))
-			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
+			diff := rl.Vector2Subtract(prev, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y+(2*calculatedSpeed)))
+			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), calculatedSpeed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 		} else {
-			p.Pos.X -= p.speed
+			p.Pos.X -= calculatedSpeed
 		}
 		p.orientation = Left
 	}
@@ -165,16 +173,16 @@ func (p *Player) Update(delta float32) {
 		if hasCurveCollision {
 			_, next := CalculatePreviousNextPointsOfBezier(collisionedCurve.Point, collisionedCurve.Curve.Start, collisionedCurve.Curve.End)
 			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y))
-			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
+			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), calculatedSpeed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 			//rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 4, rl.Pink)
 		} else if hasLineCollision {
 			_, next := CalculatePreviousAndNextPointOfLine(collisionedLine.Point, collisionedLine.Line.Start, collisionedLine.Line.End)
-			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y+(2*p.speed)))
-			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), p.speed)
+			diff := rl.Vector2Subtract(next, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y+(2*calculatedSpeed)))
+			movement := rl.Vector2Scale(rl.Vector2Normalize(diff), calculatedSpeed)
 			p.Pos = rl.Vector2Add(p.Pos, movement)
 		} else {
-			p.Pos.X += p.speed
+			p.Pos.X += calculatedSpeed
 		}
 		p.orientation = Right
 	}
