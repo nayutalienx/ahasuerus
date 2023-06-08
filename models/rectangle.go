@@ -29,7 +29,9 @@ func (p Rectangle) ResolveCollision(callback CollisionBoxCallback) {
 }
 
 func (p *Rectangle) Draw() {
-	rl.DrawRectangle(int32(p.pos.X), int32(p.pos.Y), int32(p.box.X), int32(p.box.Y), p.color)
+	if DRAW_MODELS {
+		rl.DrawRectangle(int32(p.pos.X), int32(p.pos.Y), int32(p.box.X), int32(p.box.Y), p.color)
+	}
 }
 
 func (p *Rectangle) Update(delta float32) {

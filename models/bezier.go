@@ -28,10 +28,12 @@ func NewBezier(id string, start, end rl.Vector2, thick float32, color rl.Color) 
 }
 
 func (p *Bezier) Draw() {
-	if p.editSelected {
-		rl.DrawLineBezier(p.Start, p.End, p.Thick, rl.Red)
-	} else {
-		rl.DrawLineBezier(p.Start, p.End, p.Thick, p.color)
+	if DRAW_MODELS {
+		if p.editSelected {
+			rl.DrawLineBezier(p.Start, p.End, p.Thick, rl.Red)
+		} else {
+			rl.DrawLineBezier(p.Start, p.End, p.Thick, p.color)
+		}
 	}
 }
 
@@ -78,7 +80,7 @@ func (p *Bezier) ProcessEditorSelection() EditorItemProcessSelectionResult {
 		p.editStartMode = false
 		p.editEndMode = false
 		return EditorItemProcessSelectionResult{
-			Finished:      true,
+			Finished: true,
 		}
 	}
 
@@ -88,21 +90,21 @@ func (p *Bezier) ProcessEditorSelection() EditorItemProcessSelectionResult {
 			p.editStartMode = false
 			p.editEndMode = false
 			return EditorItemProcessSelectionResult{
-				Finished:      true,
-				DisableCursor: true,
+				Finished:            true,
+				DisableCursor:       true,
 				CursorForcePosition: true,
-				CursorX: int(p.Start.X),
-				CursorY: int(p.Start.Y),
+				CursorX:             int(p.Start.X),
+				CursorY:             int(p.Start.Y),
 			}
 		}
 	}
 
 	return EditorItemProcessSelectionResult{
-		Finished:      false,
+		Finished: false,
 	}
 }
 
-func (p *Bezier) EditorResolveSelect() (EditorItemResolveSelectionResult) {
+func (p *Bezier) EditorResolveSelect() EditorItemResolveSelectionResult {
 	mousePos := rl.GetMousePosition()
 	isCollision := rl.CheckCollisionPointLine(mousePos, p.Start, p.End, int32(p.Thick))
 	if isCollision {

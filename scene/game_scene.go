@@ -53,12 +53,23 @@ func NewGameScene(sceneName string) *GameScene {
 		editCameraSpeed:         5,
 		selectedGameObjectsItem: make([]models.EditorSelectedItem, 0),
 	}
+	
+	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
+	for i, _ := range worldImages {
+		img := worldImages[i]
+		//img.
+			//WithShader(resources.TextureLightShader).
+			// AddLightPoint(lightPoint1).
+			// AddLightPoint(lightPoint2)
+		scene.worldContainer.AddObjectResource(&img)
+	}
 
 	beziers := repository.GetAllBeziers(sceneName)
 
 	lines := repository.GetAllLines(sceneName)
 
-	scene.player = models.NewPlayer(100, 100).WithShader(resources.TextureLightShader)
+	scene.player = models.NewPlayer(100, 100)
+	//WithShader(resources.TextureLightShader)
 
 	for i, _ := range beziers {
 		bz := beziers[i]
@@ -88,29 +99,19 @@ func NewGameScene(sceneName string) *GameScene {
 	// 	scene.environmentContainer.AddObjectResource(&img)
 	// }
 
-	lightPoint1 := models.NewLightPoint(rl.NewVector2(200, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
-	scene.worldContainer.AddObject(lightPoint1)
+	// lightPoint1 := models.NewLightPoint(rl.NewVector2(200, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
+	// scene.worldContainer.AddObject(lightPoint1)
 
-	lightPoint2 := models.NewLightPoint(rl.NewVector2(3000, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
-	scene.worldContainer.AddObject(lightPoint2)
+	// lightPoint2 := models.NewLightPoint(rl.NewVector2(3000, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
+	// scene.worldContainer.AddObject(lightPoint2)
 
-	scene.player.AddLightPoint(lightPoint1)
-	scene.player.AddLightPoint(lightPoint2)
-
-	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
-	for i, _ := range worldImages {
-		img := worldImages[i]
-		img.
-			//WithShader(resources.TextureLightShader).
-			AddLightPoint(lightPoint1).
-			AddLightPoint(lightPoint2)
-		scene.worldContainer.AddObjectResource(&img)
-	}
+	// scene.player.AddLightPoint(lightPoint1)
+	// scene.player.AddLightPoint(lightPoint2)
 
 	// scene.environmentContainer.AddObjectResource(
 	// 	models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
 
-	scene.environmentContainer.AddObjectResource(models.NewMusicStream("resources/music/menu_theme.mp3"))
+	//scene.environmentContainer.AddObjectResource(models.NewMusicStream("resources/music/menu_theme.mp3"))
 
 	scene.environmentContainer.AddObject(
 		models.NewText(10, 10).
@@ -124,7 +125,7 @@ func NewGameScene(sceneName string) *GameScene {
 	scene.worldContainer.Load()
 
 	camera := rl.NewCamera2D(
-		rl.NewVector2(WIDTH/2, HEIGHT/2),
+		rl.NewVector2(WIDTH/2, HEIGHT-500),
 		rl.NewVector2(0, 0),
 		0, 1)
 	scene.camera = &camera
@@ -160,9 +161,6 @@ func (s *GameScene) Run() models.Scene {
 			updateCameraSmooth(s.camera, s.player.Pos, delta)
 		}
 
-		s.environmentContainer.Update(delta)
-		s.environmentContainer.Draw()
-
 		if s.editModeShowMenu {
 			s.processEditorMenuMode()
 		}
@@ -187,6 +185,9 @@ func (s *GameScene) Run() models.Scene {
 			}
 			s.processEditorBackgroundSelection()
 		}
+
+		s.environmentContainer.Update(delta)
+		s.environmentContainer.Draw()
 
 		rl.EndDrawing()
 	}
@@ -417,6 +418,17 @@ func (s *GameScene) drawNonGameFocusedMenu() {
 		toggleHideGameObjects = rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth*2), float32(editorMenuButtonHeight)), toggleHideGameObjectsText)
 	}
 
+	toggleModelsDrawText := "HIDE COLLISSION"
+	if !models.DRAW_MODELS {
+		toggleModelsDrawText = "SHOW COLLISSION"
+	}
+	toggleCollissionDrawButton := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth*2), float32(editorMenuButtonHeight)), toggleModelsDrawText)
+
+	if toggleCollissionDrawButton {
+		models.DRAW_MODELS = !models.DRAW_MODELS
+	}
+
+
 	if s.editMenuBgImageDropMode || s.editMenuGameImageDropMode {
 
 		rl.DrawText("DROP IMAGE or BACKSPACE TO LEAVE", int32(WIDTH)/2, int32(HEIGHT)/2, 60, rl.Red)
@@ -462,19 +474,25 @@ func (s *GameScene) drawNonGameFocusedMenu() {
 	}
 
 	if newRectangle {
-		rect := models.NewRectangle(uuid.NewString(), s.camera.Target.X, s.camera.Target.Y, 200, 100, rl.Blue)
+		blue := rl.Blue
+		blue.A = 80
+		rect := models.NewRectangle(uuid.NewString(), s.camera.Target.X, s.camera.Target.Y, 200, 100, blue)
 		s.worldContainer.AddObject(rect)
 		s.player.AddCollisionBox(rect)
 	}
 
 	if newLine {
-		line := models.NewLine(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, rl.Gold)
+		gold := rl.Gold
+		gold.A = 90
+		line := models.NewLine(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, gold)
 		s.worldContainer.AddObject(line)
 		s.player.AddCollisionLine(line)
 	}
 
 	if newBezier {
-		bez := models.NewBezier(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, rl.Gold)
+		gold := rl.Gold
+		gold.A = 90
+		bez := models.NewBezier(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, gold)
 		s.worldContainer.AddObject(bez)
 		s.player.AddCollisionBezier(bez)
 	}

@@ -20,7 +20,9 @@ func NewLightPoint(pos rl.Vector2) *LightPoint {
 }
 
 func (p *LightPoint) Draw() {
-	rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 10, rl.Yellow)
+	if DRAW_MODELS {
+		rl.DrawCircle(int32(p.Pos.X), int32(p.Pos.Y), 10, rl.Yellow)
+	}
 }
 
 func (p *LightPoint) Update(delta float32) {

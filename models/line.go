@@ -5,9 +5,9 @@ import (
 )
 
 type Line struct {
-	Id string
+	Id    string
 	Start rl.Vector2
-	End rl.Vector2
+	End   rl.Vector2
 
 	Thick float32
 	color rl.Color
@@ -19,16 +19,18 @@ type Line struct {
 
 func NewLine(id string, start, end rl.Vector2, thick float32, color rl.Color) *Line {
 	return &Line{
-		Id: id,
-		Start:    start,
-		End:    end,
+		Id:    id,
+		Start: start,
+		End:   end,
 		Thick: thick,
 		color: color,
 	}
 }
 
 func (p *Line) Draw() {
-	rl.DrawLineEx(p.Start, p.End, p.Thick, p.color)
+	if DRAW_MODELS {
+		rl.DrawLineEx(p.Start, p.End, p.Thick, p.color)
+	}
 }
 
 func (p *Line) Update(delta float32) {
@@ -74,7 +76,7 @@ func (p *Line) ProcessEditorSelection() EditorItemProcessSelectionResult {
 		p.editStartMode = false
 		p.editEndMode = false
 		return EditorItemProcessSelectionResult{
-			Finished:      true,
+			Finished: true,
 		}
 	}
 
@@ -84,21 +86,21 @@ func (p *Line) ProcessEditorSelection() EditorItemProcessSelectionResult {
 			p.editStartMode = false
 			p.editEndMode = false
 			return EditorItemProcessSelectionResult{
-				Finished:      true,
-				DisableCursor: true,
+				Finished:            true,
+				DisableCursor:       true,
 				CursorForcePosition: true,
-				CursorX: int(p.Start.X),
-				CursorY: int(p.Start.Y),
+				CursorX:             int(p.Start.X),
+				CursorY:             int(p.Start.Y),
 			}
 		}
 	}
 
 	return EditorItemProcessSelectionResult{
-		Finished:      false,
+		Finished: false,
 	}
 }
 
-func (p *Line) EditorResolveSelect() (EditorItemResolveSelectionResult) {
+func (p *Line) EditorResolveSelect() EditorItemResolveSelectionResult {
 	mousePos := rl.GetMousePosition()
 	isCollision := rl.CheckCollisionPointLine(mousePos, p.Start, p.End, int32(p.Thick))
 	if isCollision {
