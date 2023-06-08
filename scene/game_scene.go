@@ -64,32 +64,9 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
-	beziers := repository.GetAllBeziers(sceneName)
-
-	lines := repository.GetAllLines(sceneName)
 
 	scene.player = models.NewPlayer(100, 100)
 	//WithShader(resources.TextureLightShader)
-
-	for i, _ := range beziers {
-		bz := beziers[i]
-		scene.worldContainer.AddObject(&bz)
-		scene.player.AddCollisionBezier(&bz)
-	}
-
-	for i, _ := range lines {
-		l := lines[i]
-		scene.worldContainer.AddObject(&l)
-		scene.player.AddCollisionLine(&l)
-	}
-
-	rectangles := repository.GetAllRectangles(sceneName)
-
-	for i, _ := range rectangles {
-		rect := rectangles[i]
-		scene.worldContainer.AddObject(&rect)
-		scene.player.AddCollisionBox(&rect)
-	}
 
 	scene.worldContainer.AddObjectResource(scene.player)
 
@@ -306,22 +283,6 @@ func (s *GameScene) saveEditor() {
 	s.worldContainer.ForEachObject(func(obj models.Object) {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
-			rect, ok := editorItem.(*models.Rectangle)
-			if ok {
-				repository.SaveRectangle(s.sceneName, rect)
-			}
-
-			bez, ok := editorItem.(*models.Bezier)
-			if ok {
-				repository.SaveBezier(s.sceneName, bez)
-			}
-
-			line, ok := editorItem.(*models.Line)
-			if ok {
-				repository.SaveLine(s.sceneName, line)
-			}
-
-			editorItem, ok := obj.(models.EditorItem)
 			if ok {
 				image, ok := editorItem.(*models.Image)
 				if ok {
@@ -381,9 +342,6 @@ func (s *GameScene) processEditorMenuMode() {
 func (s *GameScene) drawNonGameFocusedMenu() {
 	buttonCounter := models.NewCounter()
 
-	newRectangle := false
-	newLine := false
-	newBezier := false
 	newGameImage := false
 	newBgImage := false
 
@@ -408,9 +366,6 @@ func (s *GameScene) drawNonGameFocusedMenu() {
 			newBgImage = rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW BG IMAGE")
 		}
 	} else {
-		newRectangle = rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW RECTANGLE")
-		newLine = rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW LINE")
-		newBezier = rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW BEZIER")
 		newGameImage = rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW IMAGE")
 	}
 	toggleHideGameObjects := false
@@ -471,30 +426,6 @@ func (s *GameScene) drawNonGameFocusedMenu() {
 			s.editMenuGameImageDropMode = false
 		}
 
-	}
-
-	if newRectangle {
-		blue := rl.Blue
-		blue.A = 80
-		rect := models.NewRectangle(uuid.NewString(), s.camera.Target.X, s.camera.Target.Y, 200, 100, blue)
-		s.worldContainer.AddObject(rect)
-		s.player.AddCollisionBox(rect)
-	}
-
-	if newLine {
-		gold := rl.Gold
-		gold.A = 90
-		line := models.NewLine(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, gold)
-		s.worldContainer.AddObject(line)
-		s.player.AddCollisionLine(line)
-	}
-
-	if newBezier {
-		gold := rl.Gold
-		gold.A = 90
-		bez := models.NewBezier(uuid.NewString(), rl.NewVector2(s.camera.Target.X, s.camera.Target.Y), rl.NewVector2(s.camera.Target.X+100, s.camera.Target.Y+100), 10, gold)
-		s.worldContainer.AddObject(bez)
-		s.player.AddCollisionBezier(bez)
 	}
 
 	if newGameImage {
@@ -585,80 +516,6 @@ func (s *GameScene) reactOnImageEditorSelection(container *container.ObjectResou
 func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) {
 
 	buttonCounter := models.NewCounter()
-
-	bezier, isBezier := editorItem.(*models.Bezier)
-
-	if isBezier {
-		changeStart := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE START")
-		changeEnd := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE END")
-		delete := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
-		if changeStart || changeEnd {
-			if changeStart {
-				bezier.SetStartModeTrue()
-				controls.DisableCursor(543)
-				controls.SetMousePosition(int(bezier.Start.X-20), int(bezier.Start.Y-20), 544)
-			}
-
-			if changeEnd {
-				bezier.SetEndModeTrue()
-				controls.DisableCursor(549)
-				controls.SetMousePosition(int(bezier.End.X+20), int(bezier.End.Y+20), 550)
-			}
-		}
-		if delete {
-			s.worldContainer.RemoveObject(bezier)
-			repository.DeleteBezier(s.sceneName, bezier)
-		}
-	}
-
-	line, isLine := editorItem.(*models.Line)
-
-	if isLine {
-		changeStart := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE START")
-		changeEnd := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE END")
-		delete := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
-		if changeStart || changeEnd {
-			if changeStart {
-				line.SetStartModeTrue()
-				controls.DisableCursor(563)
-				controls.SetMousePosition(int(line.Start.X-20), int(line.Start.Y-20), 564)
-			}
-
-			if changeEnd {
-				line.SetEndModeTrue()
-				controls.DisableCursor(569)
-				controls.SetMousePosition(int(line.End.X+20), int(line.End.Y+20), 570)
-			}
-		}
-		if delete {
-			s.worldContainer.RemoveObject(line)
-			repository.DeleteLine(s.sceneName, line)
-		}
-	}
-
-	rect, isRect := editorItem.(*models.Rectangle)
-	if isRect {
-		changePosition := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE POSITION")
-		changeSize := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE SIZE")
-		delete := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
-
-		if changePosition {
-			rect.SetEditorMoveModeTrue()
-			controls.DisableCursor(582)
-			controls.SetMousePosition(int(rect.GetPos().X), int(rect.GetPos().Y), 583)
-		}
-
-		if changeSize {
-			rect.SetEditorSizeModeTrue()
-			controls.DisableCursor(588)
-			controls.SetMousePosition(int(rect.GetPos().X+rect.GetBox().X), int(rect.GetPos().Y+rect.GetBox().Y), 589)
-		}
-
-		if delete {
-			s.worldContainer.RemoveObject(rect)
-			repository.DeleteRectangle(s.sceneName, rect)
-		}
-	}
 
 	img, isImg := editorItem.(*models.Image)
 	if isImg {

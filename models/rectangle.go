@@ -24,10 +24,6 @@ func NewRectangle(id string, x, y, width, height float32, color rl.Color) *Recta
 	}
 }
 
-func (p Rectangle) ResolveCollision(callback CollisionBoxCallback) {
-	callback(&p)
-}
-
 func (p *Rectangle) Draw() {
 	if DRAW_MODELS {
 		rl.DrawRectangle(int32(p.pos.X), int32(p.pos.Y), int32(p.box.X), int32(p.box.Y), p.color)

@@ -12,11 +12,6 @@ type Box interface {
 	GetBox() *rl.Vector2
 }
 
-type BoxPosition interface {
-	Box
-	Position
-}
-
 type Scene interface {
 	Run() Scene
 	Unload()
@@ -65,22 +60,5 @@ type EditorSelectedItem struct {
 }
 
 // Collision interfaces
-
-type CollisionBoxCallback func(pos BoxPosition)
-type CollisionBezierCallback func(bezier *Bezier)
-type CollisionLineCallback func(line *Line)
-
 type Collision interface{}
 
-type CollisionBox interface {
-	Collision
-	ResolveCollision(callback CollisionBoxCallback)
-}
-type CollisionBezier interface {
-	Collision
-	ResolveCollision(callback CollisionBezierCallback)
-}
-type CollisionLine interface {
-	Collision
-	ResolveCollision(callback CollisionLineCallback)
-}
