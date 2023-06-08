@@ -22,7 +22,6 @@ type Image struct {
 	LightPoints []*LightPoint
 	shaderLocs  []int32
 
-	editDeleted            bool
 	editSelected           bool
 	editorMoveWithCursor   bool
 	editorResizeWithCursor bool
@@ -128,10 +127,6 @@ func (p *Image) SetEditorResizeWithCursorTrue() {
 
 func (p *Image) SetEditorRotateModeTrue() {
 	p.editorRotateMode = true
-}
-
-func (p *Image) SetEditorDeletedTrue() {
-	p.editDeleted = true
 }
 
 func (p *Image) EditorResolveSelect() EditorItemResolveSelectionResult {

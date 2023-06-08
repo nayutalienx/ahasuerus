@@ -53,8 +53,8 @@ func UnloadScene(id SceneId) {
 }
 
 func UnloadAllScenes() {
-	for _, scene := range sceneMap {
-		scene.Unload()
+	for id, _ := range sceneMap {
+		UnloadScene(id)
 	}
 }
 

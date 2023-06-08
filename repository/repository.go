@@ -31,6 +31,13 @@ func SaveRectangle(collectionPrefix string, rect *models.Rectangle) {
 	}
 }
 
+func DeleteRectangle(collectionPrefix string, rect *models.Rectangle) {
+	err := db.Delete(formatKey(collectionPrefix, "rectangle"), rect.Id)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func SaveBezier(collectionPrefix string, bez *models.Bezier) {
 	r := mapBezier(bez.Id, bez)
 	err := db.Write(formatKey(collectionPrefix, "bezier"), r.Id, r)
@@ -39,9 +46,23 @@ func SaveBezier(collectionPrefix string, bez *models.Bezier) {
 	}
 }
 
+func DeleteBezier(collectionPrefix string, bez *models.Bezier) {
+	err := db.Delete(formatKey(collectionPrefix, "bezier"), bez.Id)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func SaveLine(collectionPrefix string, line *models.Line) {
 	r := mapLine(line.Id, line)
 	err := db.Write(formatKey(collectionPrefix, "line"), r.Id, r)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func DeleteLine(collectionPrefix string, line *models.Line) {
+	err := db.Delete(formatKey(collectionPrefix, "line"), line.Id)
 	if err != nil {
 		panic(err)
 	}

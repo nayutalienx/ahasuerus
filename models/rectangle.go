@@ -5,19 +5,19 @@ import (
 )
 
 type Rectangle struct {
-	Id string
+	Id    string
 	pos   rl.Vector2
 	box   rl.Vector2
 	color rl.Color
 
-	editSelected  bool
-	editorMoveWithCursor bool
+	editSelected             bool
+	editorMoveWithCursor     bool
 	editorEditSizeWithCursor bool
 }
 
 func NewRectangle(id string, x, y, width, height float32, color rl.Color) *Rectangle {
 	return &Rectangle{
-		Id: id,
+		Id:    id,
 		pos:   rl.NewVector2(x, y),
 		box:   rl.NewVector2(width, height),
 		color: color,
@@ -75,15 +75,15 @@ func (p *Rectangle) ProcessEditorSelection() EditorItemProcessSelectionResult {
 	if p.editorMoveWithCursor {
 		mousePos := rl.GetMousePosition()
 		offset := 10
-		p.pos.X = mousePos.X-float32(offset)
-		p.pos.Y = mousePos.Y-float32(offset)
+		p.pos.X = mousePos.X - float32(offset)
+		p.pos.Y = mousePos.Y - float32(offset)
 	}
 
 	if p.editorEditSizeWithCursor {
 		mousePos := rl.GetMousePosition()
 		offset := 10
-		p.box.X = mousePos.X+float32(offset) - p.pos.X 
-		p.box.Y = mousePos.Y+float32(offset) - p.pos.Y
+		p.box.X = mousePos.X + float32(offset) - p.pos.X
+		p.box.Y = mousePos.Y + float32(offset) - p.pos.Y
 	}
 
 	if (p.editorMoveWithCursor || p.editorEditSizeWithCursor) && rl.IsMouseButtonPressed(rl.MouseLeftButton) {
@@ -91,7 +91,7 @@ func (p *Rectangle) ProcessEditorSelection() EditorItemProcessSelectionResult {
 		p.editorMoveWithCursor = false
 		p.editSelected = false
 		return EditorItemProcessSelectionResult{
-			Finished:      true,
+			Finished: true,
 		}
 	}
 
@@ -100,29 +100,29 @@ func (p *Rectangle) ProcessEditorSelection() EditorItemProcessSelectionResult {
 		p.editorMoveWithCursor = false
 		p.editSelected = false
 		return EditorItemProcessSelectionResult{
-			Finished:      true,
-			DisableCursor: true,
+			Finished:            true,
+			DisableCursor:       true,
 			CursorForcePosition: true,
-			CursorX: int(p.pos.X),
-			CursorY: int(p.pos.Y),
+			CursorX:             int(p.pos.X),
+			CursorY:             int(p.pos.Y),
 		}
 	}
 
 	return EditorItemProcessSelectionResult{
-		Finished:      false,
+		Finished: false,
 	}
 }
 
-func (p *Rectangle) EditorResolveSelect() (EditorItemResolveSelectionResult) {
+func (p *Rectangle) EditorResolveSelect() EditorItemResolveSelectionResult {
 	rec := rl.NewRectangle(p.pos.X, p.pos.Y, p.box.X, p.box.Y)
 	mousePos := rl.GetMousePosition()
 	collission := rl.CheckCollisionPointRec(mousePos, rec)
 	if collission {
 		rl.DrawRectangleLinesEx(rec, 3.0, rl.Red)
 
-		if rl.IsMouseButtonPressed(rl.MouseLeftButton){
+		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 			p.editSelected = true
-		}		
+		}
 	}
 	return EditorItemResolveSelectionResult{
 		Selected:  p.editSelected,

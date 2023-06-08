@@ -71,6 +71,13 @@ func (m *MenuScene) Run() models.Scene {
 			m.nextScene = nil
 		}
 
+		reloadButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/1.5, 500, 200), "RELOAD SCENES")
+		if reloadButton {
+			m.menuShouldClose = true
+			UnloadAllScenes()
+			m.nextScene = GetScene(Menu)
+		}
+
 		mouse := rl.GetMousePosition()
 		rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Green)
 

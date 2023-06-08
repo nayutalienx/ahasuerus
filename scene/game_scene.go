@@ -558,7 +558,6 @@ func (s *GameScene) reactOnImageEditorSelection(container *container.ObjectResou
 	}
 
 	if deleteImage {
-		image.SetEditorDeletedTrue()
 		container.RemoveObject(image)
 		repository.DeleteImage(s.sceneName, worldContainer, image)
 	}
@@ -574,6 +573,7 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 	if isBezier {
 		changeStart := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE START")
 		changeEnd := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE END")
+		delete := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
 		if changeStart || changeEnd {
 			if changeStart {
 				bezier.SetStartModeTrue()
@@ -587,6 +587,10 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 				controls.SetMousePosition(int(bezier.End.X+20), int(bezier.End.Y+20), 550)
 			}
 		}
+		if delete {
+			s.worldContainer.RemoveObject(bezier)
+			repository.DeleteBezier(s.sceneName, bezier)
+		}
 	}
 
 	line, isLine := editorItem.(*models.Line)
@@ -594,6 +598,7 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 	if isLine {
 		changeStart := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE START")
 		changeEnd := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE END")
+		delete := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
 		if changeStart || changeEnd {
 			if changeStart {
 				line.SetStartModeTrue()
@@ -607,12 +612,17 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 				controls.SetMousePosition(int(line.End.X+20), int(line.End.Y+20), 570)
 			}
 		}
+		if delete {
+			s.worldContainer.RemoveObject(line)
+			repository.DeleteLine(s.sceneName, line)
+		}
 	}
 
 	rect, isRect := editorItem.(*models.Rectangle)
 	if isRect {
 		changePosition := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE POSITION")
 		changeSize := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE SIZE")
+		delete := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
 
 		if changePosition {
 			rect.SetEditorMoveModeTrue()
@@ -624,6 +634,11 @@ func (s *GameScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 			rect.SetEditorSizeModeTrue()
 			controls.DisableCursor(588)
 			controls.SetMousePosition(int(rect.GetPos().X+rect.GetBox().X), int(rect.GetPos().Y+rect.GetBox().Y), 589)
+		}
+
+		if delete {
+			s.worldContainer.RemoveObject(rect)
+			repository.DeleteRectangle(s.sceneName, rect)
 		}
 	}
 
