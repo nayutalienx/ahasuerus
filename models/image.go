@@ -129,7 +129,7 @@ func (p *Image) SetEditorRotateModeTrue() {
 	p.editorRotateMode = true
 }
 
-func (p *Image) EditorResolveSelect() EditorItemResolveSelectionResult {
+func (p *Image) EditorDetectSelection() EditorItemDetectSelectionResult {
 	mousePos := rl.GetMousePosition()
 	triangle1 := []rl.Vector2{p.Pos, rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y), rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y)}
 	triangle2 := []rl.Vector2{p.Pos, rl.NewVector2(p.Pos.X, p.Pos.Y+p.Box.Y), rl.NewVector2(p.Pos.X+p.Box.X, p.Pos.Y+p.Box.Y)}
@@ -146,7 +146,7 @@ func (p *Image) EditorResolveSelect() EditorItemResolveSelectionResult {
 		}
 	}
 
-	return EditorItemResolveSelectionResult{
+	return EditorItemDetectSelectionResult{
 		Selected:  p.editSelected,
 		Collision: collission,
 	}

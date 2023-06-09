@@ -1,6 +1,5 @@
 package models
 
-
 type Scene interface {
 	Run() Scene
 	Unload()
@@ -27,19 +26,19 @@ type EditorItemProcessSelectionResult struct {
 	Finished      bool
 	EnableCursor  bool
 	DisableCursor bool
-	
+
 	CursorForcePosition bool
-	CursorX int
-	CursorY int
+	CursorX             int
+	CursorY             int
 }
 
-type EditorItemResolveSelectionResult struct {
+type EditorItemDetectSelectionResult struct {
 	Selected  bool
 	Collision bool
 }
 
 type EditorItem interface {
-	EditorResolveSelect() EditorItemResolveSelectionResult
+	EditorDetectSelection() EditorItemDetectSelectionResult
 	ProcessEditorSelection() EditorItemProcessSelectionResult
 }
 

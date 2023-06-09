@@ -13,11 +13,13 @@ type SceneId int
 const (
 	Menu SceneId = iota
 	Start
+	Editor
 )
 
 var (
 	WIDTH, HEIGHT = config.GetResolution()
 	sceneMap      = make(map[SceneId]models.Scene, 0)
+	lastScene     SceneId
 )
 
 func GetScene(id SceneId) models.Scene {
@@ -26,18 +28,33 @@ func GetScene(id SceneId) models.Scene {
 		return scene
 	}
 
+	sceneNames := map[SceneId]string{
+		Start: "start-scene",
+	}
+
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.Black)
+	rl.DrawText("LOAD SCENE", int32(WIDTH)/3, int32(HEIGHT)/2, 90, rl.Gold)
+	rl.EndDrawing()
+
 	switch id {
 	case Menu:
 		scene = NewMenuScene()
 	case Start:
-		scene = NewGameScene("start-scene")
+		scene = NewGameScene(sceneNames[Start])
+	case Editor:
+		UnloadScene(Start)
+		scene = NewEditScene(sceneNames[lastScene], lastScene)
 	}
 
 	if scene == nil {
 		panic("scene not found")
 	}
 
-	sceneMap[id] = scene
+	if id != Editor {
+		sceneMap[id] = scene
+		lastScene = id
+	}
 
 	return scene
 }
