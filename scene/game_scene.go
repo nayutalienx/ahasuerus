@@ -20,10 +20,9 @@ const (
 )
 
 type GameScene struct {
-	worldContainer       *container.ObjectResourceContainer
-	environmentContainer *container.ObjectResourceContainer
-	camera               *rl.Camera2D
-	player               *models.Player
+	worldContainer *container.ObjectResourceContainer
+	camera         *rl.Camera2D
+	player         *models.Player
 
 	sceneName string
 	paused    bool
@@ -31,9 +30,8 @@ type GameScene struct {
 
 func NewGameScene(sceneName string) *GameScene {
 	scene := GameScene{
-		sceneName:            sceneName,
-		worldContainer:       container.NewObjectResourceContainer(),
-		environmentContainer: container.NewObjectResourceContainer(),
+		sceneName:      sceneName,
+		worldContainer: container.NewObjectResourceContainer(),
 	}
 
 	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
@@ -62,11 +60,6 @@ func NewGameScene(sceneName string) *GameScene {
 	scene.worldContainer.AddObject(polygonFirst)
 	scene.worldContainer.AddObject(polygonSecond)
 
-	// envImages := repository.GetAllImages(scene.sceneName, envContainer)
-	// for i, _ := range envImages {
-	// 	img := envImages[i]
-	// 	scene.environmentContainer.AddObjectResource(&img)
-	// }
 
 	// lightPoint1 := models.NewLightPoint(rl.NewVector2(200, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
 	// scene.worldContainer.AddObject(lightPoint1)
@@ -77,20 +70,6 @@ func NewGameScene(sceneName string) *GameScene {
 	// scene.player.AddLightPoint(lightPoint1)
 	// scene.player.AddLightPoint(lightPoint2)
 
-	// scene.environmentContainer.AddObjectResource(
-	// 	models.NewMusicStream("resources/music/theme.mp3").SetVolume(0.2))
-
-	//scene.environmentContainer.AddObjectResource(models.NewMusicStream("resources/music/menu_theme.mp3"))
-
-	scene.environmentContainer.AddObject(
-		models.NewText(10, 10).
-			SetFontSize(40).
-			SetColor(rl.White).
-			SetUpdateCallback(func(t *models.Text) {
-				t.SetData(fmt.Sprintf("fps: %d [movement(arrow keys), jump(space), edit mode(F1)]", rl.GetFPS()))
-			}))
-
-	scene.environmentContainer.Load()
 	scene.worldContainer.Load()
 
 	scene.player.CollisionProcessor.AddHitbox(collision.Hitbox{
@@ -143,8 +122,11 @@ func (s *GameScene) Run() models.Scene {
 		s.worldContainer.Draw()
 		rl.EndMode2D()
 
-		s.environmentContainer.Update(delta)
-		s.environmentContainer.Draw()
+		models.NewText(10, 10).
+			SetFontSize(40).
+			SetColor(rl.White).
+			SetData(fmt.Sprintf("fps: %d [movement(arrow keys), jump(space), edit mode(F1)]", rl.GetFPS())).
+			Draw()
 
 		rl.EndDrawing()
 	}
@@ -155,18 +137,15 @@ func (s *GameScene) Run() models.Scene {
 }
 
 func (m *GameScene) Unload() {
-	m.environmentContainer.Unload()
 	m.worldContainer.Unload()
 }
 
 func (s *GameScene) pause() {
 	s.worldContainer.Pause()
-	s.environmentContainer.Pause()
 	s.paused = true
 }
 
 func (s *GameScene) resume() {
 	s.worldContainer.Resume()
-	s.environmentContainer.Resume()
 	s.paused = false
 }
