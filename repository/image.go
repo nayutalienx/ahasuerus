@@ -23,7 +23,6 @@ func DeleteImage(collectionPrefix string, container string, img *models.Image) {
 	}
 }
 
-
 func GetAllImages(collectionPrefix string, container string) []models.Image {
 	records, err := db.ReadAll(formatKey(collectionPrefix, fmt.Sprintf("image-%s", container)))
 	if err != nil {
@@ -63,9 +62,9 @@ func mapImage(id string, img *models.Image) Image {
 		Rotation:  int(img.Rotation),
 	}
 
-	if img.Box.X > 0 && img.Box.Y > 0 {
-		i.Width = int(img.Box.X)
-		i.Height = int(img.Box.Y)
+	if img.WidthHeight.X > 0 && img.WidthHeight.Y > 0 {
+		i.Width = int(img.WidthHeight.X)
+		i.Height = int(img.WidthHeight.Y)
 	}
 
 	return i

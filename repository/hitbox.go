@@ -37,18 +37,15 @@ func GetAllHitboxes(collectionPrefix string, container string) []models.Hitbox {
 		}
 		hb := models.Hitbox{
 			Id: hitboxFound.Id,
-			Hitbox: collision.Hitbox{
-				Polygons: []collision.Polygon{},
-			},
 		}
 		for i, _ := range hitboxFound.Polygons {
-			hb.Polygons = append(hb.Polygons, collision.Polygon{
+			hb.Polygons[i] = collision.Polygon{
 				Points: [3]rl.Vector2{
 					{hitboxFound.Polygons[i].Points[0].X, hitboxFound.Polygons[i].Points[0].Y},
 					{hitboxFound.Polygons[i].Points[1].X, hitboxFound.Polygons[i].Points[1].Y},
 					{hitboxFound.Polygons[i].Points[2].X, hitboxFound.Polygons[i].Points[2].Y},
 				},
-			})
+			}
 		}
 		hitboxes = append(hitboxes, hb)
 	}

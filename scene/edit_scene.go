@@ -49,6 +49,12 @@ func NewEditScene(
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
+	hitboxes := repository.GetAllHitboxes(scene.sceneName, worldContainer)
+	for i, _ := range hitboxes {
+		hb := hitboxes[i]
+		scene.worldContainer.AddObject(&hb)
+	}
+
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT-500),
 		rl.NewVector2(0, 0),
@@ -228,13 +234,12 @@ func (s *EditScene) drawMainHub() {
 		if rl.IsFileDropped() {
 			files := rl.LoadDroppedFiles()
 			path := "resources" + strings.Split(files[0], "resources")[1]
-			image := models.NewImage(s.worldContainer.Size(), uuid.NewString(), resources.GameTexture(path), 0, 0, 0, 0, 0).
-				AfterLoadPreset(func(i *models.Image) {
-					if s.editMenuGameImageDropMode {
-						i.Pos.X = s.camera.Target.X
-						i.Pos.Y = s.camera.Target.Y
-					}
-				})
+			image := models.NewImage(
+				s.worldContainer.Size(),
+				uuid.NewString(),
+				resources.GameTexture(path),
+				s.camera.Target.X,
+				s.camera.Target.Y, 0, 0, 0)
 
 			image.Load()
 
@@ -263,8 +268,8 @@ func (s *EditScene) drawMainHub() {
 
 		hitbox := models.Hitbox{
 			Id: uuid.NewString(),
-			Hitbox: collision.Hitbox{
-				Polygons: []collision.Polygon{
+			BaseEditorItem: models.BaseEditorItem{
+				Polygons: [2]collision.Polygon{
 					{
 						Points: [3]rl.Vector2{
 							topLeft, topRight, bottomRight,
@@ -282,40 +287,38 @@ func (s *EditScene) drawMainHub() {
 	}
 }
 
-func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResourceContainer, image *models.Image, buttonCounter *models.Counter) {
+func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResourceContainer, item *models.BaseEditorItem, buttonCounter *models.Counter) {
 
 	changeBgPosButton := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE BG POS")
 	resizeBgButton := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "RESIZE IMG")
+	rotateMode := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "ROTATE MODE")
+
+	if changeBgPosButton {
+		item.SetEditorMoveWithCursorTrue()
+		controls.DisableCursor(498)
+		controls.SetMousePosition(int(item.TopLeft().X), int(item.TopLeft().Y), 500)
+	}
+
+	if resizeBgButton {
+		item.SetEditorResizeWithCursorTrue()
+		controls.DisableCursor(506)
+		controls.SetMousePosition(int(item.TopLeft().X+item.Width()), int(item.TopLeft().Y+item.Height()), 508)
+	}
+
+	if rotateMode {
+		item.SetEditorRotateModeTrue()
+	}
+
+}
+
+func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResourceContainer, image *models.Image, buttonCounter *models.Counter) {
 
 	moveUpper := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "MOVE UPPER")
 	moveDown := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "MOVE DOWN")
 
 	replicate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "REPLICATE")
-	rotateMode := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "ROTATE MODE")
 
 	deleteImage := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
-
-	shouldDisableCursor := container == s.worldContainer
-
-	if changeBgPosButton {
-		image.SetEditorMoveWithCursorTrue()
-		if shouldDisableCursor {
-			controls.DisableCursor(498)
-		}
-		controls.SetMousePosition(int(image.Pos.X), int(image.Pos.Y), 500)
-	}
-
-	if resizeBgButton {
-		image.SetEditorResizeWithCursorTrue()
-		if shouldDisableCursor {
-			controls.DisableCursor(506)
-		}
-		controls.SetMousePosition(int(image.Pos.X+image.Box.X), int(image.Pos.Y+image.Box.Y), 508)
-	}
-
-	if rotateMode {
-		image.SetEditorRotateModeTrue()
-	}
 
 	if moveUpper {
 		drawIndex := container.MoveUp(image)
@@ -348,7 +351,13 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 
 	img, isImg := editorItem.(*models.Image)
 	if isImg {
+		s.reactOnEditorItemSelection(s.worldContainer, &img.BaseEditorItem, buttonCounter)
 		s.reactOnImageEditorSelection(s.worldContainer, img, buttonCounter)
+	}
+
+	hitbox, isHitbox := editorItem.(*models.Hitbox)
+	if isHitbox {
+		s.reactOnEditorItemSelection(s.worldContainer, &hitbox.BaseEditorItem, buttonCounter)
 	}
 
 }

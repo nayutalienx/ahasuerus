@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"ahasuerus/collision"
 	"ahasuerus/container"
 	"ahasuerus/models"
 	"ahasuerus/repository"
@@ -46,7 +47,9 @@ func NewGameScene(sceneName string) *GameScene {
 	for i, _ := range hitboxes {
 		hb := hitboxes[i]
 		scene.worldContainer.AddObject(&hb)
-		scene.player.CollisionProcessor.AddHitbox(hb.Hitbox)
+		scene.player.CollisionProcessor.AddHitbox(collision.Hitbox{
+			Polygons: hb.Polygons[:],
+		})
 	}
 
 	scene.worldContainer.Load()

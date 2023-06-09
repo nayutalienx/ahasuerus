@@ -1,14 +1,12 @@
 package models
 
 import (
-	"ahasuerus/collision"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Hitbox struct {
+	BaseEditorItem
 	Id string
-	collision.Hitbox
 }
 
 func (p *Hitbox) Draw() {
@@ -26,13 +24,4 @@ func (p *Hitbox) Draw() {
 
 func (p *Hitbox) Update(delta float32) {
 
-}
-
-func (p *Hitbox) EditorDetectSelection() EditorItemDetectSelectionResult {
-
-	return EditorItemDetectSelectionResult{}
-}
-func (p *Hitbox) ProcessEditorSelection() EditorItemProcessSelectionResult {
-	
-	return EditorItemProcessSelectionResult{}
 }
