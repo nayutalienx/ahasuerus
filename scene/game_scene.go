@@ -1,7 +1,6 @@
 package scene
 
 import (
-	"ahasuerus/collision"
 	"ahasuerus/container"
 	"ahasuerus/models"
 	"ahasuerus/repository"
@@ -15,7 +14,6 @@ const (
 	editorStartMenuPosY    = 110
 	editorMenuButtonWidth  = 200
 	editorMenuButtonHeight = 50
-	envContainer           = "env"
 	worldContainer         = "world"
 )
 
@@ -44,44 +42,14 @@ func NewGameScene(sceneName string) *GameScene {
 
 	scene.worldContainer.AddObjectResource(scene.player)
 
-	polygonFirst := &models.Polygon{
-		Points: [3]rl.Vector2{
-			{0, 400}, {2000, 400}, {2000, 600},
-		},
-		Color: rl.Blue,
+	hitboxes := repository.GetAllHitboxes(scene.sceneName, worldContainer)
+	for i, _ := range hitboxes {
+		hb := hitboxes[i]
+		scene.worldContainer.AddObject(&hb)
+		scene.player.CollisionProcessor.AddHitbox(hb.Hitbox)
 	}
-	polygonSecond := &models.Polygon{
-		Points: [3]rl.Vector2{
-			{0, 400}, {0, 600}, {2000, 600},
-		},
-		Color: rl.Blue,
-	}
-
-	scene.worldContainer.AddObject(polygonFirst)
-	scene.worldContainer.AddObject(polygonSecond)
-
-
-	// lightPoint1 := models.NewLightPoint(rl.NewVector2(200, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
-	// scene.worldContainer.AddObject(lightPoint1)
-
-	// lightPoint2 := models.NewLightPoint(rl.NewVector2(3000, 200)).Dynamic(rl.NewVector2(200, 200), rl.NewVector2(7000, 200), 10)
-	// scene.worldContainer.AddObject(lightPoint2)
-
-	// scene.player.AddLightPoint(lightPoint1)
-	// scene.player.AddLightPoint(lightPoint2)
 
 	scene.worldContainer.Load()
-
-	scene.player.CollisionProcessor.AddHitbox(collision.Hitbox{
-		Polygons: []collision.Polygon{
-			{
-				Points: polygonFirst.Points,
-			},
-			{
-				Points: polygonSecond.Points,
-			},
-		},
-	})
 
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT-500),

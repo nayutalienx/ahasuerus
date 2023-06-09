@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"ahasuerus/collision"
 	"ahasuerus/container"
 	"ahasuerus/controls"
 	"ahasuerus/models"
@@ -20,7 +21,7 @@ type EditScene struct {
 	camera         *rl.Camera2D
 	sourceScene    SceneId
 
-	editModeShowMenu        bool
+	editorHubEnabled        bool
 	cameraEditPos           rl.Vector2
 	editCameraSpeed         float32
 	selectedGameObjectsItem []models.EditorSelectedItem
@@ -71,25 +72,31 @@ func (s EditScene) Run() models.Scene {
 		delta := rl.GetFrameTime()
 		s.camera.Zoom += rl.GetMouseWheelMove() * 0.05
 
-		if rl.IsKeyDown(rl.KeyF2) && !s.editModeShowMenu {
+		if rl.IsKeyDown(rl.KeyF2) && !s.editorHubEnabled {
 			break
 		}
 
-		s.processEditorMode()
+		s.processInputs()
+
+		updateCameraCenter(s.camera, s.cameraEditPos)
 
 		rl.BeginMode2D(*s.camera)
+
 		s.worldContainer.Update(delta)
 		s.worldContainer.Draw()
-		if !s.editModeShowMenu {
+
+		if !s.editorHubEnabled {
 			s.resolveEditorGameObjectsSelection()
 		}
-		if s.editModeShowMenu {
+
+		if s.editorHubEnabled {
 			s.processEditorGameObjectSelection()
 		}
+
 		rl.EndMode2D()
 
-		if s.editModeShowMenu {
-			s.processEditorMenuMode()
+		if s.editorHubEnabled {
+			s.drawEditorHub()
 		}
 
 		models.NewText(10, 50).
@@ -140,7 +147,7 @@ func (s *EditScene) processEditorGameObjectSelection() {
 		if ei.Selected {
 			processResult := ei.Item.ProcessEditorSelection()
 			if processResult.Finished {
-				s.editModeShowMenu = false
+				s.editorHubEnabled = false
 				s.selectedGameObjectsItem[i].Selected = false
 				if processResult.DisableCursor {
 					controls.DisableCursor(246)
@@ -167,26 +174,31 @@ func (s *EditScene) saveEditor() {
 	s.worldContainer.ForEachObject(func(obj models.Object) {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
+
+			image, ok := editorItem.(*models.Image)
 			if ok {
-				image, ok := editorItem.(*models.Image)
-				if ok {
-					repository.SaveImage(s.sceneName, worldContainer, image)
-				}
+				repository.SaveImage(s.sceneName, worldContainer, image)
 			}
+
+			hitbox, ok := editorItem.(*models.Hitbox)
+			if ok {
+				repository.SaveHitbox(s.sceneName, worldContainer, hitbox)
+			}
+
 		}
 	})
 }
 
-func (s *EditScene) processEditorMenuMode() {
+func (s *EditScene) drawEditorHub() {
 	hasAnySelected, editorItem := s.hasAnySelectedGameObjectEditorItem()
 	if hasAnySelected {
-		s.reactOnGameObjectEditorSelect(editorItem)
+		s.drawHubForItem(editorItem)
 	} else {
-		s.drawNonGameFocusedMenu()
+		s.drawMainHub()
 	}
 }
 
-func (s *EditScene) drawNonGameFocusedMenu() {
+func (s *EditScene) drawMainHub() {
 	buttonCounter := models.NewCounter()
 
 	newGameImage := false
@@ -240,7 +252,33 @@ func (s *EditScene) drawNonGameFocusedMenu() {
 	}
 
 	if newCollisionBox {
+		height := float32(100)
+		width := float32(300)
 
+		topLeft := s.camera.Target
+		bottomLeft := rl.Vector2{topLeft.X, topLeft.Y + height}
+
+		topRight := rl.Vector2{topLeft.X + width, topLeft.Y}
+		bottomRight := rl.Vector2{topLeft.X + width, topLeft.Y + height}
+
+		hitbox := models.Hitbox{
+			Id: uuid.NewString(),
+			Hitbox: collision.Hitbox{
+				Polygons: []collision.Polygon{
+					{
+						Points: [3]rl.Vector2{
+							topLeft, topRight, bottomRight,
+						},
+					},
+					{
+						Points: [3]rl.Vector2{
+							topLeft, bottomLeft, bottomRight,
+						},
+					},
+				},
+			},
+		}
+		s.worldContainer.AddObject(&hitbox)
 	}
 }
 
@@ -304,7 +342,7 @@ func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResou
 
 }
 
-func (s *EditScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) {
+func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 
 	buttonCounter := models.NewCounter()
 
@@ -315,7 +353,7 @@ func (s *EditScene) reactOnGameObjectEditorSelect(editorItem models.EditorItem) 
 
 }
 
-func (s *EditScene) processEditorMode() {
+func (s *EditScene) processInputs() {
 
 	mousePos := rl.GetMousePosition()
 
@@ -323,7 +361,7 @@ func (s *EditScene) processEditorMode() {
 
 	if rl.IsKeyDown(rl.KeyRight) {
 		s.cameraEditPos.X += s.editCameraSpeed
-		if !s.editModeShowMenu {
+		if !s.editorHubEnabled {
 			mousePos.X += s.editCameraSpeed
 			updateMouse = true
 		}
@@ -331,7 +369,7 @@ func (s *EditScene) processEditorMode() {
 
 	if rl.IsKeyDown(rl.KeyLeft) {
 		s.cameraEditPos.X -= s.editCameraSpeed
-		if !s.editModeShowMenu {
+		if !s.editorHubEnabled {
 			mousePos.X -= s.editCameraSpeed
 			updateMouse = true
 		}
@@ -366,28 +404,26 @@ func (s *EditScene) processEditorMode() {
 
 	if hasAnySelected {
 
-		if !s.editModeShowMenu {
-			s.editModeShowMenu = true
+		if !s.editorHubEnabled {
+			s.editorHubEnabled = true
 			controls.EnableCursor(653)
 		}
 
 	} else {
 
-		if (rl.IsKeyDown(rl.KeyM)) && !s.editModeShowMenu {
-			s.editModeShowMenu = true
+		if (rl.IsKeyDown(rl.KeyM)) && !s.editorHubEnabled {
+			s.editorHubEnabled = true
 			controls.EnableCursor(660)
 			controls.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2, 655)
 		}
 
-		if rl.IsKeyDown(rl.KeyN) && s.editModeShowMenu {
-			s.editModeShowMenu = false
+		if rl.IsKeyDown(rl.KeyN) && s.editorHubEnabled {
+			s.editorHubEnabled = false
 			controls.DisableCursor(666)
 			controls.SetMousePosition(int(s.cameraEditPos.X), int(s.cameraEditPos.Y), 661)
 		}
 
 	}
-
-	updateCameraCenter(s.camera, s.cameraEditPos)
 }
 
 func (s *EditScene) syncDrawIndex(container *container.ObjectResourceContainer) {

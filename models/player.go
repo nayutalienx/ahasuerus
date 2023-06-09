@@ -91,16 +91,6 @@ func (p Player) Draw() {
 	}
 }
 
-func (p Player) drawHitbox(hitbox collision.Hitbox) {
-	for i, _ := range hitbox.Polygons {
-		pol1 := Polygon{
-			Points: hitbox.Polygons[i].Points,
-			Color:  rl.Blue,
-		}
-		pol1.Draw()
-	}
-}
-
 func (p *Player) Update(delta float32) {
 	p.currentAnimation = p.stayAnimation
 	

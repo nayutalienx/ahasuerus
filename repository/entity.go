@@ -18,3 +18,17 @@ type Image struct {
 	Height    int    `json:"height"`
 	Rotation  int    `json:"rotation"`
 }
+
+type Vec2 struct {
+	X float32 `json:"x"`
+	Y float32 `json:"y"`
+}
+
+type Polygon struct {
+	Points [3]Vec2 `json:"points"`
+}
+
+type Hitbox struct {
+	Id       string    `json:"id"`
+	Polygons []Polygon `json:"polygons"`
+}
