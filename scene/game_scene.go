@@ -39,7 +39,7 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
-	scene.player = models.NewPlayer(100, 100)
+	scene.player = models.NewPlayer(100, -100)
 
 	scene.worldContainer.AddObjectResource(scene.player)
 

@@ -289,23 +289,23 @@ func (s *EditScene) drawMainHub() {
 
 func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResourceContainer, item *models.BaseEditorItem, buttonCounter *models.Counter) {
 
-	changeBgPosButton := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE BG POS")
-	resizeBgButton := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "RESIZE IMG")
-	rotateMode := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "ROTATE MODE")
+	changePos := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE POS")
+	resize := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "RESIZE")
+	rotate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "ROTATE")
 
-	if changeBgPosButton {
+	if changePos {
 		item.SetEditorMoveWithCursorTrue()
 		controls.DisableCursor(498)
 		controls.SetMousePosition(int(item.TopLeft().X), int(item.TopLeft().Y), 500)
 	}
 
-	if resizeBgButton {
+	if resize {
 		item.SetEditorResizeWithCursorTrue()
 		controls.DisableCursor(506)
 		controls.SetMousePosition(int(item.TopLeft().X+item.Width()), int(item.TopLeft().Y+item.Height()), 508)
 	}
 
-	if rotateMode {
+	if rotate {
 		item.SetEditorRotateModeTrue()
 	}
 

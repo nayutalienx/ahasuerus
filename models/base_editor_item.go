@@ -114,12 +114,6 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 		if rl.IsKeyDown(rl.KeyR) {
 			p.Rotation--
 		}
-		if p.Rotation < 0 {
-			p.Rotation = 360
-		}
-		if p.Rotation > 360 {
-			p.Rotation = 0
-		}
 	}
 
 	if (p.EditorMoveWithCursor || p.EditorResizeWithCursor) && rl.IsMouseButtonPressed(rl.MouseLeftButton) {
@@ -175,4 +169,10 @@ func (p BaseEditorItem) Width() float32 {
 
 func (p BaseEditorItem) Height() float32 {
 	return p.Polygons[0].Points[2].Y - p.Polygons[0].Points[0].Y
+}
+
+func (p BaseEditorItem) Draw() {
+	if p.EditorRotateMode {
+		rl.DrawText("Rotate on [R and T]", int32(p.TopLeft().X), int32(p.TopLeft().Y+40), 40, rl.Red)
+	}
 }

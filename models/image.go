@@ -54,9 +54,7 @@ func (p *Image) Draw() {
 	if p.EditSelected {
 		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.Pos.X), int32(p.Pos.Y), 40, rl.Red)
 	}
-	if p.EditorRotateMode {
-		rl.DrawText(fmt.Sprintf("Rotate on [R and T]: %.1f", p.Rotation), int32(p.Pos.X), int32(p.Pos.Y+40), 40, rl.Red)
-	}
+	p.BaseEditorItem.Draw()
 }
 
 func (p *Image) Update(delta float32) {
@@ -74,6 +72,13 @@ func (p *Image) Update(delta float32) {
 		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.LightPoints))}, rl.ShaderUniformFloat)
 	}
 	p.syncBoxWithTexture()
+
+	if p.Rotation < 0 {
+		p.Rotation = 360
+	}
+	if p.Rotation > 360 {
+		p.Rotation = 0
+	}
 }
 
 func (p *Image) Load() {
