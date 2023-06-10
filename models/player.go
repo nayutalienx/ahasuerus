@@ -10,7 +10,7 @@ import (
 
 const (
 	JUMP_SPEED = 350
-	GRAVITY    = 400
+	GRAVITY    = 10
 	MOVE_SPEED = 5
 )
 
@@ -97,7 +97,7 @@ func (p *Player) Update(delta float32) {
 	p.currentAnimation = p.stayAnimation
 
 	p.velocity.X = 0
-	p.velocity.Y = GRAVITY/3 * delta
+	p.velocity.Y += GRAVITY * delta
 
 	p.processMoveXInput()
 
@@ -118,13 +118,19 @@ func (p *Player) Update(delta float32) {
 
 		if bottom {
 			p.velocity.Y = 0
+
+			spacePressed := rl.IsKeyDown(rl.KeySpace)
+			if spacePressed {
+				p.velocity.Y = (-1) * (GRAVITY)
+			}
+
 		}
 
-		if rightTop && rightBottom  || leftTop && leftBottom{
+		if rightTop && rightBottom || leftTop && leftBottom {
 			p.velocity.X = 0
 		}
 		if rightBottom && bottom {
-			p.velocity.Y = (-1) * GRAVITY/3 * delta
+			p.velocity.Y = (-1) * GRAVITY * 5 * delta
 		}
 
 		futurePos = rl.Vector2Add(p.Pos, p.velocity)
@@ -154,10 +160,6 @@ func (p *Player) updateAnimation(delta float32) {
 	p.currentAnimation.Pos.Y = p.Pos.Y
 	p.currentAnimation.Orientation = p.orientation
 	p.currentAnimation.Update(delta)
-}
-
-func (p *Player) processMoveYInput() {
-	//spacePressed := rl.IsKeyDown(rl.KeySpace)
 }
 
 func (p *Player) processMoveXInput() {
@@ -218,8 +220,8 @@ func (p *Player) drawHitbox() {
 func (p *Player) getHitboxMap(pos rl.Vector2) playerHitboxMap {
 	cornerOffset := float32(10)
 	return playerHitboxMap{
-		topLeftOne: rl.Vector2{pos.X+cornerOffset, pos.Y},
-		topLeftTwo: rl.Vector2{pos.X, pos.Y+cornerOffset},
+		topLeftOne: rl.Vector2{pos.X + cornerOffset, pos.Y},
+		topLeftTwo: rl.Vector2{pos.X, pos.Y + cornerOffset},
 
 		topMiddle: rl.Vector2{pos.X + p.width/2, pos.Y},
 
@@ -232,10 +234,10 @@ func (p *Player) getHitboxMap(pos rl.Vector2) playerHitboxMap {
 
 		bottomRightOne: rl.Vector2{pos.X + p.width, pos.Y + p.height - cornerOffset},
 		bottomRightTwo: rl.Vector2{pos.X + p.width - cornerOffset, pos.Y + p.height},
-		
+
 		bottomMiddle: rl.Vector2{pos.X + p.width/2, pos.Y + p.height},
 
-		bottomLeftOne: rl.Vector2{pos.X+cornerOffset, pos.Y + p.height},
+		bottomLeftOne: rl.Vector2{pos.X + cornerOffset, pos.Y + p.height},
 		bottomLeftTwo: rl.Vector2{pos.X, pos.Y + p.height - cornerOffset},
 	}
 }
