@@ -90,7 +90,7 @@ func (p Player) Draw() {
 		p.currentAnimation.Draw()
 	}
 
-	//p.drawHitbox()
+	p.drawHitbox()
 }
 
 func (p *Player) Update(delta float32) {
@@ -108,15 +108,19 @@ func (p *Player) Update(delta float32) {
 	hasCollision, collisionMap := p.CollisionProcessor.Detect(hitbox)
 	if hasCollision {
 
+		// _, topLeft := collisionMap[0]
+		// _, topRight := collisionMap[1]
+
 		_, rightTop := collisionMap[2]
 		_, rightBottom := collisionMap[3]
 
-		_, bottom := collisionMap[4]
+		_, bottomRight := collisionMap[4]
+		_, bottomLeft := collisionMap[5]
 
-		_, leftBottom := collisionMap[5]
-		_, leftTop := collisionMap[6]
+		_, leftBottom := collisionMap[6]
+		_, leftTop := collisionMap[7]
 
-		if bottom {
+		if bottomRight || bottomLeft { // fall on ground
 			p.velocity.Y = 0
 
 			spacePressed := rl.IsKeyDown(rl.KeySpace)
@@ -126,10 +130,11 @@ func (p *Player) Update(delta float32) {
 
 		}
 
-		if rightTop && rightBottom || leftTop && leftBottom {
+		if rightTop && rightBottom || leftTop && leftBottom { // wall collision
 			p.velocity.X = 0
 		}
-		if rightBottom && bottom {
+		
+		if rightBottom && bottomRight || bottomLeft && leftBottom { // push hero up when go stairs
 			p.velocity.Y = (-1) * GRAVITY * 5 * delta
 		}
 
