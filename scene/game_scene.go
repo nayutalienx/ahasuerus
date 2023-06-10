@@ -91,24 +91,7 @@ func (s *GameScene) Run() models.Scene {
 			models.DRAW_MODELS = !models.DRAW_MODELS
 		}
 
-		if s.player.Pos.X > s.properties[StartCameraFollowPos] {
-			if s.player.Pos.X < s.properties[EndCameraFollowPos] {
-
-				cameraNewPos := s.player.Pos
-				cameraNewPos.Y = s.camera.Target.Y
-				distanceToCamera := math.Abs(float64(s.player.Pos.X - s.camera.Target.X))
-				if distanceToCamera > models.PLAYER_MOVE_SPEED+models.PLAYER_MOVE_SPEED/3 {
-					updateCameraWithMode(s.camera, cameraNewPos, delta, FastSmooth)
-				} else {
-					updateCameraWithMode(s.camera, cameraNewPos, delta, InstantSmooth)
-				}
-
-			} else {
-				updateCameraWithMode(s.camera, rl.NewVector2(s.properties[EndCameraFollowPos]+s.camera.Offset.X, s.camera.Target.Y), delta, FastSmooth)
-			}
-		} else {
-			updateCameraWithMode(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta, FastSmooth)
-		}
+		s.updateCamera(delta)
 
 		rl.BeginMode2D(*s.camera)
 		s.worldContainer.Update(delta)
@@ -129,6 +112,27 @@ func (s *GameScene) Run() models.Scene {
 	s.pause()
 
 	return GetScene(nextScene)
+}
+
+func (s *GameScene) updateCamera(delta float32) {
+	if s.player.Pos.X > s.properties[StartCameraFollowPos] {
+		if s.player.Pos.X < s.properties[EndCameraFollowPos] {
+
+			cameraNewPos := s.player.Pos
+			cameraNewPos.Y = s.camera.Target.Y
+			distanceToCamera := math.Abs(float64(s.player.Pos.X - s.camera.Target.X))
+			if distanceToCamera > models.PLAYER_MOVE_SPEED+models.PLAYER_MOVE_SPEED/3 {
+				updateCameraWithMode(s.camera, cameraNewPos, delta, FastSmooth)
+			} else {
+				updateCameraWithMode(s.camera, cameraNewPos, delta, InstantSmooth)
+			}
+
+		} else {
+			updateCameraWithMode(s.camera, rl.NewVector2(s.properties[EndCameraFollowPos]+s.camera.Offset.X, s.camera.Target.Y), delta, FastSmooth)
+		}
+	} else {
+		updateCameraWithMode(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta, FastSmooth)
+	}
 }
 
 func (m *GameScene) Unload() {
