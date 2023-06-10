@@ -55,9 +55,9 @@ func NewGameScene(sceneName string) *GameScene {
 	scene.worldContainer.Load()
 
 	camera := rl.NewCamera2D(
-		rl.NewVector2(WIDTH/2, HEIGHT-500),
+		rl.NewVector2(WIDTH/2, HEIGHT-250),
 		rl.NewVector2(0, 0),
-		0, 1)
+		0, 1.0)
 	camera.Target.Y = 250
 	scene.camera = &camera
 
@@ -98,16 +98,16 @@ func (s *GameScene) Run() models.Scene {
 				cameraNewPos.Y = s.camera.Target.Y
 				distanceToCamera := math.Abs(float64(s.player.Pos.X - s.camera.Target.X))
 				if distanceToCamera > models.PLAYER_MOVE_SPEED+models.PLAYER_MOVE_SPEED/3 {
-					updateCameraSmooth(s.camera, cameraNewPos, delta)
+					updateCameraWithMode(s.camera, cameraNewPos, delta, FastSmooth)
 				} else {
-					updateCameraCenter(s.camera, cameraNewPos, delta)
+					updateCameraWithMode(s.camera, cameraNewPos, delta, InstantSmooth)
 				}
 
 			} else {
-				updateCameraSmooth(s.camera, rl.NewVector2(s.properties[EndCameraFollowPos]+s.camera.Offset.X, s.camera.Target.Y), delta)
+				updateCameraWithMode(s.camera, rl.NewVector2(s.properties[EndCameraFollowPos]+s.camera.Offset.X, s.camera.Target.Y), delta, FastSmooth)
 			}
 		} else {
-			updateCameraSmooth(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta)
+			updateCameraWithMode(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta, FastSmooth)
 		}
 
 		rl.BeginMode2D(*s.camera)
