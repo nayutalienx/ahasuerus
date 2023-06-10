@@ -4,27 +4,28 @@ import (
 	"ahasuerus/models"
 	"ahasuerus/resources"
 	"encoding/json"
-	"fmt"
 	"sort"
 )
 
-func SaveImage(collectionPrefix string, container string, img *models.Image) {
+const imageDir = "image"
+
+func SaveImage(collectionPrefix string, img *models.Image) {
 	i := mapImage(img.Id, img)
-	err := db.Write(formatKey(collectionPrefix, fmt.Sprintf("image-%s", container)), i.Id, i)
+	err := db.Write(formatKey(collectionPrefix, imageDir), i.Id, i)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func DeleteImage(collectionPrefix string, container string, img *models.Image) {
-	err := db.Delete(formatKey(collectionPrefix, fmt.Sprintf("image-%s", container)), img.Id)
+func DeleteImage(collectionPrefix string, img *models.Image) {
+	err := db.Delete(formatKey(collectionPrefix, imageDir), img.Id)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func GetAllImages(collectionPrefix string, container string) []models.Image {
-	records, err := db.ReadAll(formatKey(collectionPrefix, fmt.Sprintf("image-%s", container)))
+func GetAllImages(collectionPrefix string) []models.Image {
+	records, err := db.ReadAll(formatKey(collectionPrefix, imageDir))
 	if err != nil {
 		panic(err)
 	}

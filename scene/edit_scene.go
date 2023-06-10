@@ -15,6 +15,12 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	editorStartMenuPosY    = 110
+	editorMenuButtonWidth  = 200
+	editorMenuButtonHeight = 50
+)
+
 type EditScene struct {
 	sceneName      string
 	worldContainer *container.ObjectResourceContainer
@@ -43,13 +49,13 @@ func NewEditScene(
 		selectedGameObjectsItem: make([]models.EditorSelectedItem, 0),
 	}
 
-	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
+	worldImages := repository.GetAllImages(scene.sceneName)
 	for i, _ := range worldImages {
 		img := worldImages[i]
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
-	hitboxes := repository.GetAllHitboxes(scene.sceneName, worldContainer)
+	hitboxes := repository.GetAllHitboxes(scene.sceneName)
 	for i, _ := range hitboxes {
 		hb := hitboxes[i]
 		scene.worldContainer.AddObject(&hb)
@@ -183,12 +189,12 @@ func (s *EditScene) saveEditor() {
 
 			image, ok := editorItem.(*models.Image)
 			if ok {
-				repository.SaveImage(s.sceneName, worldContainer, image)
+				repository.SaveImage(s.sceneName, image)
 			}
 
 			hitbox, ok := editorItem.(*models.Hitbox)
 			if ok {
-				repository.SaveHitbox(s.sceneName, worldContainer, hitbox)
+				repository.SaveHitbox(s.sceneName, hitbox)
 			}
 
 		}
@@ -338,7 +344,7 @@ func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResou
 
 	if deleteImage {
 		container.RemoveObject(image)
-		repository.DeleteImage(s.sceneName, worldContainer, image)
+		repository.DeleteImage(s.sceneName, image)
 	}
 
 }

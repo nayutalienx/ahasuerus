@@ -4,27 +4,28 @@ import (
 	"ahasuerus/collision"
 	"ahasuerus/models"
 	"encoding/json"
-	"fmt"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func SaveHitbox(collectionPrefix string, container string, hb *models.Hitbox) {
+const hitboxDir = "hitbox"
+
+func SaveHitbox(collectionPrefix string,  hb *models.Hitbox) {
 	i := mapHitbox(hb.Id, hb)
-	err := db.Write(formatKey(collectionPrefix, fmt.Sprintf("hitbox-%s", container)), i.Id, i)
+	err := db.Write(formatKey(collectionPrefix, hitboxDir), i.Id, i)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func DeleteHitbox(collectionPrefix string, container string, hb *models.Hitbox) {
-	err := db.Delete(formatKey(collectionPrefix, fmt.Sprintf("hitbox-%s", container)), hb.Id)
+func DeleteHitbox(collectionPrefix string,  hb *models.Hitbox) {
+	err := db.Delete(formatKey(collectionPrefix, hitboxDir), hb.Id)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func GetAllHitboxes(collectionPrefix string, container string) []models.Hitbox {
-	records, err := db.ReadAll(formatKey(collectionPrefix, fmt.Sprintf("hitbox-%s", container)))
+func GetAllHitboxes(collectionPrefix string) []models.Hitbox {
+	records, err := db.ReadAll(formatKey(collectionPrefix, hitboxDir))
 	if err != nil {
 		panic(err)
 	}

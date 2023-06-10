@@ -11,17 +11,11 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-const (
-	editorStartMenuPosY    = 110
-	editorMenuButtonWidth  = 200
-	editorMenuButtonHeight = 50
-	worldContainer         = "world"
-)
-
 type GameScene struct {
 	worldContainer *container.ObjectResourceContainer
 	camera         *rl.Camera2D
 	player         *models.Player
+	properties     map[SceneProp]float32
 
 	sceneName string
 	paused    bool
@@ -33,7 +27,7 @@ func NewGameScene(sceneName string) *GameScene {
 		worldContainer: container.NewObjectResourceContainer(),
 	}
 
-	worldImages := repository.GetAllImages(scene.sceneName, worldContainer)
+	worldImages := repository.GetAllImages(scene.sceneName)
 	for i, _ := range worldImages {
 		img := worldImages[i]
 		scene.worldContainer.AddObjectResource(&img)
@@ -43,7 +37,7 @@ func NewGameScene(sceneName string) *GameScene {
 
 	scene.worldContainer.AddObjectResource(scene.player)
 
-	hitboxes := repository.GetAllHitboxes(scene.sceneName, worldContainer)
+	hitboxes := repository.GetAllHitboxes(scene.sceneName)
 	for i, _ := range hitboxes {
 		hb := hitboxes[i]
 		scene.worldContainer.AddObject(&hb)
@@ -52,12 +46,18 @@ func NewGameScene(sceneName string) *GameScene {
 		})
 	}
 
+	scene.properties = map[SceneProp]float32{}
+	for k, v := range repository.GetSceneProperties(scene.sceneName) {
+		scene.properties[SceneProp(k)] = v
+	}
+
 	scene.worldContainer.Load()
 
 	camera := rl.NewCamera2D(
-		rl.NewVector2(WIDTH/2, HEIGHT-500),
+		rl.NewVector2(WIDTH/2-WIDTH/6, HEIGHT-500),
 		rl.NewVector2(0, 0),
 		0, 1)
+	camera.Target.Y = 250
 	scene.camera = &camera
 
 	return &scene
@@ -86,7 +86,17 @@ func (s *GameScene) Run() models.Scene {
 			break
 		}
 
-		updateCameraSmooth(s.camera, s.player.Pos, delta)
+		if rl.IsKeyDown(rl.KeyF2) { // toggle draw collision box
+			models.DRAW_MODELS = !models.DRAW_MODELS
+		}
+
+		if s.player.Pos.X > s.properties[CameraLevelMargin] {
+			cameraNewPos := s.player.Pos
+			cameraNewPos.Y = s.camera.Target.Y
+			updateCameraSmooth(s.camera, cameraNewPos, delta)
+		} else {
+			updateCameraSmooth(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta)
+		}
 
 		rl.BeginMode2D(*s.camera)
 		s.worldContainer.Update(delta)

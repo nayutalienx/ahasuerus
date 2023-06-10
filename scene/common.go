@@ -8,6 +8,12 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+type SceneProp string
+
+const (
+	CameraLevelMargin SceneProp = "cameraLevelMargin"
+)
+
 type SceneId int
 
 const (
@@ -29,7 +35,7 @@ func GetScene(id SceneId) models.Scene {
 	}
 
 	sceneNames := map[SceneId]string{
-		Start: "start-scene",
+		Start: "start",
 	}
 
 	rl.BeginDrawing()

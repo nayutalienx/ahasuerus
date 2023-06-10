@@ -1,5 +1,5 @@
 package models
 
 var (
-	DRAW_MODELS = true
+	DRAW_MODELS = false
 )
