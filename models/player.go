@@ -107,46 +107,7 @@ func (p *Player) Update(delta float32) {
 	hitbox := p.getHitboxFromMap(futureHitboxMap)
 	hasCollision, collisionMap := p.CollisionProcessor.Detect(hitbox)
 	if hasCollision {
-
-		// _, topLeft := collisionMap[0]
-		// _, topRight := collisionMap[1]
-
-		_, rightTop := collisionMap[2]
-		_, rightBottom := collisionMap[3]
-
-		_, bottomRight := collisionMap[4]
-		_, bottomLeft := collisionMap[5]
-
-		_, leftBottom := collisionMap[6]
-		_, leftTop := collisionMap[7]
-
-		if bottomRight || bottomLeft { // fall on ground
-			p.velocity.Y = 0
-
-			spacePressed := rl.IsKeyDown(rl.KeySpace)
-			if spacePressed {
-				p.velocity.Y = (-1) * (GRAVITY)
-			}
-
-		}
-
-		pushFromWall := false
-
-		if leftTop && leftBottom { // left wall collision (push side)
-			p.velocity.X = GRAVITY * 5 * delta
-			pushFromWall = true
-		}
-
-		if rightTop && rightBottom  { // right wall collision (push side)
-			p.velocity.X = (-1) * GRAVITY * 5 * delta
-			pushFromWall = true
-		}
-
-		if (rightBottom && bottomRight || bottomLeft && leftBottom) && moveByXButtonPressed && !pushFromWall { // push hero up when go stairs
-			p.velocity.Y = (-1) * GRAVITY * 5 * delta
-		}
-
-		futurePos = rl.Vector2Add(p.Pos, p.velocity)
+		futurePos = p.resolveCollission(moveByXButtonPressed, collisionMap, delta)
 	}
 
 	p.Pos = futurePos
@@ -201,6 +162,50 @@ func (p *Player) AddLightPoint(lp *LightPoint) *Player {
 func (p *Player) WithShader(gs resources.GameShader) *Player {
 	p.ImageShader = gs
 	return p
+}
+
+func (p *Player) resolveCollission(moveByXButtonPressed bool, collisionMap map[int]bool, delta float32) rl.Vector2 {
+		// _, topLeft := collisionMap[0]
+		// _, topRight := collisionMap[1]
+
+		_, rightTop := collisionMap[2]
+		_, rightBottom := collisionMap[3]
+
+		_, bottomRight := collisionMap[4]
+		_, bottomLeft := collisionMap[5]
+
+		_, leftBottom := collisionMap[6]
+		_, leftTop := collisionMap[7]
+
+		if bottomRight || bottomLeft { // fall on ground
+			p.velocity.Y = 0
+		}
+
+		pushFromWall := false
+
+		if leftTop && leftBottom { // left wall collision (push side)
+			p.velocity.X = GRAVITY * 5 * delta
+			pushFromWall = true
+		}
+
+		if rightTop && rightBottom  { // right wall collision (push side)
+			p.velocity.X = (-1) * GRAVITY * 5 * delta
+			pushFromWall = true
+		}
+
+		if (rightBottom && bottomRight || bottomLeft && leftBottom) && moveByXButtonPressed && !pushFromWall { // push hero up when go stairs
+			p.velocity.Y = (-1) * GRAVITY * 5 * delta
+		}
+
+		// jump
+		if bottomRight || bottomLeft {
+			spacePressed := rl.IsKeyDown(rl.KeySpace)
+			if spacePressed {
+				p.velocity.Y = (-1) * (GRAVITY/1.5)
+			}
+		}
+
+		return rl.Vector2Add(p.Pos, p.velocity)
 }
 
 type playerHitboxMap struct {
