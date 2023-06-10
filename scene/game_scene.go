@@ -48,7 +48,7 @@ func NewGameScene(sceneName string) *GameScene {
 		hb := hitboxes[i]
 		scene.worldContainer.AddObject(&hb)
 		scene.player.CollisionProcessor.AddHitbox(collision.Hitbox{
-			Polygons: hb.Polygons[:],
+			Polygons: hb.Polygons(),
 		})
 	}
 

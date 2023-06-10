@@ -11,11 +11,12 @@ type Hitbox struct {
 
 func (p *Hitbox) Draw() {
 	if DRAW_MODELS {
-		for i, _ := range p.Polygons {
+		polys := p.Polygons()
+		for i, _ := range polys {
 			rl.DrawTriangleLines(
-				p.Polygons[i].Points[0],
-				p.Polygons[i].Points[1],
-				p.Polygons[i].Points[2],
+				polys[i].Points[0],
+				polys[i].Points[1],
+				polys[i].Points[2],
 				rl.Blue,
 			)
 		}
@@ -24,11 +25,5 @@ func (p *Hitbox) Draw() {
 }
 
 func (p *Hitbox) Update(delta float32) {
-
-	if p.Rotation != 0 {
-		RotateTriangleByA(&p.Polygons[0].Points[0], &p.Polygons[0].Points[1], &p.Polygons[0].Points[2], float64(p.Rotation))
-		RotateTriangleByA(&p.Polygons[1].Points[0], &p.Polygons[1].Points[1], &p.Polygons[1].Points[2], float64(p.Rotation))
-		p.Rotation = 0
-	}
 
 }

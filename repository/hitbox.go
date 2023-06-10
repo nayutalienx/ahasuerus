@@ -38,8 +38,11 @@ func GetAllHitboxes(collectionPrefix string, container string) []models.Hitbox {
 		hb := models.Hitbox{
 			Id: hitboxFound.Id,
 		}
+
+		polys := [2]collision.Polygon{}
+
 		for i, _ := range hitboxFound.Polygons {
-			hb.Polygons[i] = collision.Polygon{
+			polys[i] = collision.Polygon{
 				Points: [3]rl.Vector2{
 					{hitboxFound.Polygons[i].Points[0].X, hitboxFound.Polygons[i].Points[0].Y},
 					{hitboxFound.Polygons[i].Points[1].X, hitboxFound.Polygons[i].Points[1].Y},
@@ -47,6 +50,9 @@ func GetAllHitboxes(collectionPrefix string, container string) []models.Hitbox {
 				},
 			}
 		}
+
+		hb.SetPolygons(polys)
+
 		hitboxes = append(hitboxes, hb)
 	}
 	return hitboxes
@@ -58,8 +64,10 @@ func mapHitbox(id string, hb *models.Hitbox) Hitbox {
 		Polygons: []Polygon{},
 	}
 
-	for i, _ := range hb.Polygons {
-		p := hb.Polygons[i]
+	polygons := hb.Polygons()
+
+	for i, _ := range polygons {
+		p := polygons[i]
 		hitbox.Polygons = append(hitbox.Polygons, Polygon{
 			Points: [3]Vec2{
 				{p.Points[0].X, p.Points[0].Y},

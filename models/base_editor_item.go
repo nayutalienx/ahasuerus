@@ -7,13 +7,19 @@ import (
 )
 
 type BaseEditorItem struct {
-	Polygons [2]collision.Polygon
+	polygons [2]collision.Polygon
 
 	Rotation               float32
 	EditSelected           bool
 	EditorMoveWithCursor   bool
 	EditorResizeWithCursor bool
 	EditorRotateMode       bool
+}
+
+func NewBaseEditorItem(polygons [2]collision.Polygon) BaseEditorItem {
+	return BaseEditorItem{
+		polygons: polygons,
+	}
 }
 
 func (p *BaseEditorItem) SetEditorMoveWithCursorTrue() {
@@ -30,8 +36,8 @@ func (p *BaseEditorItem) SetEditorRotateModeTrue() {
 
 func (p *BaseEditorItem) EditorDetectSelection() EditorItemDetectSelectionResult {
 	mousePos := rl.GetMousePosition()
-	triangle1 := p.Polygons[0].Points
-	triangle2 := p.Polygons[1].Points
+	triangle1 := p.polygons[0].Points
+	triangle2 := p.polygons[1].Points
 	RotateTriangleByA(&triangle1[0], &triangle1[1], &triangle1[2], float64(p.Rotation))
 	RotateTriangleByA(&triangle2[0], &triangle2[1], &triangle2[2], float64(p.Rotation))
 	collission := rl.CheckCollisionPointTriangle(mousePos, triangle1[0], triangle1[1], triangle1[2]) ||
@@ -64,23 +70,23 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 		width := p.Width()
 		height := p.Height()
 
-		p.Polygons[0].Points[0].X = newPosX
-		p.Polygons[0].Points[0].Y = newPosY
+		p.polygons[0].Points[0].X = newPosX
+		p.polygons[0].Points[0].Y = newPosY
 
-		p.Polygons[0].Points[1].X = newPosX + width
-		p.Polygons[0].Points[1].Y = newPosY
+		p.polygons[0].Points[1].X = newPosX + width
+		p.polygons[0].Points[1].Y = newPosY
 
-		p.Polygons[0].Points[2].X = newPosX + width
-		p.Polygons[0].Points[2].Y = newPosY + height
+		p.polygons[0].Points[2].X = newPosX + width
+		p.polygons[0].Points[2].Y = newPosY + height
 
-		p.Polygons[1].Points[0].X = newPosX
-		p.Polygons[1].Points[0].Y = newPosY
+		p.polygons[1].Points[0].X = newPosX
+		p.polygons[1].Points[0].Y = newPosY
 
-		p.Polygons[1].Points[1].X = newPosX
-		p.Polygons[1].Points[1].Y = newPosY + height
+		p.polygons[1].Points[1].X = newPosX
+		p.polygons[1].Points[1].Y = newPosY + height
 
-		p.Polygons[1].Points[2].X = newPosX + width
-		p.Polygons[1].Points[2].Y = newPosY + height
+		p.polygons[1].Points[2].X = newPosX + width
+		p.polygons[1].Points[2].Y = newPosY + height
 	}
 
 	if p.EditorResizeWithCursor {
@@ -94,17 +100,17 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 		width := p.Width()
 		height := p.Height()
 
-		p.Polygons[0].Points[1].X = newPosX
-		p.Polygons[0].Points[1].Y = newPosY - height
+		p.polygons[0].Points[1].X = newPosX
+		p.polygons[0].Points[1].Y = newPosY - height
 
-		p.Polygons[0].Points[2].X = newPosX
-		p.Polygons[0].Points[2].Y = newPosY
+		p.polygons[0].Points[2].X = newPosX
+		p.polygons[0].Points[2].Y = newPosY
 
-		p.Polygons[1].Points[1].X = newPosX - width
-		p.Polygons[1].Points[1].Y = newPosY
+		p.polygons[1].Points[1].X = newPosX - width
+		p.polygons[1].Points[1].Y = newPosY
 
-		p.Polygons[1].Points[2].X = newPosX
-		p.Polygons[1].Points[2].Y = newPosY
+		p.polygons[1].Points[2].X = newPosX
+		p.polygons[1].Points[2].Y = newPosY
 	}
 
 	if p.EditorRotateMode {
@@ -113,6 +119,13 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 		}
 		if rl.IsKeyDown(rl.KeyR) {
 			p.Rotation--
+		}
+
+		if p.Rotation < 0 {
+			p.Rotation = 360
+		}
+		if p.Rotation > 360 {
+			p.Rotation = 0
 		}
 	}
 
@@ -136,8 +149,8 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 				Finished:            true,
 				DisableCursor:       true,
 				CursorForcePosition: true,
-				CursorX:             int(p.Polygons[0].Points[0].X),
-				CursorY:             int(p.Polygons[0].Points[0].Y),
+				CursorX:             int(p.polygons[0].Points[0].X),
+				CursorY:             int(p.polygons[0].Points[0].Y),
 			}
 		}
 	}
@@ -148,27 +161,40 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 }
 
 func (p BaseEditorItem) TopLeft() rl.Vector2 {
-	return p.Polygons[0].Points[0]
+	return p.polygons[0].Points[0]
 }
 
 func (p BaseEditorItem) TopRight() rl.Vector2 {
-	return p.Polygons[0].Points[1]
+	return p.polygons[0].Points[1]
 }
 
 func (p BaseEditorItem) BottomRight() rl.Vector2 {
-	return p.Polygons[0].Points[2]
+	return p.polygons[0].Points[2]
 }
 
 func (p BaseEditorItem) BottomLeft() rl.Vector2 {
-	return p.Polygons[1].Points[1]
+	return p.polygons[1].Points[1]
 }
 
 func (p BaseEditorItem) Width() float32 {
-	return p.Polygons[0].Points[2].X - p.Polygons[0].Points[0].X
+	return p.polygons[0].Points[2].X - p.polygons[0].Points[0].X
 }
 
 func (p BaseEditorItem) Height() float32 {
-	return p.Polygons[0].Points[2].Y - p.Polygons[0].Points[0].Y
+	return p.polygons[0].Points[2].Y - p.polygons[0].Points[0].Y
+}
+
+func (p BaseEditorItem) Polygons() []collision.Polygon {
+	polys := p.polygons[:]
+	if p.Rotation != 0 {
+		RotateTriangleByA(&polys[0].Points[0], &polys[0].Points[1], &polys[0].Points[2], float64(p.Rotation))
+		RotateTriangleByA(&polys[1].Points[0], &polys[1].Points[1], &polys[1].Points[2], float64(p.Rotation))
+	}
+	return polys
+}
+
+func (p *BaseEditorItem) SetPolygons(polys [2]collision.Polygon) {
+	p.polygons = polys
 }
 
 func (p BaseEditorItem) Draw() {

@@ -72,13 +72,6 @@ func (p *Image) Update(delta float32) {
 		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.LightPoints))}, rl.ShaderUniformFloat)
 	}
 	p.syncBoxWithTexture()
-
-	if p.Rotation < 0 {
-		p.Rotation = 360
-	}
-	if p.Rotation > 360 {
-		p.Rotation = 0
-	}
 }
 
 func (p *Image) Load() {
@@ -160,7 +153,7 @@ func (p *Image) syncBoxWithTexture() {
 }
 
 func (img *Image) initEditorItem() {
-	img.BaseEditorItem.Polygons = [2]collision.Polygon{
+	img.BaseEditorItem.SetPolygons([2]collision.Polygon{
 		{
 			Points: [3]rl.Vector2{
 				img.Pos, {img.Pos.X + img.WidthHeight.X, img.Pos.Y}, {img.Pos.X + img.WidthHeight.X, img.Pos.Y + img.WidthHeight.Y},
@@ -171,5 +164,5 @@ func (img *Image) initEditorItem() {
 				img.Pos, {img.Pos.X, img.Pos.Y + img.WidthHeight.Y}, {img.Pos.X + img.WidthHeight.X, img.Pos.Y + img.WidthHeight.Y},
 			},
 		},
-	}
+	})
 }

@@ -107,18 +107,23 @@ func (p *Player) Update(delta float32) {
 	hitbox := p.getHitboxFromMap(futureHitboxMap)
 	hasCollision, collisionMap := p.CollisionProcessor.Detect(hitbox)
 	if hasCollision {
-		_, leftTopOk := collisionMap[2]
-		_, leftBottomOk := collisionMap[3]
-		_, bottomOk := collisionMap[4]
 
-		if bottomOk {
+		_, rightTop := collisionMap[2]
+		_, rightBottom := collisionMap[3]
+
+		_, bottom := collisionMap[4]
+
+		_, leftBottom := collisionMap[5]
+		_, leftTop := collisionMap[6]
+
+		if bottom {
 			p.velocity.Y = 0
 		}
 
-		if leftTopOk && leftBottomOk {
+		if rightTop && rightBottom  || leftTop && leftBottom{
 			p.velocity.X = 0
 		}
-		if leftBottomOk && bottomOk {
+		if rightBottom && bottom {
 			p.velocity.Y = (-1) * GRAVITY/3 * delta
 		}
 

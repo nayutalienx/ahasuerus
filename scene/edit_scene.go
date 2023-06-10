@@ -268,20 +268,18 @@ func (s *EditScene) drawMainHub() {
 
 		hitbox := models.Hitbox{
 			Id: uuid.NewString(),
-			BaseEditorItem: models.BaseEditorItem{
-				Polygons: [2]collision.Polygon{
-					{
-						Points: [3]rl.Vector2{
-							topLeft, topRight, bottomRight,
-						},
-					},
-					{
-						Points: [3]rl.Vector2{
-							topLeft, bottomLeft, bottomRight,
-						},
+			BaseEditorItem: models.NewBaseEditorItem([2]collision.Polygon{
+				{
+					Points: [3]rl.Vector2{
+						topLeft, topRight, bottomRight,
 					},
 				},
-			},
+				{
+					Points: [3]rl.Vector2{
+						topLeft, bottomLeft, bottomRight,
+					},
+				},
+			}),
 		}
 		s.worldContainer.AddObject(&hitbox)
 	}
