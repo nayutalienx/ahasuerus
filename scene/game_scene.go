@@ -6,6 +6,7 @@ import (
 	"ahasuerus/models"
 	"ahasuerus/repository"
 	"fmt"
+	"math"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -54,7 +55,7 @@ func NewGameScene(sceneName string) *GameScene {
 	scene.worldContainer.Load()
 
 	camera := rl.NewCamera2D(
-		rl.NewVector2(WIDTH/2-WIDTH/6, HEIGHT-500),
+		rl.NewVector2(WIDTH/2, HEIGHT-500),
 		rl.NewVector2(0, 0),
 		0, 1)
 	camera.Target.Y = 250
@@ -90,10 +91,21 @@ func (s *GameScene) Run() models.Scene {
 			models.DRAW_MODELS = !models.DRAW_MODELS
 		}
 
-		if s.player.Pos.X > s.properties[CameraLevelMargin] {
-			cameraNewPos := s.player.Pos
-			cameraNewPos.Y = s.camera.Target.Y
-			updateCameraSmooth(s.camera, cameraNewPos, delta)
+		if s.player.Pos.X > s.properties[StartCameraFollowPos] {
+			if s.player.Pos.X < s.properties[EndCameraFollowPos] {
+
+				cameraNewPos := s.player.Pos
+				cameraNewPos.Y = s.camera.Target.Y
+				distanceToCamera := math.Abs(float64(s.player.Pos.X - s.camera.Target.X))
+				if distanceToCamera > models.PLAYER_MOVE_SPEED+models.PLAYER_MOVE_SPEED/3 {
+					updateCameraSmooth(s.camera, cameraNewPos, delta)
+				} else {
+					updateCameraCenter(s.camera, cameraNewPos, delta)
+				}
+
+			} else {
+				updateCameraSmooth(s.camera, rl.NewVector2(s.properties[EndCameraFollowPos]+s.camera.Offset.X, s.camera.Target.Y), delta)
+			}
 		} else {
 			updateCameraSmooth(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta)
 		}
@@ -103,11 +115,13 @@ func (s *GameScene) Run() models.Scene {
 		s.worldContainer.Draw()
 		rl.EndMode2D()
 
-		models.NewText(10, 10).
-			SetFontSize(40).
-			SetColor(rl.White).
-			SetData(fmt.Sprintf("fps: %d [movement(arrow keys), jump(space), edit mode(F1)]", rl.GetFPS())).
-			Draw()
+		if models.DRAW_MODELS {
+			models.NewText(10, 10).
+				SetFontSize(40).
+				SetColor(rl.White).
+				SetData(fmt.Sprintf("fps: %d [movement(arrow keys), jump(space), edit mode(F1)]", rl.GetFPS())).
+				Draw()
+		}
 
 		rl.EndDrawing()
 	}

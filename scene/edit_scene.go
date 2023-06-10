@@ -90,7 +90,7 @@ func (s EditScene) Run() models.Scene {
 
 		s.processInputs()
 
-		updateCameraCenter(s.camera, s.cameraEditPos)
+		updateCameraCenter(s.camera, s.cameraEditPos, delta)
 
 		rl.BeginMode2D(*s.camera)
 

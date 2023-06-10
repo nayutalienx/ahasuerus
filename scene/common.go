@@ -11,7 +11,8 @@ import (
 type SceneProp string
 
 const (
-	CameraLevelMargin SceneProp = "cameraLevelMargin"
+	StartCameraFollowPos SceneProp = "startCameraFollowPos"
+	EndCameraFollowPos   SceneProp = "endCameraFollowPos"
 )
 
 type SceneId int
@@ -82,9 +83,9 @@ func UnloadAllScenes() {
 }
 
 func updateCameraSmooth(camera *rl.Camera2D, pos rl.Vector2, delta float32) {
-	minSpeed := 60.0
+	minSpeed := 30.0
 	minEffectLength := 10
-	fractionSpeed := 0.8
+	fractionSpeed := 5.0
 
 	diff := rl.Vector2Subtract(pos, camera.Target)
 	length := rl.Vector2Length(diff)
@@ -95,7 +96,7 @@ func updateCameraSmooth(camera *rl.Camera2D, pos rl.Vector2, delta float32) {
 	}
 }
 
-func updateCameraCenter(camera *rl.Camera2D, pos rl.Vector2) {
+func updateCameraCenter(camera *rl.Camera2D, pos rl.Vector2, delta float32) {
 	camera.Target.X = pos.X
 	camera.Target.Y = pos.Y
 }

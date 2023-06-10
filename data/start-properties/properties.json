@@ -1,3 +1,4 @@
 {
-    "cameraLevelMargin": 800.0
+    "startCameraFollowPos": 800.0,
+    "endCameraFollowPos": 15500.0
 }

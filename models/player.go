@@ -11,7 +11,7 @@ import (
 const (
 	JUMP_SPEED = 350
 	GRAVITY    = 10
-	MOVE_SPEED = 5
+	PLAYER_MOVE_SPEED = 5
 )
 
 type Player struct {
@@ -141,14 +141,14 @@ func (p *Player) updateAnimation(delta float32) {
 func (p *Player) processMoveXInput() bool {
 	if rl.IsKeyDown(rl.KeyLeft) && !p.paused {
 		p.currentAnimation = p.runAnimation
-		p.velocity.X = (-1) * MOVE_SPEED
+		p.velocity.X = (-1) * PLAYER_MOVE_SPEED
 		p.orientation = Left
 		return true
 	}
 
 	if rl.IsKeyDown(rl.KeyRight) && !p.paused {
 		p.currentAnimation = p.runAnimation
-		p.velocity.X = MOVE_SPEED
+		p.velocity.X = PLAYER_MOVE_SPEED
 		p.orientation = Right
 		return true
 	}
