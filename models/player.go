@@ -99,7 +99,7 @@ func (p *Player) Update(delta float32) {
 	p.velocity.X = 0
 	p.velocity.Y += GRAVITY * delta
 
-	p.processMoveXInput()
+	moveByXButtonPressed := p.processMoveXInput()
 
 	futurePos := rl.Vector2Add(p.Pos, p.velocity)
 
@@ -130,11 +130,19 @@ func (p *Player) Update(delta float32) {
 
 		}
 
-		if rightTop && rightBottom || leftTop && leftBottom { // wall collision
-			p.velocity.X = 0
+		pushFromWall := false
+
+		if leftTop && leftBottom { // left wall collision (push side)
+			p.velocity.X = GRAVITY * 5 * delta
+			pushFromWall = true
 		}
-		
-		if rightBottom && bottomRight || bottomLeft && leftBottom { // push hero up when go stairs
+
+		if rightTop && rightBottom  { // right wall collision (push side)
+			p.velocity.X = (-1) * GRAVITY * 5 * delta
+			pushFromWall = true
+		}
+
+		if (rightBottom && bottomRight || bottomLeft && leftBottom) && moveByXButtonPressed && !pushFromWall { // push hero up when go stairs
 			p.velocity.Y = (-1) * GRAVITY * 5 * delta
 		}
 
@@ -167,18 +175,22 @@ func (p *Player) updateAnimation(delta float32) {
 	p.currentAnimation.Update(delta)
 }
 
-func (p *Player) processMoveXInput() {
+func (p *Player) processMoveXInput() bool {
 	if rl.IsKeyDown(rl.KeyLeft) && !p.paused {
 		p.currentAnimation = p.runAnimation
 		p.velocity.X = (-1) * MOVE_SPEED
 		p.orientation = Left
+		return true
 	}
 
 	if rl.IsKeyDown(rl.KeyRight) && !p.paused {
 		p.currentAnimation = p.runAnimation
 		p.velocity.X = MOVE_SPEED
 		p.orientation = Right
+		return true
 	}
+
+	return false
 }
 
 func (p *Player) AddLightPoint(lp *LightPoint) *Player {
