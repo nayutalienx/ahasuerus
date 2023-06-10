@@ -18,9 +18,9 @@ func (c *CollisionDetector) AddHitbox(h Hitbox) {
 	c.Hitboxes = append(c.Hitboxes, h)
 }
 
-func (c CollisionDetector) Detect(collider Hitbox) (bool, map[int]rl.Vector2) {
+func (c CollisionDetector) Detect(collider Hitbox) (bool, map[int]bool) {
 
-	collisionedPolys := make(map[int]rl.Vector2, 0)
+	collisionedPolys := make(map[int]bool, 0)
 
 	for i, _ := range c.Hitboxes {
 		hitbox := c.Hitboxes[i]
@@ -30,13 +30,13 @@ func (c CollisionDetector) Detect(collider Hitbox) (bool, map[int]rl.Vector2) {
 				mainPolygon := collider.Polygons[k]
 
 				if rl.CheckCollisionPointTriangle(mainPolygon.Points[0], polygon.Points[0], polygon.Points[1], polygon.Points[2]) {
-					collisionedPolys[k] = mainPolygon.Points[0]
+					collisionedPolys[k] = true
 				}
 				if rl.CheckCollisionPointTriangle(mainPolygon.Points[1], polygon.Points[0], polygon.Points[1], polygon.Points[2]) {
-					collisionedPolys[k] = mainPolygon.Points[1]
+					collisionedPolys[k] = true
 				}
 				if rl.CheckCollisionPointTriangle(mainPolygon.Points[2], polygon.Points[0], polygon.Points[1], polygon.Points[2]) {
-					collisionedPolys[k] = mainPolygon.Points[2]
+					collisionedPolys[k] = true
 				}
 			}
 		}

@@ -3,6 +3,7 @@ package models
 import (
 	"ahasuerus/collision"
 	"ahasuerus/resources"
+	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -49,7 +50,6 @@ func (p *Player) Load() {
 	p.width = float32(p.stayAnimation.StepInPixel)
 	p.height = float32(p.stayAnimation.Texture.Height)
 
-
 	if p.ImageShader != resources.UndefinedShader {
 		p.Shader = resources.LoadShader(p.ImageShader)
 		if p.ImageShader == resources.TextureLightShader {
@@ -89,22 +89,39 @@ func (p Player) Draw() {
 	} else {
 		p.currentAnimation.Draw()
 	}
+
+	//p.drawHitbox()
 }
 
 func (p *Player) Update(delta float32) {
 	p.currentAnimation = p.stayAnimation
-	
+
 	p.velocity.X = 0
-	p.velocity.Y = GRAVITY * delta
-	
+	p.velocity.Y = GRAVITY/3 * delta
+
 	p.processMoveXInput()
 
 	futurePos := rl.Vector2Add(p.Pos, p.velocity)
 
-	hitbox := p.getHitboxFromPosition(futurePos)
-	hasCollision, _ := p.CollisionProcessor.Detect(hitbox)
+	futureHitboxMap := p.getHitboxMap(futurePos)
+	hitbox := p.getHitboxFromMap(futureHitboxMap)
+	hasCollision, collisionMap := p.CollisionProcessor.Detect(hitbox)
 	if hasCollision {
-		p.velocity.Y = 0
+		_, leftTopOk := collisionMap[2]
+		_, leftBottomOk := collisionMap[3]
+		_, bottomOk := collisionMap[4]
+
+		if bottomOk {
+			p.velocity.Y = 0
+		}
+
+		if leftTopOk && leftBottomOk {
+			p.velocity.X = 0
+		}
+		if leftBottomOk && bottomOk {
+			p.velocity.Y = (-1) * GRAVITY/3 * delta
+		}
+
 		futurePos = rl.Vector2Add(p.Pos, p.velocity)
 	}
 
@@ -162,23 +179,103 @@ func (p *Player) WithShader(gs resources.GameShader) *Player {
 	return p
 }
 
-func (p *Player) getHitboxFromPosition(pos rl.Vector2) collision.Hitbox {
-	topLeft := pos
-	bottomLeft := rl.Vector2{pos.X, pos.Y + p.height}
+type playerHitboxMap struct {
+	topLeftOne rl.Vector2
+	topLeftTwo rl.Vector2
 
-	topRight := rl.Vector2{pos.X + p.width, pos.Y}
-	bottomRight := rl.Vector2{pos.X + p.width, pos.Y + p.height}
+	topMiddle rl.Vector2
 
+	topRightOne rl.Vector2
+	topRightTwo rl.Vector2
+
+	leftMiddle  rl.Vector2
+	center      rl.Vector2
+	rightMiddle rl.Vector2
+
+	bottomLeftOne rl.Vector2
+	bottomLeftTwo rl.Vector2
+
+	bottomMiddle rl.Vector2
+
+	bottomRightOne rl.Vector2
+	bottomRightTwo rl.Vector2
+}
+
+func (p *Player) drawHitbox() {
+	hitbox := p.getHitboxFromMap(p.getHitboxMap(p.Pos))
+	for i, _ := range hitbox.Polygons {
+		poly := hitbox.Polygons[i]
+		rl.DrawTriangleLines(poly.Points[0], poly.Points[1], poly.Points[2], rl.Gold)
+		rl.DrawText(fmt.Sprintf("%v", p.velocity), int32(p.Pos.X)-100, int32(p.Pos.Y)-100, 50, rl.Red)
+	}
+}
+
+func (p *Player) getHitboxMap(pos rl.Vector2) playerHitboxMap {
+	cornerOffset := float32(10)
+	return playerHitboxMap{
+		topLeftOne: rl.Vector2{pos.X+cornerOffset, pos.Y},
+		topLeftTwo: rl.Vector2{pos.X, pos.Y+cornerOffset},
+
+		topMiddle: rl.Vector2{pos.X + p.width/2, pos.Y},
+
+		topRightOne: rl.Vector2{pos.X + p.width - cornerOffset, pos.Y},
+		topRightTwo: rl.Vector2{pos.X + p.width, pos.Y + cornerOffset},
+
+		leftMiddle:  rl.Vector2{pos.X, pos.Y + p.height/2},
+		center:      rl.Vector2{pos.X + p.width/2, pos.Y + p.height/2},
+		rightMiddle: rl.Vector2{pos.X + p.width, pos.Y + p.height/2},
+
+		bottomRightOne: rl.Vector2{pos.X + p.width, pos.Y + p.height - cornerOffset},
+		bottomRightTwo: rl.Vector2{pos.X + p.width - cornerOffset, pos.Y + p.height},
+		
+		bottomMiddle: rl.Vector2{pos.X + p.width/2, pos.Y + p.height},
+
+		bottomLeftOne: rl.Vector2{pos.X+cornerOffset, pos.Y + p.height},
+		bottomLeftTwo: rl.Vector2{pos.X, pos.Y + p.height - cornerOffset},
+	}
+}
+
+func (p *Player) getHitboxFromMap(m playerHitboxMap) collision.Hitbox {
 	return collision.Hitbox{
 		Polygons: []collision.Polygon{
 			{
 				Points: [3]rl.Vector2{
-					topLeft, topRight, bottomRight,
+					m.topLeftOne, m.topMiddle, m.center,
 				},
 			},
 			{
 				Points: [3]rl.Vector2{
-					topLeft, bottomLeft, bottomRight,
+					m.topMiddle, m.topRightOne, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.topRightTwo, m.rightMiddle, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.rightMiddle, m.bottomRightOne, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.bottomRightTwo, m.bottomMiddle, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.bottomMiddle, m.bottomLeftOne, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.bottomLeftTwo, m.leftMiddle, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.leftMiddle, m.topLeftTwo, m.center,
 				},
 			},
 		},
