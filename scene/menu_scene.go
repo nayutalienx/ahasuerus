@@ -9,7 +9,6 @@ import (
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
-	"github.com/google/uuid"
 )
 
 type MenuScene struct {
@@ -24,14 +23,6 @@ func NewMenuScene() *MenuScene {
 	menuScene := &MenuScene{
 		menuContainer: container.NewObjectResourceContainer(),
 	}
-	menuScene.menuContainer.AddObjectResource(
-		models.NewImage(0, uuid.NewString(), resources.MenuBgTexture, 0, 0, 0, 0, 0).
-			WithShader(resources.BlurShader).
-			AfterLoadPreset(func(i *models.Image) {
-				i.Texture.Width = int32(WIDTH)
-				i.Texture.Height = int32(HEIGHT)
-			}),
-	)
 
 	menuScene.menuContainer.Load()
 	return menuScene
@@ -40,7 +31,7 @@ func NewMenuScene() *MenuScene {
 func (m *MenuScene) Run() models.Scene {
 
 	rl.DisableCursor()
-
+	rg.LoadStyle(string(resources.Lavanda))
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 70)
 
 	controls.SetMousePosition(int(WIDTH)/2, int(HEIGHT)/2, 43)
@@ -59,8 +50,8 @@ func (m *MenuScene) Run() models.Scene {
 
 		m.menuShouldClose = rl.WindowShouldClose()
 
-		startButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/6, 500, 200), "START")
-		closeButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/3, 500, 200), "CLOSE")
+		startButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/6, 500, 200), "New game")
+		closeButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/3, 500, 200), "Exit")
 		mouse := rl.GetMousePosition()
 		rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Green)
 
