@@ -60,26 +60,19 @@ func (m *MenuScene) Run() models.Scene {
 		m.menuShouldClose = rl.WindowShouldClose()
 
 		startButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/6, 500, 200), "START")
+		closeButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/3, 500, 200), "CLOSE")
+		mouse := rl.GetMousePosition()
+		rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Green)
+
 		if startButton {
 			m.menuShouldClose = true
 			m.nextScene = GetScene(Start)
 		}
 
-		closeButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/3, 500, 200), "CLOSE")
 		if closeButton {
 			m.menuShouldClose = true
 			m.nextScene = nil
 		}
-
-		reloadButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/1.5, 500, 200), "RELOAD SCENES")
-		if reloadButton {
-			m.menuShouldClose = true
-			UnloadAllScenes()
-			m.nextScene = GetScene(Menu)
-		}
-
-		mouse := rl.GetMousePosition()
-		rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Green)
 
 		rl.EndDrawing()
 	}

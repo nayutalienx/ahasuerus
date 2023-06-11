@@ -39,6 +39,7 @@ func GetScene(id SceneId) models.Scene {
 		Start: "start",
 	}
 
+	rl.EndDrawing()
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.Black)
 	rl.DrawText("LOAD SCENE", int32(WIDTH)/3, int32(HEIGHT)/2, 90, rl.Gold)
