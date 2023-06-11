@@ -123,10 +123,13 @@ func (p *Player) Update(delta float32) {
 		for i, _ := range p.Lightboxes {
 			lp := p.Lightboxes[i]
 			lightPoints = append(lightPoints, float32(lp.Center().X), float32(lp.Center().Y))
-			radius := rl.Vector2Distance(lp.TopLeft(), lp.TopRight())/2
+			radius := rl.Vector2Distance(lp.TopLeft(), lp.TopRight()) / 2
 			lightPointsRadius = append(lightPointsRadius, radius)
 		}
-		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{p.Pos.X, p.Pos.Y + p.height}, rl.ShaderUniformVec2)
+
+		playerHitboxMap := p.getHitboxMap(p.Pos)
+
+		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{playerHitboxMap.center.X, playerHitboxMap.center.Y}, rl.ShaderUniformVec2)
 		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.width, p.height}, rl.ShaderUniformVec2)
 		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.Lightboxes)))
 		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.Lightboxes))}, rl.ShaderUniformFloat)

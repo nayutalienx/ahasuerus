@@ -4,9 +4,11 @@ import (
 	"ahasuerus/collision"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"github.com/google/uuid"
 )
 
 type BaseEditorItem struct {
+	Id       string
 	polygons [2]collision.Polygon
 
 	Rotation               float32
@@ -18,6 +20,7 @@ type BaseEditorItem struct {
 
 func NewBaseEditorItem(polygons [2]collision.Polygon) BaseEditorItem {
 	return BaseEditorItem{
+		Id:       uuid.NewString(),
 		polygons: polygons,
 	}
 }

@@ -17,8 +17,8 @@ func SaveHitbox(collectionPrefix string, hb *models.Hitbox) {
 	}
 }
 
-func DeleteHitbox(collectionPrefix string, hb *models.Hitbox) {
-	err := db.Delete(formatKey(collectionPrefix, hitboxDir), hb.Id)
+func DeleteHitbox(collectionPrefix string, id string) {
+	err := db.Delete(formatKey(collectionPrefix, hitboxDir), id)
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +37,9 @@ func GetAllHitboxes(collectionPrefix string) []models.Hitbox {
 			panic(err)
 		}
 		hb := models.Hitbox{
-			Id:   hitboxFound.Id,
+			BaseEditorItem: models.BaseEditorItem{
+				Id: hitboxFound.Id,
+			},
 			Type: models.HitboxType(hitboxFound.Type),
 		}
 

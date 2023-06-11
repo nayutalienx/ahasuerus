@@ -276,7 +276,6 @@ func (s *EditScene) drawMainHub() {
 		}
 
 		hitbox := models.Hitbox{
-			Id:   uuid.NewString(),
 			Type: hitboxType,
 			BaseEditorItem: models.NewBaseEditorItem([2]collision.Polygon{
 				{
@@ -295,11 +294,12 @@ func (s *EditScene) drawMainHub() {
 	}
 }
 
-func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResourceContainer, item *models.BaseEditorItem, buttonCounter *models.Counter) {
+func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResourceContainer, item *models.BaseEditorItem, buttonCounter *models.Counter) bool {
 
 	changePos := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE POS")
 	resize := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "RESIZE")
 	rotate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "ROTATE")
+	delete := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
 
 	if changePos {
 		item.SetEditorMoveWithCursorTrue()
@@ -317,6 +317,7 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 		item.SetEditorRotateModeTrue()
 	}
 
+	return delete
 }
 
 func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResourceContainer, image *models.Image, buttonCounter *models.Counter) {
@@ -325,8 +326,6 @@ func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResou
 	moveDown := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "MOVE DOWN")
 
 	replicate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "REPLICATE")
-
-	deleteImage := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
 
 	if moveUpper {
 		drawIndex := container.MoveUp(image)
@@ -346,11 +345,6 @@ func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResou
 		container.AddObjectResource(imageReplica)
 	}
 
-	if deleteImage {
-		container.RemoveObject(image)
-		repository.DeleteImage(s.sceneName, image)
-	}
-
 }
 
 func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
@@ -359,13 +353,21 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 
 	img, isImg := editorItem.(*models.Image)
 	if isImg {
-		s.reactOnEditorItemSelection(s.worldContainer, &img.BaseEditorItem, buttonCounter)
+		delete := s.reactOnEditorItemSelection(s.worldContainer, &img.BaseEditorItem, buttonCounter)
 		s.reactOnImageEditorSelection(s.worldContainer, img, buttonCounter)
+		if delete {
+			s.worldContainer.RemoveObject(img)
+			repository.DeleteImage(s.sceneName, img)
+		}
 	}
 
 	hitbox, isHitbox := editorItem.(*models.Hitbox)
 	if isHitbox {
-		s.reactOnEditorItemSelection(s.worldContainer, &hitbox.BaseEditorItem, buttonCounter)
+		delete := s.reactOnEditorItemSelection(s.worldContainer, &hitbox.BaseEditorItem, buttonCounter)
+		if delete {
+			s.worldContainer.RemoveObject(hitbox)
+			repository.DeleteHitbox(s.sceneName, hitbox.Id)
+		}
 	}
 
 }

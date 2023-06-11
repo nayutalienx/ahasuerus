@@ -13,7 +13,6 @@ const (
 
 type Hitbox struct {
 	BaseEditorItem
-	Id   string
 	Type HitboxType
 }
 

@@ -13,7 +13,6 @@ type Image struct {
 	Pos          rl.Vector2
 	WidthHeight  rl.Vector2
 	DrawIndex    int
-	Id           string
 	Texture      rl.Texture2D
 	Shader       rl.Shader
 	ImageTexture resources.GameTexture
@@ -27,10 +26,10 @@ type Image struct {
 func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y, width, height, rotation float32) *Image {
 	img := &Image{
 		BaseEditorItem: BaseEditorItem{
+			Id:           id,
 			Rotation: rotation,
 		},
 		DrawIndex:    drawIndex,
-		Id:           id,
 		ImageTexture: imageTexture,
 		Pos:          rl.NewVector2(x, y),
 		WidthHeight:  rl.NewVector2(width, height),
