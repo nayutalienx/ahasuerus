@@ -5,6 +5,7 @@ import (
 	"ahasuerus/models"
 	"math"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
@@ -107,10 +108,30 @@ func drawLoadScene(message string, dots int, dur time.Duration) {
 		uint8(rand.Intn(255)),
 		255,
 	)
+
+	numPositions := []rl.Vector2{}
+	for k := 0; k < 20; k++ {
+		numPositions = append(numPositions, rl.NewVector2(float32(rand.Intn(int(WIDTH))), float32(rand.Intn(int(int32(HEIGHT)/3)))))
+		numPositions = append(numPositions, rl.NewVector2(float32(rand.Intn(int(WIDTH))), float32(int32(HEIGHT/1.5)+int32(rand.Intn(int(int32(HEIGHT)/3))))))
+	}
+
 	for i := 1; i <= dots; i++ {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
+
 		rl.DrawText(message+strings.Repeat(".", i), int32(WIDTH)/3, int32(HEIGHT)/2, 50, col)
+
+		for k := 0; k < len(numPositions); k++ {
+			num := rand.Intn(32000)
+			numCol := rl.NewColor(
+				uint8(rand.Intn(255)),
+				uint8(rand.Intn(255)),
+				uint8(rand.Intn(255)),
+				255,
+			)
+			rl.DrawText(strconv.FormatInt(int64(num), 2), int32(numPositions[k].X), int32(numPositions[k].Y), 50, numCol)
+		}
+
 		rl.EndDrawing()
 		time.Sleep(time.Duration(timeOffsetNanos))
 	}

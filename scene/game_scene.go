@@ -83,7 +83,6 @@ func (s *GameScene) Run() models.Scene {
 
 		if rl.IsKeyDown(rl.KeyF1) { // jump to editor scene
 			nextScene = Editor
-			s.Unload()
 			break
 		}
 
