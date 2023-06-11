@@ -17,6 +17,7 @@ type SceneProp string
 const (
 	StartCameraFollowPos SceneProp = "startCameraFollowPos"
 	EndCameraFollowPos   SceneProp = "endCameraFollowPos"
+	PlayerShader   SceneProp = "playerShader"
 )
 
 type SceneId int

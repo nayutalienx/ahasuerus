@@ -51,7 +51,7 @@ func (m *MenuScene) Run() models.Scene {
 		m.menuShouldClose = rl.WindowShouldClose()
 
 		startButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/6, 500, 200), "New game")
-		closeButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/3, 500, 200), "Exit")
+		closeButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/3, 500, 200), "See you next time")
 		mouse := rl.GetMousePosition()
 		rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Green)
 

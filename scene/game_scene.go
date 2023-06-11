@@ -5,6 +5,7 @@ import (
 	"ahasuerus/container"
 	"ahasuerus/models"
 	"ahasuerus/repository"
+	"ahasuerus/resources"
 	"fmt"
 	"math"
 
@@ -16,7 +17,7 @@ type GameScene struct {
 	worldContainer *container.ObjectResourceContainer
 	camera         *rl.Camera2D
 	player         *models.Player
-	properties     map[SceneProp]float32
+	properties     map[SceneProp]interface{}
 
 	sceneName string
 	paused    bool
@@ -27,6 +28,11 @@ func NewGameScene(sceneName string) *GameScene {
 		sceneName:      sceneName,
 		worldContainer: container.NewObjectResourceContainer(),
 	}
+	
+	scene.properties = map[SceneProp]interface{}{}
+	for k, v := range repository.GetSceneProperties(scene.sceneName) {
+		scene.properties[SceneProp(k)] = v
+	}
 
 	worldImages := repository.GetAllImages(scene.sceneName)
 	for i, _ := range worldImages {
@@ -35,6 +41,14 @@ func NewGameScene(sceneName string) *GameScene {
 	}
 
 	scene.player = models.NewPlayer(100, -100)
+	shaderAsInterface, hasShader := scene.properties[PlayerShader]
+	if hasShader {
+		shader := resources.GameShader(shaderAsInterface.(string))
+		scene.player.WithShader(shader)
+		if shader == resources.TextureLightShader {
+			
+		}
+	}
 
 	scene.worldContainer.AddObjectResource(scene.player)
 
@@ -45,11 +59,6 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.player.CollisionProcessor.AddHitbox(collision.Hitbox{
 			Polygons: hb.Polygons(),
 		})
-	}
-
-	scene.properties = map[SceneProp]float32{}
-	for k, v := range repository.GetSceneProperties(scene.sceneName) {
-		scene.properties[SceneProp(k)] = v
 	}
 
 	scene.worldContainer.Load()
@@ -114,8 +123,8 @@ func (s *GameScene) Run() models.Scene {
 }
 
 func (s *GameScene) updateCamera(delta float32) {
-	if s.player.Pos.X > s.properties[StartCameraFollowPos] {
-		if s.player.Pos.X < s.properties[EndCameraFollowPos] {
+	if float64(s.player.Pos.X) > s.properties[StartCameraFollowPos].(float64) {
+		if float64(s.player.Pos.X) < s.properties[EndCameraFollowPos].(float64) {
 
 			cameraNewPos := s.player.Pos
 			cameraNewPos.Y = s.camera.Target.Y
@@ -127,7 +136,7 @@ func (s *GameScene) updateCamera(delta float32) {
 			}
 
 		} else {
-			updateCameraWithMode(s.camera, rl.NewVector2(s.properties[EndCameraFollowPos]+s.camera.Offset.X, s.camera.Target.Y), delta, FastSmooth)
+			updateCameraWithMode(s.camera, rl.NewVector2(float32(s.properties[EndCameraFollowPos].(float64))+s.camera.Offset.X, s.camera.Target.Y), delta, FastSmooth)
 		}
 	} else {
 		updateCameraWithMode(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta, FastSmooth)

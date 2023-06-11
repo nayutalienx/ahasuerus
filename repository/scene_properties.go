@@ -9,7 +9,7 @@ func GetSceneProperties(collectionPrefix string) SceneProperties {
 	if err != nil {
 		panic(err)
 	}
-	properties := map[string]float32{}
+	properties := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(records[0]), &properties); err != nil {
 		panic(err)
 	}

@@ -33,4 +33,4 @@ type Hitbox struct {
 	Polygons []Polygon `json:"polygons"`
 }
 
-type SceneProperties map[string]float32
+type SceneProperties map[string]interface{}
