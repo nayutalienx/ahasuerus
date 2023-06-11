@@ -407,7 +407,7 @@ func (s *EditScene) processInputs() {
 	if rl.IsKeyDown(rl.KeyP) {
 		s.saveEditor()
 		s.worldContainer.AddObject(
-			models.NewText(int32(s.camera.Target.X+(WIDTH)/2), int32(HEIGHT)/4).
+			models.NewText(int32(s.camera.Target.X-s.camera.Offset.X+WIDTH/2), int32(s.camera.Target.Y-s.camera.Offset.Y+HEIGHT/2)).
 				SetData("DATA SAVED").
 				SetFontSize(60).
 				SetColor(rl.Red).
