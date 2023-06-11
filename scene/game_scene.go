@@ -28,7 +28,7 @@ func NewGameScene(sceneName string) *GameScene {
 		sceneName:      sceneName,
 		worldContainer: container.NewObjectResourceContainer(),
 	}
-	
+
 	scene.properties = map[SceneProp]interface{}{}
 	for k, v := range repository.GetSceneProperties(scene.sceneName) {
 		scene.properties[SceneProp(k)] = v
@@ -40,14 +40,11 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
-	scene.player = models.NewPlayer(100, -100)
+	scene.player = models.NewPlayer(float32(scene.properties[PlayerStartX].(float64)), float32(scene.properties[PlayerStartY].(float64)))
 	shaderAsInterface, hasShader := scene.properties[PlayerShader]
 	if hasShader {
 		shader := resources.GameShader(shaderAsInterface.(string))
 		scene.player.WithShader(shader)
-		if shader == resources.TextureLightShader {
-
-		}
 	}
 
 	scene.worldContainer.AddObjectResource(scene.player)

@@ -1,5 +1,7 @@
 {
     "startCameraFollowPos": 800.0,
     "endCameraFollowPos": 15500.0,
-    "playerShader": "resources/shader/texture_light.fs"
+    "playerShader": "resources/shader/texture_light.fs",
+    "playerStartX": 100.0,
+    "playerStartY": 200.0
 }
