@@ -9,8 +9,8 @@ uniform vec2 objectSize;
 
 uniform float lightPosSize = 1;
 uniform vec2 lightPos[10];
+uniform float lightMaxDistance = 1000.0;
 
-const float lightMaxDistance = 2000.0;
 const float minBrightness = 0.01;
 const float maxBrightness = 1.0;
 

@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	JUMP_SPEED = 350
-	GRAVITY    = 10
+	JUMP_SPEED        = 350
+	GRAVITY           = 10
 	PLAYER_MOVE_SPEED = 5
 )
 
@@ -27,7 +27,7 @@ type Player struct {
 
 	Shader      rl.Shader
 	ImageShader resources.GameShader
-	LightPoints []*LightPoint
+	Lightboxes  []Hitbox
 	shaderLocs  []int32
 
 	paused bool
@@ -118,14 +118,14 @@ func (p *Player) Update(delta float32) {
 
 	if p.ImageShader == resources.TextureLightShader {
 		lightPoints := make([]float32, 0)
-		for i, _ := range p.LightPoints {
-			lp := p.LightPoints[i]
-			lightPoints = append(lightPoints, float32(lp.Pos.X), float32(lp.Pos.Y))
+		for i, _ := range p.Lightboxes {
+			lp := p.Lightboxes[i]
+			lightPoints = append(lightPoints, float32(lp.Center().X), float32(lp.Center().Y))
 		}
 		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{p.Pos.X, p.Pos.Y + p.height}, rl.ShaderUniformVec2)
 		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.width, p.height}, rl.ShaderUniformVec2)
-		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.LightPoints)))
-		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.LightPoints))}, rl.ShaderUniformFloat)
+		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.Lightboxes)))
+		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.Lightboxes))}, rl.ShaderUniformFloat)
 
 		rl.SetShaderValueTexture(p.Shader, p.shaderLocs[4], p.currentAnimation.Texture)
 	}
@@ -156,8 +156,8 @@ func (p *Player) processMoveXInput() bool {
 	return false
 }
 
-func (p *Player) AddLightPoint(lp *LightPoint) *Player {
-	p.LightPoints = append(p.LightPoints, lp)
+func (p *Player) AddLightbox(lp Hitbox) *Player {
+	p.Lightboxes = append(p.Lightboxes, lp)
 	return p
 }
 

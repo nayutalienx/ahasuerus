@@ -160,6 +160,12 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 	}
 }
 
+func (p BaseEditorItem) Center() rl.Vector2 {
+	tl := p.TopLeft()
+	br := p.BottomRight()
+	return rl.Vector2Scale(rl.Vector2Subtract(br, tl), 0.5)
+}
+
 func (p BaseEditorItem) TopLeft() rl.Vector2 {
 	return p.polygons[0].Points[0]
 }

@@ -20,8 +20,8 @@ type Image struct {
 	ImageShader  resources.GameShader
 	preset       func(i *Image)
 
-	LightPoints []*LightPoint
-	shaderLocs  []int32
+	Lightboxes []Hitbox
+	shaderLocs []int32
 }
 
 func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y, width, height, rotation float32) *Image {
@@ -34,7 +34,7 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 		ImageTexture: imageTexture,
 		Pos:          rl.NewVector2(x, y),
 		WidthHeight:  rl.NewVector2(width, height),
-		LightPoints:  make([]*LightPoint, 0),
+		Lightboxes:   make([]Hitbox, 0),
 		shaderLocs:   make([]int32, 0),
 	}
 	if width != 0 && height != 0 {
@@ -62,14 +62,14 @@ func (p *Image) Update(delta float32) {
 	p.WidthHeight = rl.NewVector2(p.Width(), p.Height())
 	if p.ImageShader == resources.TextureLightShader {
 		lightPoints := make([]float32, 0)
-		for i, _ := range p.LightPoints {
-			lp := p.LightPoints[i]
-			lightPoints = append(lightPoints, float32(lp.Pos.X), float32(lp.Pos.Y))
+		for i, _ := range p.Lightboxes {
+			lp := p.Lightboxes[i]
+			lightPoints = append(lightPoints, float32(lp.Center().X), float32(lp.Center().Y))
 		}
 		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{p.Pos.X, p.Pos.Y + p.WidthHeight.Y}, rl.ShaderUniformVec2)
 		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.WidthHeight.X, p.WidthHeight.Y}, rl.ShaderUniformVec2)
-		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.LightPoints)))
-		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.LightPoints))}, rl.ShaderUniformFloat)
+		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.Lightboxes)))
+		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.Lightboxes))}, rl.ShaderUniformFloat)
 	}
 	p.syncBoxWithTexture()
 }
@@ -133,8 +133,8 @@ func (p *Image) WithShader(gs resources.GameShader) *Image {
 	return p
 }
 
-func (p *Image) AddLightPoint(lp *LightPoint) *Image {
-	p.LightPoints = append(p.LightPoints, lp)
+func (p *Image) AddLightbox(lp Hitbox) *Image {
+	p.Lightboxes = append(p.Lightboxes, lp)
 	return p
 }
 

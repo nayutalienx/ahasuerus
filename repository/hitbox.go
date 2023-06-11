@@ -9,7 +9,7 @@ import (
 
 const hitboxDir = "hitbox"
 
-func SaveHitbox(collectionPrefix string,  hb *models.Hitbox) {
+func SaveHitbox(collectionPrefix string, hb *models.Hitbox) {
 	i := mapHitbox(hb.Id, hb)
 	err := db.Write(formatKey(collectionPrefix, hitboxDir), i.Id, i)
 	if err != nil {
@@ -17,7 +17,7 @@ func SaveHitbox(collectionPrefix string,  hb *models.Hitbox) {
 	}
 }
 
-func DeleteHitbox(collectionPrefix string,  hb *models.Hitbox) {
+func DeleteHitbox(collectionPrefix string, hb *models.Hitbox) {
 	err := db.Delete(formatKey(collectionPrefix, hitboxDir), hb.Id)
 	if err != nil {
 		panic(err)
@@ -37,7 +37,8 @@ func GetAllHitboxes(collectionPrefix string) []models.Hitbox {
 			panic(err)
 		}
 		hb := models.Hitbox{
-			Id: hitboxFound.Id,
+			Id:   hitboxFound.Id,
+			Type: models.HitboxType(hitboxFound.Type),
 		}
 
 		polys := [2]collision.Polygon{}
@@ -63,6 +64,7 @@ func mapHitbox(id string, hb *models.Hitbox) Hitbox {
 	hitbox := Hitbox{
 		Id:       id,
 		Polygons: []Polygon{},
+		Type:     int(hb.Type),
 	}
 
 	polygons := hb.Polygons()
