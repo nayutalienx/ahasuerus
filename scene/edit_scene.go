@@ -392,6 +392,13 @@ func (s *EditScene) processInputs() {
 		}
 	}
 
+	if rl.IsKeyDown(rl.KeySpace) {
+		mouseDelta := rl.Vector2Negate(rl.GetMouseDelta())
+		s.cameraEditPos = rl.Vector2Add(s.cameraEditPos, mouseDelta)
+		mousePos = rl.Vector2Add(mousePos, mouseDelta)
+		updateMouse = true
+	}
+
 	if updateMouse {
 		controls.SetMousePosition(int(mousePos.X), int(mousePos.Y), 618)
 	}
