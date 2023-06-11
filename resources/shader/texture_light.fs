@@ -4,8 +4,7 @@ in vec2 fragTexCoord;
 
 uniform sampler2D texture0;
 
-uniform vec2 objectPosBottomLeft;
-uniform vec2 objectSize;
+uniform vec2 objectPosCenter;
 
 uniform float lightPosSize = 1;
 uniform vec2 lightPos[10];
@@ -19,15 +18,12 @@ void main()
     // Сэмплирование цвета пикселя из текстуры
     vec4 color = texture2D(texture0, fragTexCoord);
 
-    vec2 posInPixel = fragTexCoord * objectSize;
-    vec2 worldPos = objectPosBottomLeft + posInPixel;
-
     float brightness = 0.0;
 
     for (int i = 0; i < int(lightPosSize); i++) {
         vec2 lPos = lightPos[i];
 
-        float distance = distance(worldPos, lPos);
+        float distance = distance(objectPosCenter, lPos);
         float diff = distance/lightMaxDistance[i];
         if(diff >= 1) {
             brightness += minBrightness;

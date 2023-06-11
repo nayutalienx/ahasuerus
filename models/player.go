@@ -3,7 +3,6 @@ package models
 import (
 	"ahasuerus/collision"
 	"ahasuerus/resources"
-	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -54,11 +53,10 @@ func (p *Player) Load() {
 		p.Shader = resources.LoadShader(p.ImageShader)
 		if p.ImageShader == resources.TextureLightShader {
 			p.shaderLocs = []int32{
-				rl.GetShaderLocation(p.Shader, "objectPosBottomLeft"),
-				rl.GetShaderLocation(p.Shader, "objectSize"),
-				rl.GetShaderLocation(p.Shader, "lightPos"),
-				rl.GetShaderLocation(p.Shader, "lightPosSize"),
 				rl.GetShaderLocation(p.Shader, "texture0"),
+				rl.GetShaderLocation(p.Shader, "objectPosCenter"),
+				rl.GetShaderLocation(p.Shader, "lightPosSize"),
+				rl.GetShaderLocation(p.Shader, "lightPos"),
 				rl.GetShaderLocation(p.Shader, "lightMaxDistance"),
 			}
 		}
@@ -129,13 +127,12 @@ func (p *Player) Update(delta float32) {
 
 		playerHitboxMap := p.getHitboxMap(p.Pos)
 
-		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{playerHitboxMap.center.X, playerHitboxMap.center.Y}, rl.ShaderUniformVec2)
-		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.width, p.height}, rl.ShaderUniformVec2)
-		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.Lightboxes)))
-		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.Lightboxes))}, rl.ShaderUniformFloat)
+		rl.SetShaderValueTexture(p.Shader, p.shaderLocs[0], p.currentAnimation.Texture)
+		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{playerHitboxMap.center.X, playerHitboxMap.center.Y}, rl.ShaderUniformVec2)
+		rl.SetShaderValue(p.Shader, p.shaderLocs[2], []float32{float32(len(p.Lightboxes))}, rl.ShaderUniformFloat)
 
-		rl.SetShaderValueTexture(p.Shader, p.shaderLocs[4], p.currentAnimation.Texture)
-		rl.SetShaderValueV(p.Shader, p.shaderLocs[5], lightPointsRadius, rl.ShaderUniformFloat, int32(len(p.Lightboxes)))
+		rl.SetShaderValueV(p.Shader, p.shaderLocs[3], lightPoints, rl.ShaderUniformVec2, int32(len(p.Lightboxes)))
+		rl.SetShaderValueV(p.Shader, p.shaderLocs[4], lightPointsRadius, rl.ShaderUniformFloat, int32(len(p.Lightboxes)))
 	}
 }
 
@@ -241,11 +238,11 @@ type playerHitboxMap struct {
 }
 
 func (p *Player) drawHitbox() {
-	hitbox := p.getHitboxFromMap(p.getHitboxMap(p.Pos))
+	playerHitboxMap := p.getHitboxMap(p.Pos)
+	hitbox := p.getHitboxFromMap(playerHitboxMap)
 	for i, _ := range hitbox.Polygons {
 		poly := hitbox.Polygons[i]
 		rl.DrawTriangleLines(poly.Points[0], poly.Points[1], poly.Points[2], rl.Gold)
-		rl.DrawText(fmt.Sprintf("%v", p.velocity), int32(p.Pos.X)-100, int32(p.Pos.Y)-100, 50, rl.Red)
 	}
 }
 
