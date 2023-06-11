@@ -33,6 +33,8 @@ func (p *Hitbox) Draw() {
 		if p.Type == Light {
 			center := p.Center()
 			rl.DrawCircleLines(int32(center.X), int32(center.Y), rl.Vector2Distance(p.TopLeft(), p.TopRight())/2, rl.Gold)
+			rl.DrawCircleLines(int32(center.X), int32(center.Y), rl.Vector2Distance(p.TopLeft(), p.TopRight())/6, rl.Gold)
+			rl.DrawCircle(int32(center.X), int32(center.Y), 10, rl.Gold)
 		}
 		p.BaseEditorItem.Draw()
 	}

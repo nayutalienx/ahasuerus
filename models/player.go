@@ -59,6 +59,7 @@ func (p *Player) Load() {
 				rl.GetShaderLocation(p.Shader, "lightPos"),
 				rl.GetShaderLocation(p.Shader, "lightPosSize"),
 				rl.GetShaderLocation(p.Shader, "texture0"),
+				rl.GetShaderLocation(p.Shader, "lightMaxDistance"),
 			}
 		}
 	}
@@ -118,9 +119,12 @@ func (p *Player) Update(delta float32) {
 
 	if p.ImageShader == resources.TextureLightShader {
 		lightPoints := make([]float32, 0)
+		lightPointsRadius := make([]float32, 0)
 		for i, _ := range p.Lightboxes {
 			lp := p.Lightboxes[i]
 			lightPoints = append(lightPoints, float32(lp.Center().X), float32(lp.Center().Y))
+			radius := rl.Vector2Distance(lp.TopLeft(), lp.TopRight())/2
+			lightPointsRadius = append(lightPointsRadius, radius)
 		}
 		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{p.Pos.X, p.Pos.Y + p.height}, rl.ShaderUniformVec2)
 		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.width, p.height}, rl.ShaderUniformVec2)
@@ -128,6 +132,7 @@ func (p *Player) Update(delta float32) {
 		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.Lightboxes))}, rl.ShaderUniformFloat)
 
 		rl.SetShaderValueTexture(p.Shader, p.shaderLocs[4], p.currentAnimation.Texture)
+		rl.SetShaderValueV(p.Shader, p.shaderLocs[5], lightPointsRadius, rl.ShaderUniformFloat, int32(len(p.Lightboxes)))
 	}
 }
 
