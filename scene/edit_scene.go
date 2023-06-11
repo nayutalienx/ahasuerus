@@ -213,11 +213,9 @@ func (s *EditScene) drawEditorHub() {
 func (s *EditScene) drawMainHub() {
 	buttonCounter := models.NewCounter()
 
-	newGameImage := false
-	newCollisionBox := false
-
-	newGameImage = rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW IMAGE")
-	newCollisionBox = rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW COLLISION BOX")
+	newGameImage := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW IMAGE")
+	newCollisionBox := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW COLLISIONBOX")
+	newLightBox := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW LIGHTBOX")
 
 	toggleModelsDrawText := "HIDE COLLISSION"
 	if !models.DRAW_MODELS {
@@ -262,8 +260,8 @@ func (s *EditScene) drawMainHub() {
 		s.editMenuGameImageDropMode = true
 	}
 
-	if newCollisionBox {
-		height := float32(100)
+	if newCollisionBox || newLightBox {
+		height := float32(300)
 		width := float32(300)
 
 		topLeft := s.camera.Target
@@ -272,8 +270,14 @@ func (s *EditScene) drawMainHub() {
 		topRight := rl.Vector2{topLeft.X + width, topLeft.Y}
 		bottomRight := rl.Vector2{topLeft.X + width, topLeft.Y + height}
 
+		hitboxType := models.Collision
+		if newLightBox {
+			hitboxType = models.Light
+		}
+
 		hitbox := models.Hitbox{
-			Id: uuid.NewString(),
+			Id:   uuid.NewString(),
+			Type: hitboxType,
 			BaseEditorItem: models.NewBaseEditorItem([2]collision.Polygon{
 				{
 					Points: [3]rl.Vector2{
@@ -403,7 +407,7 @@ func (s *EditScene) processInputs() {
 	if rl.IsKeyDown(rl.KeyP) {
 		s.saveEditor()
 		s.worldContainer.AddObject(
-			models.NewText(int32(WIDTH)/2, int32(HEIGHT)/4).
+			models.NewText(int32(s.camera.Target.X+(WIDTH)/2), int32(HEIGHT)/4).
 				SetData("DATA SAVED").
 				SetFontSize(60).
 				SetColor(rl.Red).

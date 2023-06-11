@@ -163,7 +163,7 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 func (p BaseEditorItem) Center() rl.Vector2 {
 	tl := p.TopLeft()
 	br := p.BottomRight()
-	return rl.Vector2Scale(rl.Vector2Subtract(br, tl), 0.5)
+	return rl.Vector2Scale(rl.Vector2Add(tl, br), 0.5)
 }
 
 func (p BaseEditorItem) TopLeft() rl.Vector2 {

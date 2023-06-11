@@ -46,7 +46,7 @@ func NewGameScene(sceneName string) *GameScene {
 		shader := resources.GameShader(shaderAsInterface.(string))
 		scene.player.WithShader(shader)
 		if shader == resources.TextureLightShader {
-			
+
 		}
 	}
 
@@ -56,9 +56,15 @@ func NewGameScene(sceneName string) *GameScene {
 	for i, _ := range hitboxes {
 		hb := hitboxes[i]
 		scene.worldContainer.AddObject(&hb)
-		scene.player.CollisionProcessor.AddHitbox(collision.Hitbox{
-			Polygons: hb.Polygons(),
-		})
+		if hb.Type == models.Collision {
+			scene.player.CollisionProcessor.AddHitbox(collision.Hitbox{
+				Polygons: hb.Polygons(),
+			})
+		}
+		if hb.Type == models.Light {
+			scene.player.AddLightbox(hb)
+		}
+
 	}
 
 	scene.worldContainer.Load()
