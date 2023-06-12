@@ -216,6 +216,7 @@ func (s *EditScene) drawMainHub() {
 	newGameImage := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW IMAGE")
 	newCollisionBox := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW COLLISIONBOX")
 	newLightBox := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW LIGHTBOX")
+	newNpc := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW NPC")
 
 	toggleModelsDrawText := "HIDE COLLISSION"
 	if !models.DRAW_MODELS {
@@ -260,9 +261,9 @@ func (s *EditScene) drawMainHub() {
 		s.editMenuGameImageDropMode = true
 	}
 
-	if newCollisionBox || newLightBox {
-		height := float32(300)
-		width := float32(300)
+	if newCollisionBox || newLightBox || newNpc {
+		height := float32(100)
+		width := float32(100)
 
 		topLeft := s.camera.Target
 		bottomLeft := rl.Vector2{topLeft.X, topLeft.Y + height}
@@ -273,6 +274,9 @@ func (s *EditScene) drawMainHub() {
 		hitboxType := models.Collision
 		if newLightBox {
 			hitboxType = models.Light
+		}
+		if newNpc {
+			hitboxType = models.Npc
 		}
 
 		hitbox := models.Hitbox{

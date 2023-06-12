@@ -1,6 +1,7 @@
 package models
 
 import (
+	"ahasuerus/collision"
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -16,6 +17,100 @@ func RotateTriangleByA(A *rl.Vector2, B *rl.Vector2, C *rl.Vector2, degrees floa
 	// Перемещаем вершины B и C относительно вершины A
 	B.X, B.Y = rotatePoint(A, B, float32(sin), float32(cos))
 	C.X, C.Y = rotatePoint(A, C, float32(sin), float32(cos))
+}
+
+type DynamicHitboxMap struct {
+	topLeftOne rl.Vector2
+	topLeftTwo rl.Vector2
+
+	topMiddle rl.Vector2
+
+	topRightOne rl.Vector2
+	topRightTwo rl.Vector2
+
+	leftMiddle  rl.Vector2
+	center      rl.Vector2
+	rightMiddle rl.Vector2
+
+	bottomLeftOne rl.Vector2
+	bottomLeftTwo rl.Vector2
+
+	bottomMiddle rl.Vector2
+
+	bottomRightOne rl.Vector2
+	bottomRightTwo rl.Vector2
+}
+
+func GetDynamicHitboxMap(pos rl.Vector2, width, height float32) DynamicHitboxMap {
+	cornerOffset := float32(10)
+	return DynamicHitboxMap{
+		topLeftOne: rl.Vector2{pos.X + cornerOffset, pos.Y},
+		topLeftTwo: rl.Vector2{pos.X, pos.Y + cornerOffset},
+
+		topMiddle: rl.Vector2{pos.X + width/2, pos.Y},
+
+		topRightOne: rl.Vector2{pos.X + width - cornerOffset, pos.Y},
+		topRightTwo: rl.Vector2{pos.X + width, pos.Y + cornerOffset},
+
+		leftMiddle:  rl.Vector2{pos.X, pos.Y + height/2},
+		center:      rl.Vector2{pos.X + width/2, pos.Y + height/2},
+		rightMiddle: rl.Vector2{pos.X + width, pos.Y + height/2},
+
+		bottomRightOne: rl.Vector2{pos.X + width, pos.Y + height - cornerOffset},
+		bottomRightTwo: rl.Vector2{pos.X + width - cornerOffset, pos.Y + height},
+
+		bottomMiddle: rl.Vector2{pos.X + width/2, pos.Y + height},
+
+		bottomLeftOne: rl.Vector2{pos.X + cornerOffset, pos.Y + height},
+		bottomLeftTwo: rl.Vector2{pos.X, pos.Y + height - cornerOffset},
+	}
+}
+
+func GetDynamicHitboxFromMap(m DynamicHitboxMap) collision.Hitbox {
+	return collision.Hitbox{
+		Polygons: []collision.Polygon{
+			{
+				Points: [3]rl.Vector2{
+					m.topLeftOne, m.topMiddle, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.topMiddle, m.topRightOne, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.topRightTwo, m.rightMiddle, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.rightMiddle, m.bottomRightOne, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.bottomRightTwo, m.bottomMiddle, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.bottomMiddle, m.bottomLeftOne, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.bottomLeftTwo, m.leftMiddle, m.center,
+				},
+			},
+			{
+				Points: [3]rl.Vector2{
+					m.leftMiddle, m.topLeftTwo, m.center,
+				},
+			},
+		},
+	}
 }
 
 func rotatePoint(origin, point *rl.Vector2, sin, cos float32) (float32, float32) {

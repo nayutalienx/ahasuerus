@@ -11,10 +11,10 @@ type Hitbox struct {
 }
 
 type CollisionDetector struct {
-	Hitboxes []Hitbox
+	Hitboxes []*Hitbox
 }
 
-func (c *CollisionDetector) AddHitbox(h Hitbox) {
+func (c *CollisionDetector) AddHitbox(h *Hitbox) {
 	c.Hitboxes = append(c.Hitboxes, h)
 }
 

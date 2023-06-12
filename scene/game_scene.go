@@ -54,12 +54,15 @@ func NewGameScene(sceneName string) *GameScene {
 		hb := hitboxes[i]
 		scene.worldContainer.AddObject(&hb)
 		if hb.Type == models.Collision {
-			scene.player.CollisionProcessor.AddHitbox(collision.Hitbox{
+			scene.player.CollisionProcessor.AddHitbox(&collision.Hitbox{
 				Polygons: hb.Polygons(),
 			})
 		}
 		if hb.Type == models.Light {
 			scene.player.AddLightbox(hb)
+		}
+		if hb.Type == models.Npc {
+			hb.CollisionProcessor.AddHitbox(scene.player.GetHitbox())
 		}
 
 	}
