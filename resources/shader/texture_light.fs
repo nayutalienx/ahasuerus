@@ -36,8 +36,8 @@ void main()
         brightness = maxBrightness;
     }
 
-    if (brightness < minBrightness) {
-        brightness = minBrightness;
+    if (brightness < 0.1) {
+        brightness = 0;
     }
 
     // Изменение яркости цвета пикселя
