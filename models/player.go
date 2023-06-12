@@ -18,11 +18,14 @@ type Player struct {
 	CollisionProcessor collision.CollisionDetector
 	velocity           rl.Vector2
 
-	width, height    float32
-	currentAnimation *Animation
-	runAnimation     *Animation
-	stayAnimation    *Animation
-	orientation      Orientation
+	width, height float32
+	orientation   Orientation
+
+	currentAnimation    *Animation
+	runAnimation        *Animation
+	stayAnimation       *Animation
+	directUpAnimation   *Animation
+	directDownAnimation *Animation
 
 	Shader      rl.Shader
 	ImageShader resources.GameShader
@@ -40,11 +43,19 @@ func NewPlayer(x float32, y float32) *Player {
 }
 
 func (p *Player) Load() {
-	p.runAnimation = NewAnimation(resources.PlayerRunTexture, 27, 24)
+	p.runAnimation = NewAnimation(resources.PlayerRunTexture, 27, Loop).FramesPerSecond(24)
 	p.runAnimation.Load()
 
-	p.stayAnimation = NewAnimation(resources.PlayerStayTexture, 22, 7)
+	p.stayAnimation = NewAnimation(resources.PlayerStayTexture, 22, Loop).FramesPerSecond(7)
 	p.stayAnimation.Load()
+
+	p.directUpAnimation = NewAnimation(resources.PlayerDirectUpTexture, 5, Temporary).TimeInSeconds(1)
+	p.directUpAnimation.Load()
+
+	p.directDownAnimation = NewAnimation(resources.PlayerDirectDownTexture, 6, Temporary).TimeInSeconds(1.5)
+	p.directDownAnimation.Load()
+
+	p.currentAnimation = p.stayAnimation
 
 	p.width = float32(p.stayAnimation.StepInPixel)
 	p.height = float32(p.stayAnimation.Texture.Height)
@@ -95,8 +106,6 @@ func (p Player) Draw() {
 }
 
 func (p *Player) Update(delta float32) {
-	p.currentAnimation = p.stayAnimation
-
 	p.velocity.X = 0
 	p.velocity.Y += GRAVITY * delta
 
@@ -111,9 +120,11 @@ func (p *Player) Update(delta float32) {
 		futurePos = p.resolveCollission(moveByXButtonPressed, collisionMap, delta)
 	}
 
+	posDelta := rl.Vector2Subtract(p.Pos, futurePos)
+
 	p.Pos = futurePos
 
-	p.updateAnimation(delta)
+	p.updateAnimation(posDelta, delta)
 
 	if p.ImageShader == resources.TextureLightShader {
 		lightPoints := make([]float32, 0)
@@ -136,7 +147,30 @@ func (p *Player) Update(delta float32) {
 	}
 }
 
-func (p *Player) updateAnimation(delta float32) {
+func (p *Player) updateAnimation(posDelta rl.Vector2, delta float32) {
+
+	prevAnimation := p.currentAnimation
+
+	if posDelta.X != 0 {
+		p.currentAnimation = p.runAnimation
+	}
+
+	if posDelta.X == 0 && posDelta.Y == 0 {
+		p.currentAnimation = p.stayAnimation
+	}
+
+	if posDelta.Y > 1 {
+		p.currentAnimation = p.directUpAnimation
+	}
+
+	if posDelta.Y < -2 {
+		p.currentAnimation = p.directDownAnimation
+	}
+
+	if p.currentAnimation != prevAnimation {
+		p.currentAnimation.Begin()
+	}
+
 	p.currentAnimation.Pos.X = p.Pos.X
 	p.currentAnimation.Pos.Y = p.Pos.Y
 	p.currentAnimation.Orientation = p.orientation
@@ -145,14 +179,12 @@ func (p *Player) updateAnimation(delta float32) {
 
 func (p *Player) processMoveXInput() bool {
 	if rl.IsKeyDown(rl.KeyLeft) && !p.paused {
-		p.currentAnimation = p.runAnimation
 		p.velocity.X = (-1) * PLAYER_MOVE_SPEED
 		p.orientation = Left
 		return true
 	}
 
 	if rl.IsKeyDown(rl.KeyRight) && !p.paused {
-		p.currentAnimation = p.runAnimation
 		p.velocity.X = PLAYER_MOVE_SPEED
 		p.orientation = Right
 		return true
