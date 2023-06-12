@@ -26,6 +26,8 @@ type Player struct {
 	stayAnimation       *Animation
 	directUpAnimation   *Animation
 	directDownAnimation *Animation
+	sideUpAnimation     *Animation
+	sideDownAnimation   *Animation
 
 	Shader      rl.Shader
 	ImageShader resources.GameShader
@@ -54,6 +56,12 @@ func (p *Player) Load() {
 
 	p.directDownAnimation = NewAnimation(resources.PlayerDirectDownTexture, 6, Temporary).TimeInSeconds(1.5)
 	p.directDownAnimation.Load()
+
+	p.sideUpAnimation = NewAnimation(resources.PlayerSideUpTexture, 12, Temporary).TimeInSeconds(1)
+	p.sideUpAnimation.Load()
+
+	p.sideDownAnimation = NewAnimation(resources.PlayerSideDownTexture, 12, Temporary).TimeInSeconds(1.5)
+	p.sideDownAnimation.Load()
 
 	p.currentAnimation = p.stayAnimation
 
@@ -124,7 +132,7 @@ func (p *Player) Update(delta float32) {
 
 	p.Pos = futurePos
 
-	p.updateAnimation(posDelta, delta)
+	p.updateAnimation(hasCollision, posDelta, delta)
 
 	if p.ImageShader == resources.TextureLightShader {
 		lightPoints := make([]float32, 0)
@@ -147,11 +155,11 @@ func (p *Player) Update(delta float32) {
 	}
 }
 
-func (p *Player) updateAnimation(posDelta rl.Vector2, delta float32) {
+func (p *Player) updateAnimation(hasCollision bool, posDelta rl.Vector2, delta float32) {
 
 	prevAnimation := p.currentAnimation
 
-	if posDelta.X != 0 {
+	if posDelta.X != 0 && hasCollision {
 		p.currentAnimation = p.runAnimation
 	}
 
@@ -161,10 +169,16 @@ func (p *Player) updateAnimation(posDelta rl.Vector2, delta float32) {
 
 	if posDelta.Y > 1 {
 		p.currentAnimation = p.directUpAnimation
+		if posDelta.X != 0 {
+			p.currentAnimation = p.sideUpAnimation
+		}
 	}
 
 	if posDelta.Y < -2 {
 		p.currentAnimation = p.directDownAnimation
+		if posDelta.X != 0 {
+			p.currentAnimation = p.sideDownAnimation
+		}
 	}
 
 	if p.currentAnimation != prevAnimation {

@@ -19,6 +19,8 @@ const (
 	PlayerRunTexture        GameTexture = "resources/heroes/tim_run.png"
 	PlayerDirectUpTexture   GameTexture = "resources/heroes/tim_direct_up.png"
 	PlayerDirectDownTexture GameTexture = "resources/heroes/tim_direct_down.png"
+	PlayerSideUpTexture     GameTexture = "resources/heroes/tim_side_up.png"
+	PlayerSideDownTexture   GameTexture = "resources/heroes/tim_side_down.png"
 )
 
 type GameShader string
