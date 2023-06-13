@@ -1093,53 +1093,297 @@
 			"properties": {}
 		},
 		{
-			"id": "ea6d8124-f40c-41b5-be0c-1ae31c36fa25",
+			"id": "3ef6a107-c234-4076-9e63-5ee24b2292a5",
 			"polygons": [
 				{
 					"points": [
 						{
-							"x": 916,
-							"y": 271
+							"x": 918,
+							"y": 268
 						},
 						{
-							"x": 968,
-							"y": 271
+							"x": 966,
+							"y": 268
 						},
 						{
-							"x": 968,
-							"y": 367
+							"x": 966,
+							"y": 379
 						}
 					]
 				},
 				{
 					"points": [
 						{
-							"x": 916,
-							"y": 271
+							"x": 918,
+							"y": 268
 						},
 						{
-							"x": 916,
-							"y": 367
+							"x": 918,
+							"y": 379
 						},
 						{
-							"x": 968,
-							"y": 367
+							"x": 966,
+							"y": 379
 						}
 					]
 				}
 			],
 			"type": 2,
 			"properties": {
-				"blockHeight": "100.0",
-				"blockOffsetX": "100.0",
-				"blockOffsetY": "-110.0",
-				"blockWidth": "400.0",
-				"fontSize": "40.0",
-				"outlineThick": "5.0",
-				"text": "Hi there!;How are you?;Glad to see you here",
-				"textCounter": "0.0",
-				"textOffsetX": "10.0",
-				"textOffsetY": "5.0"
+				"blockOffsetX": "100.0\u0000",
+				"blockOffsetY": "-110.0\u0000",
+				"fontSize": "40.0\u0000",
+				"label": "npc1\u0000",
+				"outlineThick": "5.0\u0000",
+				"text": "Hi traveler!\nHow are you?;Glad to see you here;I don't know what are you\ntalking about",
+				"textCounter": "0.0\u0000",
+				"textOffsetX": "10.0\u0000",
+				"textOffsetY": "5.0\u0000"
+			}
+		},
+		{
+			"id": "97333ae0-4c14-485e-9c55-324a73701bdc",
+			"polygons": [
+				{
+					"points": [
+						{
+							"x": 3197,
+							"y": 96
+						},
+						{
+							"x": 3240,
+							"y": 96
+						},
+						{
+							"x": 3240,
+							"y": 180
+						}
+					]
+				},
+				{
+					"points": [
+						{
+							"x": 3197,
+							"y": 96
+						},
+						{
+							"x": 3197,
+							"y": 180
+						},
+						{
+							"x": 3240,
+							"y": 180
+						}
+					]
+				}
+			],
+			"type": 2,
+			"properties": {
+				"blockOffsetX": "100.0\u0000",
+				"blockOffsetY": "-110.0\u0000",
+				"fontSize": "40.0\u0000",
+				"label": "npc2\u0000",
+				"outlineThick": "5.0\u0000",
+				"text": "I don't care man;Fuck off!;Stupid bastard",
+				"textCounter": "0.0\u0000",
+				"textOffsetX": "10.0\u0000",
+				"textOffsetY": "5.0\u0000"
+			}
+		},
+		{
+			"id": "a666f57f-8bbb-49ce-93a3-b30f842e76ba",
+			"polygons": [
+				{
+					"points": [
+						{
+							"x": 3972,
+							"y": 254
+						},
+						{
+							"x": 4023,
+							"y": 254
+						},
+						{
+							"x": 4023,
+							"y": 339
+						}
+					]
+				},
+				{
+					"points": [
+						{
+							"x": 3972,
+							"y": 254
+						},
+						{
+							"x": 3972,
+							"y": 339
+						},
+						{
+							"x": 4023,
+							"y": 339
+						}
+					]
+				}
+			],
+			"type": 2,
+			"properties": {
+				"blockOffsetX": "100.0\u0000",
+				"blockOffsetY": "-110.0\u0000",
+				"fontSize": "40.0\u0000",
+				"label": "npc3\u0000",
+				"outlineThick": "5.0\u0000",
+				"text": "...;What?;...;......",
+				"textCounter": "0.0\u0000",
+				"textOffsetX": "10.0\u0000",
+				"textOffsetY": "5.0\u0000"
+			}
+		},
+		{
+			"id": "86779158-4e58-4371-9697-a24ddb296192",
+			"polygons": [
+				{
+					"points": [
+						{
+							"x": 8037,
+							"y": 203
+						},
+						{
+							"x": 8084,
+							"y": 203
+						},
+						{
+							"x": 8084,
+							"y": 284
+						}
+					]
+				},
+				{
+					"points": [
+						{
+							"x": 8037,
+							"y": 203
+						},
+						{
+							"x": 8037,
+							"y": 284
+						},
+						{
+							"x": 8084,
+							"y": 284
+						}
+					]
+				}
+			],
+			"type": 2,
+			"properties": {
+				"blockOffsetX": "100.0\u0000",
+				"blockOffsetY": "-110.0\u0000",
+				"fontSize": "40.0\u0000",
+				"label": "npc4\u0000",
+				"outlineThick": "5.0\u0000",
+				"text": "Fucking jew!\nI hope you will die tomorrow",
+				"textCounter": "0.0\u0000",
+				"textOffsetX": "10.0\u0000",
+				"textOffsetY": "5.0\u0000"
+			}
+		},
+		{
+			"id": "3a5ebb66-b1cb-464e-86ec-44da3dc34017",
+			"polygons": [
+				{
+					"points": [
+						{
+							"x": 11604,
+							"y": 23
+						},
+						{
+							"x": 11650,
+							"y": 23
+						},
+						{
+							"x": 11650,
+							"y": 108
+						}
+					]
+				},
+				{
+					"points": [
+						{
+							"x": 11604,
+							"y": 23
+						},
+						{
+							"x": 11604,
+							"y": 108
+						},
+						{
+							"x": 11650,
+							"y": 108
+						}
+					]
+				}
+			],
+			"type": 2,
+			"properties": {
+				"blockOffsetX": "100.0\u0000",
+				"blockOffsetY": "-110.0\u0000",
+				"fontSize": "40.0\u0000",
+				"label": "npc5\u0000",
+				"outlineThick": "5.0\u0000",
+				"text": "I don't wanna talk with you;No!\nGo away.",
+				"textCounter": "0.0\u0000",
+				"textOffsetX": "10.0\u0000",
+				"textOffsetY": "5.0\u0000"
+			}
+		},
+		{
+			"id": "f8b66f35-94ec-43e5-9edf-6439bedaaa8f",
+			"polygons": [
+				{
+					"points": [
+						{
+							"x": 15585,
+							"y": 349
+						},
+						{
+							"x": 15624,
+							"y": 349
+						},
+						{
+							"x": 15624,
+							"y": 439
+						}
+					]
+				},
+				{
+					"points": [
+						{
+							"x": 15585,
+							"y": 349
+						},
+						{
+							"x": 15585,
+							"y": 439
+						},
+						{
+							"x": 15624,
+							"y": 439
+						}
+					]
+				}
+			],
+			"type": 2,
+			"properties": {
+				"blockOffsetX": "100.0\u0000",
+				"blockOffsetY": "-110.0\u0000",
+				"fontSize": "40.0\u0000",
+				"label": "npc6\u0000",
+				"outlineThick": "5.0\u0000",
+				"text": "Hello friend\nYes, I can help you;Go with me",
+				"textCounter": "0.0\u0000",
+				"textOffsetX": "10.0\u0000",
+				"textOffsetY": "5.0\u0000"
 			}
 		}
 	],

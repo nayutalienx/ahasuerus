@@ -305,10 +305,9 @@ func (s *EditScene) drawMainHub() {
 
 		if newNpc {
 			hitbox.Properties = map[string]string{
+				"label": "npc",
 				"blockOffsetX": "100.0",
 				"blockOffsetY": "-110.0",
-				"blockWidth":   "400.0",
-				"blockHeight":  "100.0",
 				"outlineThick": "5.0",
 				"fontSize":     "40.0",
 				"textOffsetX":  "10.0",
@@ -393,8 +392,10 @@ func (s EditScene) drawEditorItemProperties(item *models.BaseEditorItem, bc *mod
 		if len(val) >= 20 {
 			shortText = val[:20]
 			isActive = false
+			rg.TextBoxMulti(propertiesRect, &shortText, maxTextSize, isActive)
+		} else {
+			rg.TextBoxMulti(propertiesRect, &val, maxTextSize, isActive)
 		}
-		rg.TextBoxMulti(propertiesRect, &shortText, maxTextSize, isActive)
 
 		item.Properties[k] = val
 	}

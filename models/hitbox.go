@@ -2,6 +2,7 @@ package models
 
 import (
 	"ahasuerus/collision"
+	"ahasuerus/resources"
 	"fmt"
 	"strings"
 
@@ -68,8 +69,6 @@ func (p *Hitbox) Draw() {
 
 			offsetX := int32(p.PropertyFloat("blockOffsetX"))
 			offsetY := int32(p.PropertyFloat("blockOffsetY"))
-			width := int32(p.PropertyFloat("blockWidth"))
-			height := int32(p.PropertyFloat("blockHeight"))
 
 			outline := p.PropertyFloat("outlineThick")
 			fontSize := int32(p.PropertyFloat("fontSize"))
@@ -84,9 +83,21 @@ func (p *Hitbox) Draw() {
 				text = phrases[textCounter]
 			}
 
+			maxXLen := 0
+			splittenByNewLine := strings.Split(text, "\n")
+			for i, _ := range splittenByNewLine {
+				if len(splittenByNewLine[i]) > maxXLen {
+					maxXLen = len(splittenByNewLine[i])
+				}
+			}
+
+			width := int32(maxXLen * int(float64(fontSize)/1.5))
+			height := int32(float64(fontSize)+(float64(fontSize)/1.5)) * (1 + (int32(strings.Count(text, "\n"))))
+
 			rl.DrawRectangle(int32(pos.X)+offsetX, int32(pos.Y)+offsetY, width, height, rl.Black)
 			rl.DrawRectangleLinesEx(rl.NewRectangle((pos.X)+float32(offsetX), (pos.Y)+float32(offsetY), float32(width), float32(height)), outline, rl.White)
-			rl.DrawText(text, int32(pos.X)+offsetX+int32(textOffsetX), int32(pos.Y)+offsetY+int32(textOffsetY), fontSize, rl.White)
+			// rl.DrawText(text, int32(pos.X)+offsetX+int32(textOffsetX), int32(pos.Y)+offsetY+int32(textOffsetY), fontSize, rl.White)
+			rl.DrawTextEx(resources.LoadFont(resources.Literata), text, rl.NewVector2(float32(int32(pos.X)+offsetX+int32(textOffsetX)), float32(int32(pos.Y)+offsetY+int32(textOffsetY))), float32(fontSize), 2, rl.White )
 		}
 	}
 

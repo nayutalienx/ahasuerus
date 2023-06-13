@@ -6,10 +6,16 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+type FontTtf string
+
+const (
+	Literata FontTtf = "resources/font/literata.ttf"
+)
+
 type GuiStyle string
 
 const (
-	Lavanda GuiStyle = "resources\\styles\\lavanda.rgs"
+	Lavanda GuiStyle = "resources/styles/lavanda.rgs"
 )
 
 type GameTexture string
@@ -35,7 +41,26 @@ const (
 
 var (
 	textureCache = make(map[GameTexture]rl.Texture2D)
+	fontsCache = make(map[FontTtf]rl.Font)
 )
+
+func LoadFont(f FontTtf) rl.Font {
+	font, ok := fontsCache[f]
+	if ok {
+		return font
+	}
+
+	font = rl.LoadFont(string(f))
+	fontsCache[f] = font
+	return font
+}
+
+func UnloadFont(f FontTtf) {
+	font, ok := fontsCache[f]
+	if ok {
+		rl.UnloadFont(font)
+	}
+}
 
 func LoadTexture(gameTexture GameTexture) rl.Texture2D {
 	loadedTexture, ok := textureCache[gameTexture]

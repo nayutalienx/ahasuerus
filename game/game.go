@@ -2,6 +2,7 @@ package game
 
 import (
 	"ahasuerus/config"
+	"ahasuerus/resources"
 	"ahasuerus/scene"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -23,10 +24,14 @@ func Start() {
 	rl.InitAudioDevice()
 	rl.SetConfigFlags(rl.FlagMsaa4xHint)
 
+	resources.LoadFont(resources.Literata)
+
 	nextScene := scene.GetScene(scene.Menu)
 	for nextScene != nil {
 		nextScene = nextScene.Run()
 	}
+
+	resources.UnloadFont(resources.Literata)
 
 	scene.UnloadAllScenes()
 

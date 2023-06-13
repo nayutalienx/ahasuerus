@@ -101,7 +101,7 @@ func (s *GameScene) Run() models.Scene {
 			break
 		}
 
-		if rl.IsKeyDown(rl.KeyF2) { // toggle draw collision box
+		if rl.IsKeyReleased(rl.KeyF2) { // toggle draw collision box
 			models.DRAW_MODELS = !models.DRAW_MODELS
 		}
 
