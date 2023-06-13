@@ -100,7 +100,6 @@ func (p *Hitbox) Draw() {
 			rectColor := rl.Black
 			rectColor.A = 150
 
-			//rl.DrawRectangle(int32(pos.X)+offsetX, int32(pos.Y)+offsetY, width, height, rectColor)
 			rl.DrawRectangleRounded(rl.NewRectangle(float32(int32(pos.X)+offsetX), float32(int32(pos.Y)+offsetY), float32(width), float32(height)), 0.5, 0, rectColor)
 
 
