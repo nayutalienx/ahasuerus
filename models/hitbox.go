@@ -2,6 +2,8 @@ package models
 
 import (
 	"ahasuerus/collision"
+	"fmt"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -74,7 +76,13 @@ func (p *Hitbox) Draw() {
 
 			textOffsetX := p.PropertyFloat("textOffsetX")
 			textOffsetY := p.PropertyFloat("textOffsetY")
-			text := p.PropertyString("text")
+			phrases := strings.Split(p.PropertyString("text"), ";")
+			textCounter := int32(p.PropertyFloat("textCounter"))
+
+			text := "empty phrase"
+			if len(phrases) > int(textCounter) {
+				text = phrases[textCounter]
+			}
 
 			rl.DrawRectangle(int32(pos.X)+offsetX, int32(pos.Y)+offsetY, width, height, rl.Black)
 			rl.DrawRectangleLinesEx(rl.NewRectangle((pos.X)+float32(offsetX), (pos.Y)+float32(offsetY), float32(width), float32(height)), outline, rl.White)
@@ -88,6 +96,18 @@ func (p *Hitbox) Update(delta float32) {
 
 	if p.Type == Npc {
 		p.hasCollision, _ = p.CollisionProcessor.Detect(p.getDynamicHitbox())
+
+		if p.hasCollision {
+			if rl.IsKeyReleased(rl.KeyEnter) {
+				phrases := strings.Split(p.PropertyString("text"), ";")
+				textCounter := int32(p.PropertyFloat("textCounter"))
+				if len(phrases) > int(textCounter+1) {
+					p.Properties["textCounter"] = fmt.Sprintf("%.1f", float32(textCounter+1))
+				}
+			}
+
+		}
+
 	}
 
 }

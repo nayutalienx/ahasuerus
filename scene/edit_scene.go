@@ -77,6 +77,8 @@ func NewEditScene(
 
 	scene.worldContainer.Load()
 
+	models.DRAW_MODELS = true
+
 	return scene
 }
 
@@ -311,7 +313,8 @@ func (s *EditScene) drawMainHub() {
 				"fontSize":     "40.0",
 				"textOffsetX":  "10.0",
 				"textOffsetY":  "5.0",
-				"text":         "Mytext",
+				"textCounter":  "0.0",
+				"text":         "Hi there!;How are you?;Glad to see you here",
 			}
 		}
 
@@ -325,8 +328,20 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 	resize := rg.Button(s.controlRect(bc), "RESIZE")
 	rotate := rg.Button(s.controlRect(bc), "ROTATE")
 	deleteItem := rg.Button(s.controlRect(bc), "DELETE")
+	toggleProps := rg.Button(s.controlRect(bc), "PROPERTIES")
+	unselect := rg.Button(s.controlRect(bc), "UNSELECT(F11)")
 
-	s.drawEditorItemProperties(item, bc)
+	if unselect {
+		item.ExternalUnselect = true
+	}
+
+	if toggleProps {
+		item.ShowProperties = !item.ShowProperties
+	}
+
+	if item.ShowProperties {
+		s.drawEditorItemProperties(item, bc)
+	}
 
 	if changePos {
 		item.SetEditorMoveWithCursorTrue()
@@ -348,22 +363,12 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 }
 
 func (s EditScene) drawEditorItemProperties(item *models.BaseEditorItem, bc *models.Counter) {
-	propertiesMargin := float32(10)
-	propsLen := float32(len(item.Properties)) + 3
-	propertiesPanelRect := s.controlRectWithMargin(bc, 5)
-	propertiesPanelRect.Width *= 3.2
+	propertiesMargin := float32(20)
+	propsLen := float32(len(item.Properties)) + 2
+	propertiesPanelRect := s.controlRectWithMarginUp(bc, 10)
+	propertiesPanelRect.Width *= 2.2
 	propertiesPanelRect.Height *= propsLen
 	rg.Panel(propertiesPanelRect, "Properties")
-
-	itemForNewKey := "NEW_KEY"
-	addPropery := rg.Button(s.controlRectWithMarginLeft(bc, propertiesMargin), "ADD PROPERTY")
-	newKey, ok := item.Properties[itemForNewKey]
-	if !ok {
-		item.Properties[itemForNewKey] = itemForNewKey
-	}
-	if addPropery {
-		item.Properties[item.Properties[itemForNewKey]] = newKey
-	}
 
 	keys := []string{}
 	for k, _ := range item.Properties {
@@ -383,17 +388,15 @@ func (s EditScene) drawEditorItemProperties(item *models.BaseEditorItem, bc *mod
 		if rl.CheckCollisionPointRec(rl.GetMousePosition(), propertiesRect) {
 			isActive = true
 		}
-		rg.TextBoxMulti(propertiesRect, &val, maxTextSize, isActive)
-		item.Properties[k] = val
 
-		propertiesRect.X += propertiesRect.Width + propertiesMargin
-		if k != itemForNewKey {
-			deleteProperty := rg.Button(propertiesRect, "DELETE PROPERTY")
-			if deleteProperty {
-				delete(item.Properties, k)
-			}
+		shortText := val
+		if len(val) >= 20 {
+			shortText = val[:20]
+			isActive = false
 		}
+		rg.TextBoxMulti(propertiesRect, &shortText, maxTextSize, isActive)
 
+		item.Properties[k] = val
 	}
 
 }
@@ -406,8 +409,8 @@ func (s EditScene) controlRect(bc *models.Counter) rl.Rectangle {
 	return rl.NewRectangle(editorControlMarginLeft, s.itemPosY(bc), editorControlRectWidth, editorControlRectHeight)
 }
 
-func (s EditScene) controlRectWithMarginLeft(bc *models.Counter, margin float32) rl.Rectangle {
-	return rl.NewRectangle(editorControlMarginLeft+margin, s.itemPosY(bc), editorControlRectWidth, editorControlRectHeight)
+func (s EditScene) controlRectWithMarginUp(bc *models.Counter, margin float32) rl.Rectangle {
+	return rl.NewRectangle(editorControlMarginLeft, s.itemPosY(bc)+margin, editorControlRectWidth, editorControlRectHeight)
 }
 
 func (s EditScene) controlRectWithMargin(bc *models.Counter, margin float32) rl.Rectangle {

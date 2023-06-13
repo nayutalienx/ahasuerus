@@ -1093,53 +1093,53 @@
 			"properties": {}
 		},
 		{
-			"id": "80a2425b-6a6f-4720-8b1d-d877b54b17e9",
+			"id": "ea6d8124-f40c-41b5-be0c-1ae31c36fa25",
 			"polygons": [
 				{
 					"points": [
 						{
-							"x": 908,
-							"y": 224
+							"x": 916,
+							"y": 271
 						},
 						{
-							"x": 975,
-							"y": 224
+							"x": 968,
+							"y": 271
 						},
 						{
-							"x": 975,
-							"y": 375
+							"x": 968,
+							"y": 367
 						}
 					]
 				},
 				{
 					"points": [
 						{
-							"x": 908,
-							"y": 224
+							"x": 916,
+							"y": 271
 						},
 						{
-							"x": 908,
-							"y": 375
+							"x": 916,
+							"y": 367
 						},
 						{
-							"x": 975,
-							"y": 375
+							"x": 968,
+							"y": 367
 						}
 					]
 				}
 			],
 			"type": 2,
 			"properties": {
-				"NEW_KEY": "NEW_KEY\u0000",
-				"blockHeight": "50.0\u0000\u0000",
-				"blockOffsetX": "0.0\u0000\u0000\u0000",
-				"blockOffsetY": "-10.5\u0000\u0000",
-				"blockWidth": "200.0\u0000",
-				"fontSize": "40.0\u0000",
-				"outlineThick": "5.0\u0000",
-				"text": "Hi there!\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
-				"textOffsetX": "10.0\u0000",
-				"textOffsetY": "5.0\u0000"
+				"blockHeight": "100.0",
+				"blockOffsetX": "100.0",
+				"blockOffsetY": "-110.0",
+				"blockWidth": "400.0",
+				"fontSize": "40.0",
+				"outlineThick": "5.0",
+				"text": "Hi there!;How are you?;Glad to see you here",
+				"textCounter": "0.0",
+				"textOffsetX": "10.0",
+				"textOffsetY": "5.0"
 			}
 		}
 	],

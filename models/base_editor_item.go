@@ -16,6 +16,8 @@ type BaseEditorItem struct {
 
 	Rotation               float32
 	EditSelected           bool
+	ExternalUnselect       bool
+	ShowProperties         bool
 	EditorMoveWithCursor   bool
 	EditorResizeWithCursor bool
 	EditorRotateMode       bool
@@ -148,11 +150,13 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 	}
 
 	if p.EditSelected {
-		if rl.IsKeyDown(rl.KeyF11) {
+		if rl.IsKeyDown(rl.KeyF11) || p.ExternalUnselect {
+			p.ExternalUnselect = false
 			p.EditorMoveWithCursor = false
 			p.EditorResizeWithCursor = false
 			p.EditSelected = false
 			p.EditorRotateMode = false
+			p.ShowProperties = false
 			return EditorItemProcessSelectionResult{
 				Finished:            true,
 				DisableCursor:       true,
