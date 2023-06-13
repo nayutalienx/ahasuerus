@@ -19,8 +19,10 @@ import (
 
 const (
 	editorStartMenuPosY     = 110
-	editorControlRectWidth  = float32(200)
-	editorControlRectHeight = float32(50)
+	editorControlRectWidth  = float32(300)
+	editorControlRectHeight = float32(60)
+	editorControlMarginLeft = 50
+	maxTextSize             = 200
 )
 
 type EditScene struct {
@@ -41,6 +43,8 @@ func NewEditScene(
 	sceneName string,
 	sourceScene SceneId,
 ) *EditScene {
+
+	rg.LoadStyleDefault()
 
 	scene := &EditScene{
 		sourceScene:             sourceScene,
@@ -115,7 +119,7 @@ func (s EditScene) Run() models.Scene {
 
 		models.NewText(10, 50).
 			SetFontSize(40).
-			SetColor(rl.Red).SetData(fmt.Sprintf("edit mode[movement(arrow keys), cam.speed(+,-,%.1f), save(F11), menu(M), off menu(N), exit(F2)]", s.editCameraSpeed)).
+			SetColor(rl.Red).SetData(fmt.Sprintf("edit mode[movement(arrow keys), cam.speed(+,-,%.1f), save(F10), menu(M), off menu(N), exit(F2)]", s.editCameraSpeed)).
 			Draw()
 
 		rl.EndDrawing()
@@ -232,9 +236,9 @@ func (s *EditScene) drawMainHub() {
 
 	if s.editMenuGameImageDropMode {
 
-		rl.DrawText("DROP IMAGE or F12 TO LEAVE", int32(WIDTH)/2, int32(HEIGHT)/2, 60, rl.Red)
+		rl.DrawText("DROP IMAGE or F11 TO LEAVE", int32(WIDTH)/2, int32(HEIGHT)/2, 60, rl.Red)
 
-		if rl.IsKeyDown(rl.KeyF12) {
+		if rl.IsKeyDown(rl.KeyF11) {
 			s.editMenuGameImageDropMode = false
 		}
 
@@ -296,6 +300,21 @@ func (s *EditScene) drawMainHub() {
 				},
 			}),
 		}
+
+		if newNpc {
+			hitbox.Properties = map[string]string{
+				"blockOffsetX": "100.0",
+				"blockOffsetY": "-110.0",
+				"blockWidth":   "400.0",
+				"blockHeight":  "100.0",
+				"outlineThick": "5.0",
+				"fontSize":     "40.0",
+				"textOffsetX":  "10.0",
+				"textOffsetY":  "5.0",
+				"text":         "Mytext",
+			}
+		}
+
 		s.worldContainer.AddObject(&hitbox)
 	}
 }
@@ -307,11 +326,37 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 	rotate := rg.Button(s.controlRect(bc), "ROTATE")
 	deleteItem := rg.Button(s.controlRect(bc), "DELETE")
 
+	s.drawEditorItemProperties(item, bc)
+
+	if changePos {
+		item.SetEditorMoveWithCursorTrue()
+		controls.DisableCursor(498)
+		controls.SetMousePosition(int(item.TopLeft().X), int(item.TopLeft().Y), 500)
+	}
+
+	if resize {
+		item.SetEditorResizeWithCursorTrue()
+		controls.DisableCursor(506)
+		controls.SetMousePosition(int(item.TopLeft().X+item.Width()), int(item.TopLeft().Y+item.Height()), 508)
+	}
+
+	if rotate {
+		item.SetEditorRotateModeTrue()
+	}
+
+	return deleteItem
+}
+
+func (s EditScene) drawEditorItemProperties(item *models.BaseEditorItem, bc *models.Counter) {
 	propertiesMargin := float32(10)
+	propsLen := float32(len(item.Properties)) + 3
+	propertiesPanelRect := s.controlRectWithMargin(bc, 5)
+	propertiesPanelRect.Width *= 3.2
+	propertiesPanelRect.Height *= propsLen
+	rg.Panel(propertiesPanelRect, "Properties")
 
 	itemForNewKey := "NEW_KEY"
-
-	addPropery := rg.Button(s.controlRect(bc), "ADD PROPERTY")
+	addPropery := rg.Button(s.controlRectWithMarginLeft(bc, propertiesMargin), "ADD PROPERTY")
 	newKey, ok := item.Properties[itemForNewKey]
 	if !ok {
 		item.Properties[itemForNewKey] = itemForNewKey
@@ -338,7 +383,7 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 		if rl.CheckCollisionPointRec(rl.GetMousePosition(), propertiesRect) {
 			isActive = true
 		}
-		rg.TextBoxMulti(propertiesRect, &val, 10, isActive)
+		rg.TextBoxMulti(propertiesRect, &val, maxTextSize, isActive)
 		item.Properties[k] = val
 
 		propertiesRect.X += propertiesRect.Width + propertiesMargin
@@ -351,23 +396,6 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 
 	}
 
-	if changePos {
-		item.SetEditorMoveWithCursorTrue()
-		controls.DisableCursor(498)
-		controls.SetMousePosition(int(item.TopLeft().X), int(item.TopLeft().Y), 500)
-	}
-
-	if resize {
-		item.SetEditorResizeWithCursorTrue()
-		controls.DisableCursor(506)
-		controls.SetMousePosition(int(item.TopLeft().X+item.Width()), int(item.TopLeft().Y+item.Height()), 508)
-	}
-
-	if rotate {
-		item.SetEditorRotateModeTrue()
-	}
-
-	return deleteItem
 }
 
 func (s EditScene) itemPosY(buttonCounter *models.Counter) float32 {
@@ -375,11 +403,15 @@ func (s EditScene) itemPosY(buttonCounter *models.Counter) float32 {
 }
 
 func (s EditScene) controlRect(bc *models.Counter) rl.Rectangle {
-	return rl.NewRectangle(10, s.itemPosY(bc), editorControlRectWidth, editorControlRectHeight)
+	return rl.NewRectangle(editorControlMarginLeft, s.itemPosY(bc), editorControlRectWidth, editorControlRectHeight)
+}
+
+func (s EditScene) controlRectWithMarginLeft(bc *models.Counter, margin float32) rl.Rectangle {
+	return rl.NewRectangle(editorControlMarginLeft+margin, s.itemPosY(bc), editorControlRectWidth, editorControlRectHeight)
 }
 
 func (s EditScene) controlRectWithMargin(bc *models.Counter, margin float32) rl.Rectangle {
-	return rl.NewRectangle(10+margin, s.itemPosY(bc)+margin, editorControlRectWidth, editorControlRectHeight)
+	return rl.NewRectangle(editorControlMarginLeft+margin, s.itemPosY(bc)+margin, editorControlRectWidth, editorControlRectHeight)
 }
 
 func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResourceContainer, image *models.Image, bc *models.Counter) {
@@ -475,7 +507,7 @@ func (s *EditScene) processInputs() {
 		s.editCameraSpeed--
 	}
 
-	if rl.IsKeyDown(rl.KeyF11) {
+	if rl.IsKeyDown(rl.KeyF10) {
 		s.saveEditor()
 		s.worldContainer.AddObject(
 			models.NewText(int32(s.camera.Target.X-s.camera.Offset.X+WIDTH/2), int32(s.camera.Target.Y-s.camera.Offset.Y+HEIGHT/2)).

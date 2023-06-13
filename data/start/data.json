@@ -37,7 +37,7 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "061d57bc-faec-4435-8e69-0a2780306426",
@@ -76,7 +76,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "0b18935a-0913-4edb-a737-ab739bf95df8",
@@ -115,7 +115,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "0ce90e7d-4b58-411d-b4a3-a6ead382f98f",
@@ -154,7 +154,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "2644944c-f941-4e34-8110-119d2638bae4",
@@ -193,7 +193,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "2b9183d7-cfee-434e-b8f0-07380402d1db",
@@ -232,7 +232,7 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "38aacb52-ddb3-403c-8f55-8ccca01f72c1",
@@ -271,7 +271,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "41bf1301-a66e-4e71-bbb3-de460b697d10",
@@ -310,7 +310,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "43f432dc-f0ba-46bf-a0e6-f6118cdaf24e",
@@ -349,7 +349,7 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "482b3f75-0ba1-4fa6-9ea7-77a5c0fcd72e",
@@ -388,7 +388,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "542d8c0c-9abf-4dd5-ac49-9e2e41df2ec5",
@@ -427,7 +427,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "653f39c7-3cbf-4108-abbb-f0f7d2efef66",
@@ -466,7 +466,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "6d50921b-4919-4e45-86a8-a5bb4bcbb26d",
@@ -505,7 +505,7 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "6e509006-b5ef-451e-aa07-ee066efbffea",
@@ -544,7 +544,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "6ebf23b8-07f0-4fd2-b879-fa2b43245cab",
@@ -583,7 +583,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "8e0e2e90-d95e-46b6-80eb-cae98fed50db",
@@ -622,7 +622,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "92b6eddd-1520-4923-af99-4a154a166cb0",
@@ -661,7 +661,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "986008d0-baeb-46b7-8a74-6432477cbd8b",
@@ -700,7 +700,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "9a979ddc-5b7f-4c37-8122-05774b467ec0",
@@ -739,7 +739,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "a9dce155-ee54-4d2c-bbd5-9c62c0f4df95",
@@ -778,7 +778,7 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "ac271e59-d9c6-4ffc-b670-3e67a981e893",
@@ -817,7 +817,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "b115d172-e01e-4ffd-b912-6c063d0e5ba7",
@@ -856,7 +856,7 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "ca8895cf-c25f-47a3-a433-bf14952033cb",
@@ -895,7 +895,7 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "d49ee045-605e-4cf5-b83d-4029324ceef3",
@@ -934,7 +934,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "d5c63d15-293a-499c-9c40-f33b81596c00",
@@ -973,7 +973,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "df27fd4f-74d3-4356-a98e-abe462b788cf",
@@ -1012,7 +1012,7 @@
 				}
 			],
 			"type": 0,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "e6feb41e-95c0-4de6-9861-7f3e15b2e228",
@@ -1051,7 +1051,7 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
 		},
 		{
 			"id": "f4265b6d-d2ea-4641-9922-2a84e0b5da21",
@@ -1090,7 +1090,57 @@
 				}
 			],
 			"type": 1,
-			"properties": null
+			"properties": {}
+		},
+		{
+			"id": "80a2425b-6a6f-4720-8b1d-d877b54b17e9",
+			"polygons": [
+				{
+					"points": [
+						{
+							"x": 908,
+							"y": 224
+						},
+						{
+							"x": 975,
+							"y": 224
+						},
+						{
+							"x": 975,
+							"y": 375
+						}
+					]
+				},
+				{
+					"points": [
+						{
+							"x": 908,
+							"y": 224
+						},
+						{
+							"x": 908,
+							"y": 375
+						},
+						{
+							"x": 975,
+							"y": 375
+						}
+					]
+				}
+			],
+			"type": 2,
+			"properties": {
+				"NEW_KEY": "NEW_KEY\u0000",
+				"blockHeight": "50.0\u0000\u0000",
+				"blockOffsetX": "0.0\u0000\u0000\u0000",
+				"blockOffsetY": "-10.5\u0000\u0000",
+				"blockWidth": "200.0\u0000",
+				"fontSize": "40.0\u0000",
+				"outlineThick": "5.0\u0000",
+				"text": "Hi there!\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+				"textOffsetX": "10.0\u0000",
+				"textOffsetY": "5.0\u0000"
+			}
 		}
 	],
 	"images": [

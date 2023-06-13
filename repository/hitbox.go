@@ -34,6 +34,9 @@ func GetAllHitboxes(levelName string) []models.Hitbox {
 			},
 			Type: models.HitboxType(hitboxFound.Type),
 		}
+		if hb.Properties == nil {
+			hb.Properties = map[string]string{}
+		}
 
 		polys := [2]collision.Polygon{}
 

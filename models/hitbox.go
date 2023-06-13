@@ -61,20 +61,20 @@ func (p *Hitbox) Draw() {
 	}
 
 	if p.Type == Npc {
-		if p.hasCollision {
+		if p.hasCollision || p.EditSelected {
 			pos := p.TopRight()
 
-			offsetX := int32(100)
-			offsetY := int32(-110)
-			width := int32(400)
-			height := int32(50)
+			offsetX := int32(p.PropertyFloat("blockOffsetX"))
+			offsetY := int32(p.PropertyFloat("blockOffsetY"))
+			width := int32(p.PropertyFloat("blockWidth"))
+			height := int32(p.PropertyFloat("blockHeight"))
 
-			outline := float32(5)
-			fontSize := int32(40)
+			outline := p.PropertyFloat("outlineThick")
+			fontSize := int32(p.PropertyFloat("fontSize"))
 
-			textOffsetX := 10
-			textOffsetY := 5
-			text := "Collision with NPC"
+			textOffsetX := p.PropertyFloat("textOffsetX")
+			textOffsetY := p.PropertyFloat("textOffsetY")
+			text := p.PropertyString("text")
 
 			rl.DrawRectangle(int32(pos.X)+offsetX, int32(pos.Y)+offsetY, width, height, rl.Black)
 			rl.DrawRectangleLinesEx(rl.NewRectangle((pos.X)+float32(offsetX), (pos.Y)+float32(offsetY), float32(width), float32(height)), outline, rl.White)

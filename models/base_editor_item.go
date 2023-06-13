@@ -2,6 +2,9 @@ package models
 
 import (
 	"ahasuerus/collision"
+	"fmt"
+	"strconv"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/google/uuid"
@@ -145,7 +148,7 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 	}
 
 	if p.EditSelected {
-		if rl.IsKeyDown(rl.KeyF12) {
+		if rl.IsKeyDown(rl.KeyF11) {
 			p.EditorMoveWithCursor = false
 			p.EditorResizeWithCursor = false
 			p.EditSelected = false
@@ -206,6 +209,30 @@ func (p BaseEditorItem) Polygons() []collision.Polygon {
 
 func (p *BaseEditorItem) SetPolygons(polys [2]collision.Polygon) {
 	p.polygons = polys
+}
+
+func (p *BaseEditorItem) PropertyFloat(key string) float32 {
+	propVal := p.PropertyString(key)
+	if propVal == "ERROR" {
+		return 0
+	}
+	val, err := strconv.ParseFloat(strings.ReplaceAll(propVal, "\x00", ""), 32)
+	if err != nil {
+		fmt.Println("ERROR PARSE HITBOX PROPERTY ", key, propVal, p.Id, err)
+		//p.Properties[key] = "ERRORTYPE"
+		return 0
+	}
+	return float32(val)
+}
+
+func (p *BaseEditorItem) PropertyString(key string) string {
+	propVal, ok := p.Properties[key]
+	if !ok {
+		fmt.Sprintf("ERROR HITBOX PROPERTY NOT FOUND", key, p.Id)
+		p.Properties[key] = "ERROR"
+		return p.Properties[key]
+	}
+	return propVal
 }
 
 func (p BaseEditorItem) Draw() {
