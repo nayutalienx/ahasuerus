@@ -1130,11 +1130,11 @@
 			],
 			"type": 2,
 			"properties": {
-				"blockOffsetX": "100.0\u0000",
+				"blockOffsetX": "50.0\u0000",
 				"blockOffsetY": "-110.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc1\u0000",
-				"outlineThick": "5.0\u0000",
+
 				"text": "Hi traveler!\nHow are you?;Glad to see you here;I don't know what are you\ntalking about",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1179,11 +1179,11 @@
 			],
 			"type": 2,
 			"properties": {
-				"blockOffsetX": "100.0\u0000",
+				"blockOffsetX": "50.0\u0000",
 				"blockOffsetY": "-110.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc2\u0000",
-				"outlineThick": "5.0\u0000",
+
 				"text": "I don't care man;Fuck off!;Stupid bastard",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1228,11 +1228,11 @@
 			],
 			"type": 2,
 			"properties": {
-				"blockOffsetX": "100.0\u0000",
+				"blockOffsetX": "50.0\u0000",
 				"blockOffsetY": "-110.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc3\u0000",
-				"outlineThick": "5.0\u0000",
+
 				"text": "...;What?;...;......",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1277,11 +1277,11 @@
 			],
 			"type": 2,
 			"properties": {
-				"blockOffsetX": "100.0\u0000",
+				"blockOffsetX": "50.0\u0000",
 				"blockOffsetY": "-110.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc4\u0000",
-				"outlineThick": "5.0\u0000",
+
 				"text": "Fucking jew!\nI hope you will die tomorrow",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1326,11 +1326,11 @@
 			],
 			"type": 2,
 			"properties": {
-				"blockOffsetX": "100.0\u0000",
+				"blockOffsetX": "50.0\u0000",
 				"blockOffsetY": "-110.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc5\u0000",
-				"outlineThick": "5.0\u0000",
+
 				"text": "I don't wanna talk with you;No!\nGo away.",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1375,11 +1375,11 @@
 			],
 			"type": 2,
 			"properties": {
-				"blockOffsetX": "100.0\u0000",
+				"blockOffsetX": "50.0\u0000",
 				"blockOffsetY": "-110.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc6\u0000",
-				"outlineThick": "5.0\u0000",
+
 				"text": "Hello friend\nYes, I can help you;Go with me",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",

@@ -306,12 +306,11 @@ func (s *EditScene) drawMainHub() {
 		if newNpc {
 			hitbox.Properties = map[string]string{
 				"label": "npc",
-				"blockOffsetX": "100.0",
+				"blockOffsetX": "50.0",
 				"blockOffsetY": "-110.0",
-				"outlineThick": "5.0",
-				"fontSize":     "40.0",
-				"textOffsetX":  "10.0",
-				"textOffsetY":  "5.0",
+				"fontSize":     "60.0",
+				"textOffsetX":  "20.0",
+				"textOffsetY":  "15.0",
 				"textCounter":  "0.0",
 				"text":         "Hi there!;How are you?;Glad to see you here",
 			}
