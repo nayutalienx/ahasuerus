@@ -16,12 +16,14 @@ type BaseEditorItem struct {
 	EditorMoveWithCursor   bool
 	EditorResizeWithCursor bool
 	EditorRotateMode       bool
+	Properties             map[string]string
 }
 
 func NewBaseEditorItem(polygons [2]collision.Polygon) BaseEditorItem {
 	return BaseEditorItem{
-		Id:       uuid.NewString(),
-		polygons: polygons,
+		Id:         uuid.NewString(),
+		polygons:   polygons,
+		Properties: map[string]string{},
 	}
 }
 
@@ -143,7 +145,7 @@ func (p *BaseEditorItem) ProcessEditorSelection() EditorItemProcessSelectionResu
 	}
 
 	if p.EditSelected {
-		if rl.IsKeyDown(rl.KeyBackspace) {
+		if rl.IsKeyDown(rl.KeyF12) {
 			p.EditorMoveWithCursor = false
 			p.EditorResizeWithCursor = false
 			p.EditSelected = false

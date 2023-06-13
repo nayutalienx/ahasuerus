@@ -29,9 +29,10 @@ type Polygon struct {
 }
 
 type Hitbox struct {
-	Id       string    `json:"id"`
-	Polygons []Polygon `json:"polygons"`
-	Type     int       `json:"type"`
+	Id         string            `json:"id"`
+	Polygons   []Polygon         `json:"polygons"`
+	Type       int               `json:"type"`
+	Properties map[string]string `json:"properties"`
 }
 
 type SceneProperties map[string]interface{}

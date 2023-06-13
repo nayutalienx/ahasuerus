@@ -8,6 +8,9 @@ import (
 	"ahasuerus/repository"
 	"ahasuerus/resources"
 	"fmt"
+	"sort"
+
+	//"strconv"
 	"strings"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
@@ -16,9 +19,9 @@ import (
 )
 
 const (
-	editorStartMenuPosY    = 110
-	editorMenuButtonWidth  = 200
-	editorMenuButtonHeight = 50
+	editorStartMenuPosY     = 110
+	editorControlRectWidth  = float32(200)
+	editorControlRectHeight = float32(50)
 )
 
 type EditScene struct {
@@ -75,7 +78,7 @@ func NewEditScene(
 }
 
 func (s EditScene) Run() models.Scene {
-	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 20)
+	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 30)
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
@@ -113,7 +116,7 @@ func (s EditScene) Run() models.Scene {
 
 		models.NewText(10, 50).
 			SetFontSize(40).
-			SetColor(rl.Red).SetData(fmt.Sprintf("edit mode[movement(arrow keys), cam.speed(+,-,%.1f), save(P), menu(M), off menu(N), exit(F2)]", s.editCameraSpeed)).
+			SetColor(rl.Red).SetData(fmt.Sprintf("edit mode[movement(arrow keys), cam.speed(+,-,%.1f), save(F11), menu(M), off menu(N), exit(F2)]", s.editCameraSpeed)).
 			Draw()
 
 		rl.EndDrawing()
@@ -211,18 +214,18 @@ func (s *EditScene) drawEditorHub() {
 }
 
 func (s *EditScene) drawMainHub() {
-	buttonCounter := models.NewCounter()
+	bc := models.NewCounter()
 
-	newGameImage := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW IMAGE")
-	newCollisionBox := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW COLLISIONBOX")
-	newLightBox := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW LIGHTBOX")
-	newNpc := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "NEW NPC")
+	newGameImage := rg.Button(s.controlRect(bc), "NEW IMAGE")
+	newCollisionBox := rg.Button(s.controlRect(bc), "NEW COLLISIONBOX")
+	newLightBox := rg.Button(s.controlRect(bc), "NEW LIGHTBOX")
+	newNpc := rg.Button(s.controlRect(bc), "NEW NPC")
 
 	toggleModelsDrawText := "HIDE COLLISSION"
 	if !models.DRAW_MODELS {
 		toggleModelsDrawText = "SHOW COLLISSION"
 	}
-	toggleCollissionDrawButton := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth*2), float32(editorMenuButtonHeight)), toggleModelsDrawText)
+	toggleCollissionDrawButton := rg.Button(s.controlRect(bc), toggleModelsDrawText)
 
 	if toggleCollissionDrawButton {
 		models.DRAW_MODELS = !models.DRAW_MODELS
@@ -230,9 +233,9 @@ func (s *EditScene) drawMainHub() {
 
 	if s.editMenuGameImageDropMode {
 
-		rl.DrawText("DROP IMAGE or BACKSPACE TO LEAVE", int32(WIDTH)/2, int32(HEIGHT)/2, 60, rl.Red)
+		rl.DrawText("DROP IMAGE or F12 TO LEAVE", int32(WIDTH)/2, int32(HEIGHT)/2, 60, rl.Red)
 
-		if rl.IsKeyDown(rl.KeyBackspace) {
+		if rl.IsKeyDown(rl.KeyF12) {
 			s.editMenuGameImageDropMode = false
 		}
 
@@ -298,12 +301,56 @@ func (s *EditScene) drawMainHub() {
 	}
 }
 
-func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResourceContainer, item *models.BaseEditorItem, buttonCounter *models.Counter) bool {
+func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResourceContainer, item *models.BaseEditorItem, bc *models.Counter) bool {
 
-	changePos := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "CHANGE POS")
-	resize := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "RESIZE")
-	rotate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "ROTATE")
-	delete := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "DELETE")
+	changePos := rg.Button(s.controlRect(bc), "CHANGE POS")
+	resize := rg.Button(s.controlRect(bc), "RESIZE")
+	rotate := rg.Button(s.controlRect(bc), "ROTATE")
+	deleteItem := rg.Button(s.controlRect(bc), "DELETE")
+
+	propertiesMargin := float32(10)
+
+	itemForNewKey := "NEW_KEY"
+
+	addPropery := rg.Button(s.controlRect(bc), "ADD PROPERTY")
+	newKey, ok := item.Properties[itemForNewKey]
+	if !ok {
+		item.Properties[itemForNewKey] = itemForNewKey
+	}
+	if addPropery {
+		item.Properties[item.Properties[itemForNewKey]] = newKey
+	}
+
+	keys := []string{}
+	for k, _ := range item.Properties {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	for i, _ := range keys {
+		k := keys[i]
+		propertiesRect := s.controlRectWithMargin(bc, propertiesMargin)
+
+		rg.Label(propertiesRect, k)
+		propertiesRect.X += propertiesRect.Width + propertiesMargin
+		val := item.Properties[k]
+		isActive := false
+		if rl.CheckCollisionPointRec(rl.GetMousePosition(), propertiesRect) {
+			isActive = true
+		}
+		rg.TextBoxMulti(propertiesRect, &val, 10, isActive)
+		item.Properties[k] = val
+
+		propertiesRect.X += propertiesRect.Width + propertiesMargin
+		if k != itemForNewKey {
+			deleteProperty := rg.Button(propertiesRect, "DELETE PROPERTY")
+			if deleteProperty {
+				delete(item.Properties, k)
+			}
+		}
+
+	}
 
 	if changePos {
 		item.SetEditorMoveWithCursorTrue()
@@ -321,15 +368,27 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 		item.SetEditorRotateModeTrue()
 	}
 
-	return delete
+	return deleteItem
 }
 
-func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResourceContainer, image *models.Image, buttonCounter *models.Counter) {
+func (s EditScene) itemPosY(buttonCounter *models.Counter) float32 {
+	return float32(editorStartMenuPosY + int(editorControlRectHeight)*buttonCounter.GetAndIncrement())
+}
 
-	moveUpper := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "MOVE UPPER")
-	moveDown := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "MOVE DOWN")
+func (s EditScene) controlRect(bc *models.Counter) rl.Rectangle {
+	return rl.NewRectangle(10, s.itemPosY(bc), editorControlRectWidth, editorControlRectHeight)
+}
 
-	replicate := rg.Button(rl.NewRectangle(10, float32(editorStartMenuPosY+editorMenuButtonHeight*buttonCounter.GetAndIncrement()), float32(editorMenuButtonWidth), float32(editorMenuButtonHeight)), "REPLICATE")
+func (s EditScene) controlRectWithMargin(bc *models.Counter, margin float32) rl.Rectangle {
+	return rl.NewRectangle(10+margin, s.itemPosY(bc)+margin, editorControlRectWidth, editorControlRectHeight)
+}
+
+func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResourceContainer, image *models.Image, bc *models.Counter) {
+
+	moveUpper := rg.Button(s.controlRect(bc), "MOVE UPPER")
+	moveDown := rg.Button(s.controlRect(bc), "MOVE DOWN")
+
+	replicate := rg.Button(s.controlRect(bc), "REPLICATE")
 
 	if moveUpper {
 		drawIndex := container.MoveUp(image)
@@ -417,7 +476,7 @@ func (s *EditScene) processInputs() {
 		s.editCameraSpeed--
 	}
 
-	if rl.IsKeyDown(rl.KeyP) {
+	if rl.IsKeyDown(rl.KeyF11) {
 		s.saveEditor()
 		s.worldContainer.AddObject(
 			models.NewText(int32(s.camera.Target.X-s.camera.Offset.X+WIDTH/2), int32(s.camera.Target.Y-s.camera.Offset.Y+HEIGHT/2)).

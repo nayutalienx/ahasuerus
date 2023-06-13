@@ -38,7 +38,8 @@ func GetAllHitboxes(collectionPrefix string) []models.Hitbox {
 		}
 		hb := models.Hitbox{
 			BaseEditorItem: models.BaseEditorItem{
-				Id: hitboxFound.Id,
+				Id:         hitboxFound.Id,
+				Properties: hitboxFound.Properties,
 			},
 			Type: models.HitboxType(hitboxFound.Type),
 		}
@@ -64,9 +65,10 @@ func GetAllHitboxes(collectionPrefix string) []models.Hitbox {
 
 func mapHitbox(id string, hb *models.Hitbox) Hitbox {
 	hitbox := Hitbox{
-		Id:       id,
-		Polygons: []Polygon{},
-		Type:     int(hb.Type),
+		Id:         id,
+		Polygons:   []Polygon{},
+		Type:       int(hb.Type),
+		Properties: hb.Properties,
 	}
 
 	polygons := hb.Polygons()
