@@ -70,7 +70,6 @@ func (p *Hitbox) Draw() {
 			offsetX := int32(p.PropertyFloat("blockOffsetX"))
 			offsetY := int32(p.PropertyFloat("blockOffsetY"))
 
-			outline := p.PropertyFloat("outlineThick")
 			fontSize := int32(p.PropertyFloat("fontSize"))
 
 			textOffsetX := p.PropertyFloat("textOffsetX")
@@ -91,13 +90,24 @@ func (p *Hitbox) Draw() {
 				}
 			}
 
-			width := int32(maxXLen * int(float64(fontSize)/1.5))
+			width := int32(maxXLen * int(float64(fontSize)/2.0))
 			height := int32(float64(fontSize)+(float64(fontSize)/1.5)) * (1 + (int32(strings.Count(text, "\n"))))
 
-			rl.DrawRectangle(int32(pos.X)+offsetX, int32(pos.Y)+offsetY, width, height, rl.Black)
-			rl.DrawRectangleLinesEx(rl.NewRectangle((pos.X)+float32(offsetX), (pos.Y)+float32(offsetY), float32(width), float32(height)), outline, rl.White)
-			// rl.DrawText(text, int32(pos.X)+offsetX+int32(textOffsetX), int32(pos.Y)+offsetY+int32(textOffsetY), fontSize, rl.White)
-			rl.DrawTextEx(resources.LoadFont(resources.Literata), text, rl.NewVector2(float32(int32(pos.X)+offsetX+int32(textOffsetX)), float32(int32(pos.Y)+offsetY+int32(textOffsetY))), float32(fontSize), 2, rl.White )
+			if width < 400 {
+				width = 400
+			}
+
+			rectColor := rl.Black
+			rectColor.A = 150
+
+			//rl.DrawRectangle(int32(pos.X)+offsetX, int32(pos.Y)+offsetY, width, height, rectColor)
+			rl.DrawRectangleRounded(rl.NewRectangle(float32(int32(pos.X)+offsetX), float32(int32(pos.Y)+offsetY), float32(width), float32(height)), 0.5, 0, rectColor)
+
+
+			mainColor := rl.White
+
+			textPos := rl.NewVector2(float32(int32(pos.X)+offsetX+int32(textOffsetX)), float32(int32(pos.Y)+offsetY+int32(textOffsetY)))
+			rl.DrawTextEx(resources.LoadFont(resources.Literata), text, textPos, float32(fontSize), 2, mainColor)
 		}
 	}
 
