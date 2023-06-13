@@ -3,39 +3,30 @@ package repository
 import (
 	"ahasuerus/collision"
 	"ahasuerus/models"
-	"encoding/json"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 const hitboxDir = "hitbox"
 
-func SaveHitbox(collectionPrefix string, hb *models.Hitbox) {
+func SaveHitbox(levelName string, hb *models.Hitbox) {
 	i := mapHitbox(hb.Id, hb)
-	err := db.Write(formatKey(collectionPrefix, hitboxDir), i.Id, i)
-	if err != nil {
-		panic(err)
-	}
+	level := GetLevel(levelName)
+	level.SaveHitbox(i)
+	SaveLevel(levelName, level)
 }
 
-func DeleteHitbox(collectionPrefix string, id string) {
-	err := db.Delete(formatKey(collectionPrefix, hitboxDir), id)
-	if err != nil {
-		panic(err)
-	}
+func DeleteHitbox(levelName string, id string) {
+	level := GetLevel(levelName)
+	level.DeleteHitbox(id)
+	SaveLevel(levelName, level)
 }
 
-func GetAllHitboxes(collectionPrefix string) []models.Hitbox {
-	records, err := db.ReadAll(formatKey(collectionPrefix, hitboxDir))
-	if err != nil {
-		panic(err)
-	}
+func GetAllHitboxes(levelName string) []models.Hitbox {
+	level := GetLevel(levelName)
 
 	hitboxes := []models.Hitbox{}
-	for _, f := range records {
-		hitboxFound := Hitbox{}
-		if err := json.Unmarshal([]byte(f), &hitboxFound); err != nil {
-			panic(err)
-		}
+	for i, _ := range level.Hitboxes {
+		hitboxFound := level.Hitboxes[i]
 		hb := models.Hitbox{
 			BaseEditorItem: models.BaseEditorItem{
 				Id:         hitboxFound.Id,

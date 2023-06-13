@@ -3,39 +3,30 @@ package repository
 import (
 	"ahasuerus/models"
 	"ahasuerus/resources"
-	"encoding/json"
 	"sort"
 )
 
 const imageDir = "image"
 
-func SaveImage(collectionPrefix string, img *models.Image) {
+func SaveImage(levelName string, img *models.Image) {
 	i := mapImage(img.Id, img)
-	err := db.Write(formatKey(collectionPrefix, imageDir), i.Id, i)
-	if err != nil {
-		panic(err)
-	}
+	level := GetLevel(levelName)
+	level.SaveImage(i)
+	SaveLevel(levelName, level)
 }
 
-func DeleteImage(collectionPrefix string, img *models.Image) {
-	err := db.Delete(formatKey(collectionPrefix, imageDir), img.Id)
-	if err != nil {
-		panic(err)
-	}
+func DeleteImage(levelName string, img *models.Image) {
+	level := GetLevel(levelName)
+	level.DeleteImage(img.Id)
+	SaveLevel(levelName, level)
 }
 
-func GetAllImages(collectionPrefix string) []models.Image {
-	records, err := db.ReadAll(formatKey(collectionPrefix, imageDir))
-	if err != nil {
-		panic(err)
-	}
+func GetAllImages(levelName string) []models.Image {
+	level := GetLevel(levelName)
 
 	images := []models.Image{}
-	for _, f := range records {
-		imageFound := Image{}
-		if err := json.Unmarshal([]byte(f), &imageFound); err != nil {
-			panic(err)
-		}
+	for i, _ := range level.Images {
+		imageFound := level.Images[i]
 
 		imageModel := models.NewImage(imageFound.DrawIndex, imageFound.Id, resources.GameTexture(imageFound.Path), float32(imageFound.X), float32(imageFound.Y), float32(imageFound.Width), float32(imageFound.Height), float32(imageFound.Rotation))
 		if imageFound.Shader != string(resources.UndefinedShader) {

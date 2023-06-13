@@ -1,5 +1,77 @@
 package repository
 
+type Level struct {
+	Hitboxes   []Hitbox        `json:"hitboxes"`
+	Images     []Image         `json:"images"`
+	Properties SceneProperties `json:"properties"`
+}
+
+func (l *Level) SaveImage(img Image) {
+	found := false
+	foundIndex := 0
+	for index, _ := range l.Images {
+		if l.Images[index].Id == img.Id {
+			found = true
+			foundIndex = index
+			break
+		}
+	}
+
+	if found {
+		l.Images[foundIndex] = img
+	} else {
+		l.Images = append(l.Images, img)
+	}
+}
+
+func (l *Level) DeleteImage(id string) {
+	found := false
+	foundIndex := 0
+	for index, _ := range l.Images {
+		if l.Images[index].Id == id {
+			found = true
+			foundIndex = index
+			break
+		}
+	}
+	if found {
+		l.Images = append(l.Images[:foundIndex], l.Images[foundIndex+1:]...)
+	}
+}
+
+func (l *Level) SaveHitbox(hitbox Hitbox) {
+	found := false
+	foundIndex := 0
+	for index, _ := range l.Hitboxes {
+		if l.Hitboxes[index].Id == hitbox.Id {
+			found = true
+			foundIndex = index
+			break
+		}
+	}
+
+	if found {
+		l.Hitboxes[foundIndex] = hitbox
+	} else {
+		l.Hitboxes = append(l.Hitboxes, hitbox)
+	}
+}
+
+func (l *Level) DeleteHitbox(id string) {
+	found := false
+	foundIndex := 0
+	for index, _ := range l.Hitboxes {
+		if l.Hitboxes[index].Id == id {
+			found = true
+			foundIndex = index
+			break
+		}
+	}
+	if found {
+		l.Hitboxes = append(l.Hitboxes[:foundIndex], l.Hitboxes[foundIndex+1:]...)
+	}
+}
+
 type Color struct {
 	R int `json:"R"`
 	G int `json:"G"`
