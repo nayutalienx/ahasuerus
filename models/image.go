@@ -19,6 +19,13 @@ type Image struct {
 	ImageShader  resources.GameShader
 	preset       func(i *Image)
 
+	Scale float32
+
+	isMoveMode   bool
+	startMovePos rl.Vector2
+	endMovePos   rl.Vector2
+	moveSpeed    float32
+
 	Lightboxes []Hitbox
 	shaderLocs []int32
 }
@@ -26,7 +33,7 @@ type Image struct {
 func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y, width, height, rotation float32) *Image {
 	img := &Image{
 		BaseEditorItem: BaseEditorItem{
-			Id:           id,
+			Id:       id,
 			Rotation: rotation,
 		},
 		DrawIndex:    drawIndex,
@@ -35,6 +42,7 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 		WidthHeight:  rl.NewVector2(width, height),
 		Lightboxes:   make([]Hitbox, 0),
 		shaderLocs:   make([]int32, 0),
+		Scale: 1,
 	}
 	if width != 0 && height != 0 {
 		img.initEditorItem()
@@ -42,13 +50,22 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 	return img
 }
 
+func (p *Image) StartMove(startMovePos rl.Vector2, endMovePos rl.Vector2, moveSpeed float32) {
+	p.isMoveMode = true
+	p.startMovePos = startMovePos
+	p.endMovePos = endMovePos
+	p.moveSpeed = moveSpeed
+
+	p.Pos = p.startMovePos
+}
+
 func (p *Image) Draw() {
 	if p.ImageShader != resources.UndefinedShader {
 		rl.BeginShaderMode(p.Shader)
-		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, 1, rl.White)
+		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, p.Scale, rl.White)
 		rl.EndShaderMode()
 	} else {
-		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, 1, rl.White)
+		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, p.Scale, rl.White)
 	}
 	if p.EditSelected {
 		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.Pos.X), int32(p.Pos.Y), 40, rl.Red)
@@ -57,8 +74,16 @@ func (p *Image) Draw() {
 }
 
 func (p *Image) Update(delta float32) {
-	p.Pos = p.TopLeft()
+	if p.isMoveMode {
+		p.Pos = rl.Vector2Lerp(p.Pos, p.endMovePos, p.moveSpeed*delta)
+		if p.Pos == p.endMovePos {
+			p.isMoveMode = false
+		}
+	} else {
+		p.Pos = p.TopLeft()
+	}
 	p.WidthHeight = rl.NewVector2(p.Width(), p.Height())
+
 	if p.ImageShader == resources.TextureLightShader {
 		lightPoints := make([]float32, 0)
 		for i, _ := range p.Lightboxes {

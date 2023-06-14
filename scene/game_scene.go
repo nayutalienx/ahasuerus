@@ -19,6 +19,8 @@ type GameScene struct {
 	player         *models.Player
 	properties     map[SceneProp]interface{}
 
+	onScreenQueue chan models.Object
+
 	sceneName string
 	paused    bool
 }
@@ -27,6 +29,7 @@ func NewGameScene(sceneName string) *GameScene {
 	scene := GameScene{
 		sceneName:      sceneName,
 		worldContainer: container.NewObjectResourceContainer(),
+		onScreenQueue: make(chan models.Object, 1),
 	}
 
 	scene.properties = map[SceneProp]interface{}{}
@@ -52,7 +55,7 @@ func NewGameScene(sceneName string) *GameScene {
 	hitboxes := repository.GetAllHitboxes(scene.sceneName)
 	for i, _ := range hitboxes {
 		hb := hitboxes[i]
-		scene.worldContainer.AddObject(&hb)
+		scene.worldContainer.AddObjectResource(hb.ScreenChan(scene.onScreenQueue))
 		if hb.Type == models.Collision {
 			scene.player.CollisionProcessor.AddHitbox(&collision.Hitbox{
 				Polygons: hb.Polygons(),
@@ -111,6 +114,12 @@ func (s *GameScene) Run() models.Scene {
 		s.worldContainer.Update(delta)
 		s.worldContainer.Draw()
 		rl.EndMode2D()
+
+		if len(s.onScreenQueue) > 0 {
+			onScreenObject := <- s.onScreenQueue
+			onScreenObject.Draw()
+			onScreenObject.Update(delta)
+		}
 
 		if models.DRAW_MODELS {
 			models.NewText(10, 10).

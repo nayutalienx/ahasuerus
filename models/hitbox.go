@@ -2,11 +2,18 @@ package models
 
 import (
 	"ahasuerus/collision"
+	"ahasuerus/config"
 	"ahasuerus/resources"
 	"fmt"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"github.com/google/uuid"
+)
+
+var (
+	WIDTH, HEIGHT = config.GetResolution()
+	INACCURACY = float32(10)
 )
 
 type HitboxType int
@@ -22,8 +29,41 @@ type Hitbox struct {
 	Type               HitboxType
 	CollisionProcessor collision.CollisionDetector
 
+	bgImage        *Image
+	bgImageHidePos rl.Vector2
+	screenChan     chan Object
+
 	hasCollision bool
+	drawBgImage  bool
 }
+
+func (p *Hitbox) ScreenChan(c chan Object) *Hitbox {
+	p.screenChan = c
+	return p
+}
+
+func (p *Hitbox) Load() {
+	bgImage, ok := p.Properties["bgImage"]
+	if ok {
+		p.bgImage = NewImage(0, uuid.NewString(), resources.GameTexture(bgImage), 0, 0, 0, 0, 0)
+		p.bgImage.Load()
+
+		scale := p.PropertyFloat("bgImageScale")
+		if scale > 0 {
+			p.bgImage.Scale = scale
+		}
+
+	}
+}
+
+func (p *Hitbox) Unload() {
+	if p.bgImage != nil {
+		p.bgImage.Unload()
+	}
+}
+
+func (p *Hitbox) Pause()  {}
+func (p *Hitbox) Resume() {}
 
 func (p *Hitbox) Draw() {
 	if DRAW_MODELS {
@@ -67,6 +107,19 @@ func (p *Hitbox) Draw() {
 		if p.hasCollision || p.EditSelected {
 			p.drawDialog()
 		}
+
+		if p.drawBgImage {
+			if p.bgImage != nil {
+				p.screenChan <- p.bgImage
+			}
+		}
+
+		if !p.hasCollision && p.drawBgImage {
+			if p.bgImage.Pos.X > p.bgImageHidePos.X - INACCURACY && p.bgImage.Pos.Y > p.bgImageHidePos.Y - INACCURACY {
+				p.drawBgImage = false
+			}
+		}
+
 	}
 
 }
@@ -74,9 +127,20 @@ func (p *Hitbox) Draw() {
 func (p *Hitbox) Update(delta float32) {
 
 	if p.Type == Npc {
-		p.hasCollision, _ = p.CollisionProcessor.Detect(p.getDynamicHitbox())
+		detectedCollision, _ := p.CollisionProcessor.Detect(p.getDynamicHitbox())
+
+		if !p.hasCollision && detectedCollision {
+			p.enterCollision()
+		}
+
+		if p.hasCollision && !detectedCollision {
+			p.exitCollision()
+		}
+
+		p.hasCollision = detectedCollision
 
 		if p.hasCollision {
+
 			textCounter := int32(p.PropertyFloat("textCounter"))
 			currentChoice := int(p.PropertyFloat("currentChoice"))
 
@@ -104,7 +168,7 @@ func (p *Hitbox) Update(delta float32) {
 
 					if rl.IsKeyReleased(rl.KeyUp) {
 						futureChoice = currentChoice - 1
-					}					
+					}
 
 					if len(choices) > futureChoice && futureChoice >= 0 {
 						p.Properties["currentChoice"] = fmt.Sprintf("%.1f", float32(futureChoice))
@@ -118,6 +182,22 @@ func (p *Hitbox) Update(delta float32) {
 
 	}
 
+}
+
+func (p *Hitbox) enterCollision() {
+	if p.bgImage != nil {
+		start := rl.NewVector2(WIDTH, 0)
+		end := rl.NewVector2(WIDTH-(p.bgImage.WidthHeight.X*p.bgImage.Scale), 0)
+		p.bgImage.StartMove(start, end, 10)
+		p.drawBgImage = true
+	}
+}
+
+func (p *Hitbox) exitCollision() {
+	if p.bgImage != nil {
+		p.bgImageHidePos = rl.NewVector2(WIDTH+INACCURACY, 0)
+		p.bgImage.StartMove(p.bgImage.Pos, p.bgImageHidePos, 10)
+	}
 }
 
 func (p Hitbox) drawSelectDialog(dialogRec rl.Rectangle) {

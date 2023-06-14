@@ -1139,7 +1139,8 @@
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
 				"textOffsetY": "15.0\u0000",
-				"currentChoice": "0"
+				"currentChoice": "0",
+				"bgImage": "resources/heroes/characters/kanade.png"
 			}
 		},
 		{
@@ -1184,7 +1185,8 @@
 				"blockOffsetY": "-150.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc2\u0000",
-
+				"bgImage": "resources/heroes/characters/kanade_2.png",
+				"bgImageScale": "0.7",
 				"text": "I don't care man;Fuck off!;Stupid bastard",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",

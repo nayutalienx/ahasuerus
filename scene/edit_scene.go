@@ -64,7 +64,7 @@ func NewEditScene(
 	hitboxes := repository.GetAllHitboxes(scene.sceneName)
 	for i, _ := range hitboxes {
 		hb := hitboxes[i]
-		scene.worldContainer.AddObject(&hb)
+		scene.worldContainer.AddObjectResource(&hb)
 	}
 
 	camera := rl.NewCamera2D(
