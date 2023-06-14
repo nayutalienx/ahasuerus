@@ -37,11 +37,12 @@ const (
 	BlurShader         GameShader = "resources/shader/blur.fs"
 	TextureShader      GameShader = "resources/shader/texture.fs"
 	TextureLightShader GameShader = "resources/shader/texture_light.fs"
+	NpbBgImageShader   GameShader = "resources/shader/npc_bg_image.fs"
 )
 
 var (
 	textureCache = make(map[GameTexture]rl.Texture2D)
-	fontsCache = make(map[FontTtf]rl.Font)
+	fontsCache   = make(map[FontTtf]rl.Font)
 )
 
 func LoadFont(f FontTtf) rl.Font {

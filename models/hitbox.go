@@ -45,7 +45,7 @@ func (p *Hitbox) ScreenChan(c chan Object) *Hitbox {
 func (p *Hitbox) Load() {
 	bgImage, ok := p.Properties["bgImage"]
 	if ok {
-		p.bgImage = NewImage(0, uuid.NewString(), resources.GameTexture(bgImage), 0, 0, 0, 0, 0)
+		p.bgImage = NewImage(0, uuid.NewString(), resources.GameTexture(bgImage), 0, 0, 0, 0, 0).WithShader(resources.NpbBgImageShader)
 		p.bgImage.Load()
 
 		scale := p.PropertyFloat("bgImageScale")
