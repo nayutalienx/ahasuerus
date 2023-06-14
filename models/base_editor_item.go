@@ -223,6 +223,7 @@ func (p *BaseEditorItem) PropertyFloat(key string) float32 {
 	val, err := strconv.ParseFloat(strings.ReplaceAll(propVal, "\x00", ""), 32)
 	if err != nil {
 		fmt.Println("ERROR PARSE HITBOX PROPERTY ", key, propVal, p.Id, err)
+		p.Properties[key] = "0"
 		return 0
 	}
 	return float32(val)
@@ -232,7 +233,7 @@ func (p *BaseEditorItem) PropertyString(key string) string {
 	propVal, ok := p.Properties[key]
 	if !ok {
 		fmt.Sprintf("ERROR HITBOX PROPERTY NOT FOUND", key, p.Id)
-		p.Properties[key] = "ERROR"
+		p.Properties[key] = ""
 		return p.Properties[key]
 	}
 	return propVal

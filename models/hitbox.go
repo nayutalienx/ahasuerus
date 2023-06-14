@@ -65,48 +65,7 @@ func (p *Hitbox) Draw() {
 
 	if p.Type == Npc {
 		if p.hasCollision || p.EditSelected {
-			pos := p.TopRight()
-
-			offsetX := int32(p.PropertyFloat("blockOffsetX"))
-			offsetY := int32(p.PropertyFloat("blockOffsetY"))
-
-			fontSize := int32(p.PropertyFloat("fontSize"))
-
-			textOffsetX := p.PropertyFloat("textOffsetX")
-			textOffsetY := p.PropertyFloat("textOffsetY")
-			phrases := strings.Split(p.PropertyString("text"), ";")
-			textCounter := int32(p.PropertyFloat("textCounter"))
-
-			text := "empty phrase"
-			if len(phrases) > int(textCounter) {
-				text = phrases[textCounter]
-			}
-
-			maxXLen := 0
-			splittenByNewLine := strings.Split(text, "\n")
-			for i, _ := range splittenByNewLine {
-				if len(splittenByNewLine[i]) > maxXLen {
-					maxXLen = len(splittenByNewLine[i])
-				}
-			}
-
-			width := int32(maxXLen * int(float64(fontSize)/2.0))
-			height := int32(float64(fontSize)+(float64(fontSize)/1.5)) * (1 + (int32(strings.Count(text, "\n"))))
-
-			if width < 400 {
-				width = 400
-			}
-
-			rectColor := rl.Black
-			rectColor.A = 150
-
-			rl.DrawRectangleRounded(rl.NewRectangle(float32(int32(pos.X)+offsetX), float32(int32(pos.Y)+offsetY), float32(width), float32(height)), 0.5, 0, rectColor)
-
-
-			mainColor := rl.White
-
-			textPos := rl.NewVector2(float32(int32(pos.X)+offsetX+int32(textOffsetX)), float32(int32(pos.Y)+offsetY+int32(textOffsetY)))
-			rl.DrawTextEx(resources.LoadFont(resources.Literata), text, textPos, float32(fontSize), 2, mainColor)
+			p.drawDialog()
 		}
 	}
 
@@ -118,18 +77,141 @@ func (p *Hitbox) Update(delta float32) {
 		p.hasCollision, _ = p.CollisionProcessor.Detect(p.getDynamicHitbox())
 
 		if p.hasCollision {
+			textCounter := int32(p.PropertyFloat("textCounter"))
+			currentChoice := int(p.PropertyFloat("currentChoice"))
+
 			if rl.IsKeyReleased(rl.KeyEnter) {
 				phrases := strings.Split(p.PropertyString("text"), ";")
-				textCounter := int32(p.PropertyFloat("textCounter"))
 				if len(phrases) > int(textCounter+1) {
 					p.Properties["textCounter"] = fmt.Sprintf("%.1f", float32(textCounter+1))
+					choosed := p.PropertyString("choosed")
+					p.Properties["choosed"] = fmt.Sprintf("%s;%d", choosed, currentChoice)
+					p.Properties["currentChoice"] = fmt.Sprintf("%.1f", float32(0))
 				}
+			}
+
+			if rl.IsKeyReleased(rl.KeyDown) || rl.IsKeyReleased(rl.KeyUp) {
+
+				choicesByPhrace := strings.Split(p.PropertyString("choice"), ";")
+				if len(choicesByPhrace) > int(textCounter) {
+					choices := strings.Split(choicesByPhrace[textCounter], ":")
+
+					futureChoice := 0
+
+					if rl.IsKeyReleased(rl.KeyDown) {
+						futureChoice = currentChoice + 1
+					}
+
+					if rl.IsKeyReleased(rl.KeyUp) {
+						futureChoice = currentChoice - 1
+					}					
+
+					if len(choices) > futureChoice && futureChoice >= 0 {
+						p.Properties["currentChoice"] = fmt.Sprintf("%.1f", float32(futureChoice))
+					}
+
+				}
+
 			}
 
 		}
 
 	}
 
+}
+
+func (p Hitbox) drawSelectDialog(dialogRec rl.Rectangle) {
+
+	choice := p.PropertyString("choice")
+	if choice == "" {
+		return
+	}
+
+	fontSize := int32(p.PropertyFloat("fontSize"))
+	textOffsetX := p.PropertyFloat("textOffsetX")
+	textOffsetY := p.PropertyFloat("textOffsetY")
+
+	textCounter := int32(p.PropertyFloat("textCounter"))
+
+	choicesByPhrace := strings.Split(choice, ";")
+
+	if len(choicesByPhrace) > int(textCounter) {
+
+		rectColor := rl.Black
+		rectColor.A = 150
+		dialogRec.X += dialogRec.Width / 1.1
+		dialogRec.Y += dialogRec.Height / 2
+
+		choices := strings.Split(choicesByPhrace[textCounter], ":")
+
+		dialogRec.Height = float32(fontSize*int32(len(choices))) + textOffsetY
+		rl.DrawRectangleRounded(dialogRec, 0.5, 0, rectColor)
+
+		for i, _ := range choices {
+			choice := choices[i]
+
+			textPos := rl.NewVector2(
+				dialogRec.X+textOffsetX,
+				dialogRec.Y+textOffsetY/2+float32(fontSize)*float32(i),
+			)
+
+			color := rl.White
+			if i == int(p.PropertyFloat("currentChoice")) {
+				color = rl.Orange
+			}
+
+			rl.DrawTextEx(resources.LoadFont(resources.Literata), choice, textPos, float32(fontSize), 2, color)
+
+		}
+
+	}
+
+}
+
+func (p Hitbox) drawDialog() {
+	pos := p.TopRight()
+
+	offsetX := int32(p.PropertyFloat("blockOffsetX"))
+	offsetY := int32(p.PropertyFloat("blockOffsetY"))
+
+	fontSize := int32(p.PropertyFloat("fontSize"))
+
+	textOffsetX := p.PropertyFloat("textOffsetX")
+	textOffsetY := p.PropertyFloat("textOffsetY")
+	phrases := strings.Split(p.PropertyString("text"), ";")
+	textCounter := int32(p.PropertyFloat("textCounter"))
+
+	text := "empty phrase"
+	if len(phrases) > int(textCounter) {
+		text = phrases[textCounter]
+	}
+
+	maxXLen := 0
+	splittenByNewLine := strings.Split(text, "\n")
+	for i, _ := range splittenByNewLine {
+		if len(splittenByNewLine[i]) > maxXLen {
+			maxXLen = len(splittenByNewLine[i])
+		}
+	}
+
+	width := int32(maxXLen * int(float64(fontSize)/2.0))
+	height := int32(float64(fontSize)+(float64(fontSize)/1.5)) * (1 + (int32(strings.Count(text, "\n"))))
+
+	if width < 400 {
+		width = 400
+	}
+
+	rectColor := rl.Black
+	rectColor.A = 150
+
+	roundedRec := rl.NewRectangle(float32(int32(pos.X)+offsetX), float32(int32(pos.Y)+offsetY), float32(width), float32(height))
+
+	rl.DrawRectangleRounded(roundedRec, 0.5, 0, rectColor)
+
+	textPos := rl.NewVector2(float32(int32(pos.X)+offsetX+int32(textOffsetX)), float32(int32(pos.Y)+offsetY+int32(textOffsetY)))
+	rl.DrawTextEx(resources.LoadFont(resources.Literata), text, textPos, float32(fontSize), 2, rl.White)
+
+	p.drawSelectDialog(roundedRec)
 }
 
 func (p Hitbox) getDynamicHitbox() collision.Hitbox {
