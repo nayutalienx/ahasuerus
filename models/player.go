@@ -19,6 +19,7 @@ type RewindItem struct {
 	Pos              rl.Vector2
 	orientation      Orientation
 	currentAnimation *Animation
+	velocity         rl.Vector2
 }
 
 type Player struct {
@@ -134,7 +135,7 @@ func (p *Player) Update(delta float32) {
 	rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
 
 	if !rewindEnabled {
-		p.velocity.X = 0
+		p.movementResist(1, delta)
 		p.velocity.Y += GRAVITY * delta
 
 		moveByXButtonPressed := p.processMoveXInput()
@@ -191,6 +192,7 @@ func (p *Player) savePlayerToRewind() {
 		Pos:              p.Pos,
 		orientation:      p.orientation,
 		currentAnimation: p.currentAnimation,
+		velocity:         p.velocity,
 	}
 	p.Rewind[p.rewindLastIndex+1] = p.Rewind[p.rewindLastIndex] // fix jump to 0,0 when rewind
 	p.rewindLastIndex++
@@ -202,6 +204,7 @@ func (p *Player) rewindPlayer() {
 		p.Pos = rewind.Pos
 		p.orientation = rewind.orientation
 		p.currentAnimation = rewind.currentAnimation
+		p.velocity = rewind.velocity
 		p.rewindLastIndex--
 	}
 }
@@ -286,6 +289,7 @@ func (p *Player) resolveCollission(moveByXButtonPressed bool, collisionMap map[i
 
 	if bottomRight || bottomLeft { // fall on ground
 		p.velocity.Y = 0
+		p.movementResist(7, delta)
 	}
 
 	pushFromWall := false
@@ -313,6 +317,21 @@ func (p *Player) resolveCollission(moveByXButtonPressed bool, collisionMap map[i
 	}
 
 	return rl.Vector2Add(p.Pos, p.velocity)
+}
+
+func (p *Player) movementResist(resistScale float32, delta float32) {
+	if p.velocity.X > 0 {
+		p.velocity.X += -1 * PLAYER_MOVE_SPEED * resistScale * delta
+		if p.velocity.X < 0 {
+			p.velocity.X = 0
+		}
+	}
+	if p.velocity.X < 0 {
+		p.velocity.X += PLAYER_MOVE_SPEED * resistScale * delta
+		if p.velocity.X > 0 {
+			p.velocity.X = 0
+		}
+	}
 }
 
 func (p *Player) drawHitbox() {
