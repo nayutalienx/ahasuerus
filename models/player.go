@@ -3,7 +3,6 @@ package models
 import (
 	"ahasuerus/collision"
 	"ahasuerus/resources"
-	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -13,8 +12,7 @@ const (
 	GRAVITY           = 10
 	PLAYER_MOVE_SPEED = 5
 
-	everyMs          = 0.1
-	rewindBufferSize = (1.0 / everyMs) * 60 * 30
+	rewindBufferSize = 60 * 60 * 30
 )
 
 type RewindItem struct {
@@ -45,10 +43,8 @@ type Player struct {
 	Lightboxes  []Hitbox
 	shaderLocs  []int32
 
-	Rewind             [rewindBufferSize]RewindItem
-	rewindLastIndex    int32
-	rewindFrameCounter int32
-	rewindSaveFrame    int32
+	Rewind          [rewindBufferSize]RewindItem
+	rewindLastIndex int32
 
 	paused bool
 }
@@ -56,8 +52,7 @@ type Player struct {
 func NewPlayer(x float32, y float32) *Player {
 
 	p := &Player{
-		Pos:             rl.NewVector2(x, y),
-		rewindSaveFrame: int32(float64(FPS) * (everyMs)),
+		Pos: rl.NewVector2(x, y),
 	}
 	hb := GetDynamicHitboxFromMap(GetDynamicHitboxMap(p.Pos, p.width, p.height))
 	p.currentHitbox = &hb
@@ -192,46 +187,22 @@ func (p *Player) Update(delta float32) {
 }
 
 func (p *Player) savePlayerToRewind() {
-	p.rewindFrameCounter++
-	if p.rewindFrameCounter == p.rewindSaveFrame {
-		p.Rewind[p.rewindLastIndex] = RewindItem{
-			Pos:              p.Pos,
-			orientation:      p.orientation,
-			currentAnimation: p.currentAnimation,
-		}
-		p.Rewind[p.rewindLastIndex+1] = p.Rewind[p.rewindLastIndex] // fix jump to 0,0 when rewind
-		p.rewindLastIndex++
-		p.rewindFrameCounter = 0
+	p.Rewind[p.rewindLastIndex] = RewindItem{
+		Pos:              p.Pos,
+		orientation:      p.orientation,
+		currentAnimation: p.currentAnimation,
 	}
+	p.Rewind[p.rewindLastIndex+1] = p.Rewind[p.rewindLastIndex] // fix jump to 0,0 when rewind
+	p.rewindLastIndex++
 }
 
 func (p *Player) rewindPlayer() {
-
 	if p.rewindLastIndex > 0 {
-
-		if p.rewindFrameCounter > 0 {
-			p.rewindFrameCounter = 0
-		}
-
-		p.rewindFrameCounter--
-		if p.rewindFrameCounter == (-1)*p.rewindSaveFrame {
-			rewind := p.Rewind[p.rewindLastIndex-1]
-			p.Pos = rewind.Pos
-			p.orientation = rewind.orientation
-			p.currentAnimation = rewind.currentAnimation
-			p.rewindFrameCounter = 0
-			p.rewindLastIndex--
-		} else {
-			currentPos := p.Rewind[p.rewindLastIndex].Pos
-			nextPos := p.Rewind[p.rewindLastIndex-1].Pos
-			p.currentAnimation = p.Rewind[p.rewindLastIndex-1].currentAnimation
-			relativePositionByFrame := float32(math.Abs(float64(p.rewindFrameCounter)) / float64(p.rewindSaveFrame))
-			p.Pos = rl.Vector2Lerp(
-				currentPos,
-				nextPos,
-				relativePositionByFrame,
-			)
-		}
+		rewind := p.Rewind[p.rewindLastIndex-1]
+		p.Pos = rewind.Pos
+		p.orientation = rewind.orientation
+		p.currentAnimation = rewind.currentAnimation
+		p.rewindLastIndex--
 	}
 }
 
