@@ -42,6 +42,8 @@ type Animation struct {
 	framesPerSecond int32
 	timeInSeconds   float32
 
+	reverse bool
+
 	preset func(*Animation)
 }
 
@@ -108,6 +110,14 @@ func (a *Animation) Update(delta float32) {
 	}
 
 	a.frame.X = float32(a.currentFrame) * float32(a.StepInPixel)
+	if a.reverse {
+		mirrorCurrentFrame := a.steps - a.currentFrame - 1
+		a.frame.X = float32(mirrorCurrentFrame) * float32(a.StepInPixel)
+	}
+}
+
+func (a *Animation) Reverse(rev bool) {
+	a.reverse = rev
 }
 
 func (a *Animation) Stop() {

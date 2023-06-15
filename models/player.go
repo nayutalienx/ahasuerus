@@ -3,6 +3,7 @@ package models
 import (
 	"ahasuerus/collision"
 	"ahasuerus/resources"
+	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -11,7 +12,16 @@ const (
 	JUMP_SPEED        = 350
 	GRAVITY           = 10
 	PLAYER_MOVE_SPEED = 5
+
+	everyMs          = 0.1
+	rewindBufferSize = (1.0 / everyMs) * 60 * 30
 )
+
+type RewindItem struct {
+	Pos              rl.Vector2
+	orientation      Orientation
+	currentAnimation *Animation
+}
 
 type Player struct {
 	Pos                rl.Vector2
@@ -35,12 +45,19 @@ type Player struct {
 	Lightboxes  []Hitbox
 	shaderLocs  []int32
 
+	Rewind             [rewindBufferSize]RewindItem
+	rewindLastIndex    int32
+	rewindFrameCounter int32
+	rewindSaveFrame    int32
+
 	paused bool
 }
 
 func NewPlayer(x float32, y float32) *Player {
+
 	p := &Player{
-		Pos: rl.NewVector2(x, y),
+		Pos:             rl.NewVector2(x, y),
+		rewindSaveFrame: int32(float64(FPS) * (everyMs)),
 	}
 	hb := GetDynamicHitboxFromMap(GetDynamicHitboxMap(p.Pos, p.width, p.height))
 	p.currentHitbox = &hb
@@ -118,25 +135,37 @@ func (p Player) Draw() {
 }
 
 func (p *Player) Update(delta float32) {
-	p.velocity.X = 0
-	p.velocity.Y += GRAVITY * delta
 
-	moveByXButtonPressed := p.processMoveXInput()
+	rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
 
-	futurePos := rl.Vector2Add(p.Pos, p.velocity)
+	if !rewindEnabled {
+		p.velocity.X = 0
+		p.velocity.Y += GRAVITY * delta
 
-	futureHitboxMap := GetDynamicHitboxMap(futurePos, p.width, p.height)
-	hitbox := GetDynamicHitboxFromMap(futureHitboxMap)
-	hasCollision, collisionMap := p.CollisionProcessor.Detect(hitbox)
-	if hasCollision {
-		futurePos = p.resolveCollission(moveByXButtonPressed, collisionMap, delta)
+		moveByXButtonPressed := p.processMoveXInput()
+
+		futurePos := rl.Vector2Add(p.Pos, p.velocity)
+
+		futureHitboxMap := GetDynamicHitboxMap(futurePos, p.width, p.height)
+		hitbox := GetDynamicHitboxFromMap(futureHitboxMap)
+		hasCollision, collisionMap := p.CollisionProcessor.Detect(hitbox)
+		if hasCollision {
+			futurePos = p.resolveCollission(moveByXButtonPressed, collisionMap, delta)
+		}
+
+		posDelta := rl.Vector2Subtract(p.Pos, futurePos)
+
+		p.Pos = futurePos
+
+		p.resolveAndUpdateAnimation(hasCollision, posDelta, delta)
+
+		p.savePlayerToRewind()
+	} else {
+		p.rewindPlayer()
+		p.currentAnimation.Reverse(true)
+		p.updateAnimation(delta)
+		p.currentAnimation.Reverse(false)
 	}
-
-	posDelta := rl.Vector2Subtract(p.Pos, futurePos)
-
-	p.Pos = futurePos
-
-	p.updateAnimation(hasCollision, posDelta, delta)
 
 	// update hitbox for others
 	p.updateCurrentHitbox()
@@ -162,7 +191,51 @@ func (p *Player) Update(delta float32) {
 	}
 }
 
-func (p *Player) updateAnimation(hasCollision bool, posDelta rl.Vector2, delta float32) {
+func (p *Player) savePlayerToRewind() {
+	p.rewindFrameCounter++
+	if p.rewindFrameCounter == p.rewindSaveFrame {
+		p.Rewind[p.rewindLastIndex] = RewindItem{
+			Pos:              p.Pos,
+			orientation:      p.orientation,
+			currentAnimation: p.currentAnimation,
+		}
+		p.Rewind[p.rewindLastIndex+1] = p.Rewind[p.rewindLastIndex] // fix jump to 0,0 when rewind
+		p.rewindLastIndex++
+		p.rewindFrameCounter = 0
+	}
+}
+
+func (p *Player) rewindPlayer() {
+
+	if p.rewindLastIndex > 0 {
+
+		if p.rewindFrameCounter > 0 {
+			p.rewindFrameCounter = 0
+		}
+
+		p.rewindFrameCounter--
+		if p.rewindFrameCounter == (-1)*p.rewindSaveFrame {
+			rewind := p.Rewind[p.rewindLastIndex-1]
+			p.Pos = rewind.Pos
+			p.orientation = rewind.orientation
+			p.currentAnimation = rewind.currentAnimation
+			p.rewindFrameCounter = 0
+			p.rewindLastIndex--
+		} else {
+			currentPos := p.Rewind[p.rewindLastIndex].Pos
+			nextPos := p.Rewind[p.rewindLastIndex-1].Pos
+			p.currentAnimation = p.Rewind[p.rewindLastIndex-1].currentAnimation
+			relativePositionByFrame := float32(math.Abs(float64(p.rewindFrameCounter)) / float64(p.rewindSaveFrame))
+			p.Pos = rl.Vector2Lerp(
+				currentPos,
+				nextPos,
+				relativePositionByFrame,
+			)
+		}
+	}
+}
+
+func (p *Player) resolveAndUpdateAnimation(hasCollision bool, posDelta rl.Vector2, delta float32) {
 
 	prevAnimation := p.currentAnimation
 
@@ -191,7 +264,10 @@ func (p *Player) updateAnimation(hasCollision bool, posDelta rl.Vector2, delta f
 	if p.currentAnimation != prevAnimation {
 		p.currentAnimation.Begin()
 	}
+	p.updateAnimation(delta)
+}
 
+func (p *Player) updateAnimation(delta float32) {
 	p.currentAnimation.Pos.X = p.Pos.X
 	p.currentAnimation.Pos.Y = p.Pos.Y
 	p.currentAnimation.Orientation = p.orientation
