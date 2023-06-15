@@ -11,11 +11,9 @@ const (
 	JUMP_SPEED        = 350
 	GRAVITY           = 10
 	PLAYER_MOVE_SPEED = 5
-
-	rewindBufferSize = 60 * 60 * 30
 )
 
-type RewindItem struct {
+type PlayerRewindData struct {
 	Pos              rl.Vector2
 	orientation      Orientation
 	currentAnimation *Animation
@@ -44,7 +42,7 @@ type Player struct {
 	Lightboxes  []Hitbox
 	shaderLocs  []int32
 
-	Rewind          [rewindBufferSize]RewindItem
+	Rewind          [REWIND_BUFFER_SIZE]PlayerRewindData
 	rewindLastIndex int32
 
 	paused bool
@@ -192,13 +190,12 @@ func (p *Player) savePlayerToRewind() {
 		p.rewindLastIndex = 0
 	}
 
-	p.Rewind[p.rewindLastIndex] = RewindItem{
+	p.Rewind[p.rewindLastIndex] = PlayerRewindData{
 		Pos:              p.Pos,
 		orientation:      p.orientation,
 		currentAnimation: p.currentAnimation,
 		velocity:         p.velocity,
 	}
-	p.Rewind[p.rewindLastIndex+1] = p.Rewind[p.rewindLastIndex] // fix jump to 0,0 when rewind
 	p.rewindLastIndex++
 }
 

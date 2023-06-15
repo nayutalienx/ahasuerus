@@ -13,7 +13,7 @@ import (
 
 var (
 	WIDTH, HEIGHT = config.GetResolution()
-	INACCURACY = float32(10)
+	INACCURACY    = float32(10)
 )
 
 type HitboxType int
@@ -23,6 +23,12 @@ const (
 	Light
 	Npc
 )
+
+type HitboxRewindData struct {
+	TextCounter   string
+	Choosed       string
+	CurrentChoise string
+}
 
 type Hitbox struct {
 	BaseEditorItem
@@ -35,6 +41,9 @@ type Hitbox struct {
 
 	hasCollision bool
 	drawBgImage  bool
+
+	Rewind          []HitboxRewindData
+	rewindLastIndex int32
 }
 
 func (p *Hitbox) ScreenChan(c chan Object) *Hitbox {
@@ -53,6 +62,10 @@ func (p *Hitbox) Load() {
 			p.bgImage.Scale = scale
 		}
 
+	}
+
+	if p.Type == Npc {
+		p.Rewind = make([]HitboxRewindData, REWIND_BUFFER_SIZE)
 	}
 }
 
@@ -115,7 +128,7 @@ func (p *Hitbox) Draw() {
 		}
 
 		if !p.hasCollision && p.drawBgImage {
-			if p.bgImage.Pos.X > p.bgImageHidePos.X - INACCURACY && p.bgImage.Pos.Y > p.bgImageHidePos.Y - INACCURACY {
+			if p.bgImage.Pos.X > p.bgImageHidePos.X-INACCURACY && p.bgImage.Pos.Y > p.bgImageHidePos.Y-INACCURACY {
 				p.drawBgImage = false
 			}
 		}
@@ -127,6 +140,14 @@ func (p *Hitbox) Draw() {
 func (p *Hitbox) Update(delta float32) {
 
 	if p.Type == Npc {
+
+		rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
+		if rewindEnabled {
+			p.rewindNpc()
+		} else {
+			p.saveNpcToRewind()
+		}
+
 		detectedCollision, _ := p.CollisionProcessor.Detect(p.getDynamicHitbox())
 
 		if !p.hasCollision && detectedCollision {
@@ -197,6 +218,29 @@ func (p *Hitbox) exitCollision() {
 	if p.bgImage != nil {
 		p.bgImageHidePos = rl.NewVector2(WIDTH+INACCURACY, 0)
 		p.bgImage.StartMove(p.bgImage.Pos, p.bgImageHidePos, 10)
+	}
+}
+
+func (p *Hitbox) saveNpcToRewind() {
+	if int(p.rewindLastIndex) == len(p.Rewind)-1 {
+		p.rewindLastIndex = 0
+	}
+
+	p.Rewind[p.rewindLastIndex] = HitboxRewindData{
+		TextCounter:   p.Properties["textCounter"],
+		Choosed:       p.Properties["choosed"],
+		CurrentChoise: p.Properties["currentChoise"],
+	}
+	p.rewindLastIndex++
+}
+
+func (p *Hitbox) rewindNpc() {
+	if p.rewindLastIndex > 0 {
+		rewind := p.Rewind[p.rewindLastIndex-1]
+		p.Properties["textCounter"] = rewind.TextCounter
+		p.Properties["choosed"] = rewind.Choosed
+		p.Properties["currentChoise"] = rewind.CurrentChoise
+		p.rewindLastIndex--
 	}
 }
 
