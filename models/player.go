@@ -85,7 +85,7 @@ func (p *Player) Load() {
 
 	if p.ImageShader != resources.UndefinedShader {
 		p.Shader = resources.LoadShader(p.ImageShader)
-		if p.ImageShader == resources.TextureLightShader {
+		if p.ImageShader == resources.PlayerShader {
 			p.shaderLocs = []int32{
 				rl.GetShaderLocation(p.Shader, "texture0"),
 				rl.GetShaderLocation(p.Shader, "objectPosCenter"),
@@ -164,7 +164,7 @@ func (p *Player) Update(delta float32) {
 	// update hitbox for others
 	p.updateCurrentHitbox()
 
-	if p.ImageShader == resources.TextureLightShader {
+	if p.ImageShader == resources.PlayerShader {
 		lightPoints := make([]float32, 0)
 		lightPointsRadius := make([]float32, 0)
 		for i, _ := range p.Lightboxes {
@@ -186,7 +186,7 @@ func (p *Player) Update(delta float32) {
 }
 
 func (p *Player) savePlayerToRewind() {
-	if int(p.rewindLastIndex) == len(p.Rewind) - 1 {
+	if int(p.rewindLastIndex) == len(p.Rewind)-1 {
 		p.rewindLastIndex = 0
 	}
 

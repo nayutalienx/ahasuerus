@@ -83,18 +83,6 @@ func (p *Image) Update(delta float32) {
 		p.Pos = p.TopLeft()
 	}
 	p.WidthHeight = rl.NewVector2(p.Width(), p.Height())
-
-	if p.ImageShader == resources.TextureLightShader {
-		lightPoints := make([]float32, 0)
-		for i, _ := range p.Lightboxes {
-			lp := p.Lightboxes[i]
-			lightPoints = append(lightPoints, float32(lp.Center().X), float32(lp.Center().Y))
-		}
-		rl.SetShaderValue(p.Shader, p.shaderLocs[0], []float32{p.Pos.X, p.Pos.Y + p.WidthHeight.Y}, rl.ShaderUniformVec2)
-		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{p.WidthHeight.X, p.WidthHeight.Y}, rl.ShaderUniformVec2)
-		rl.SetShaderValueV(p.Shader, p.shaderLocs[2], lightPoints, rl.ShaderUniformVec2, int32(len(p.Lightboxes)))
-		rl.SetShaderValue(p.Shader, p.shaderLocs[3], []float32{float32(len(p.Lightboxes))}, rl.ShaderUniformFloat)
-	}
 	p.syncBoxWithTexture()
 }
 
@@ -124,16 +112,6 @@ func (p *Image) Load() {
 		p.Shader = resources.LoadShader(p.ImageShader)
 		textureLoc := rl.GetShaderLocation(p.Shader, "texture0")
 		rl.SetShaderValueTexture(p.Shader, textureLoc, p.Texture)
-
-		if p.ImageShader == resources.TextureLightShader {
-			p.shaderLocs = []int32{
-				rl.GetShaderLocation(p.Shader, "objectPosBottomLeft"),
-				rl.GetShaderLocation(p.Shader, "objectSize"),
-				rl.GetShaderLocation(p.Shader, "lightPos"),
-				rl.GetShaderLocation(p.Shader, "lightPosSize"),
-			}
-		}
-
 	}
 }
 

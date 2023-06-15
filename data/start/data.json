@@ -1416,7 +1416,7 @@
 	],
 	"properties": {
 		"endCameraFollowPos": 15500,
-		"playerShader": "resources/shader/texture_light.fs",
+		"playerShader": "resources/shader/player.fs",
 		"playerStartX": 100,
 		"playerStartY": 200,
 		"startCameraFollowPos": 800

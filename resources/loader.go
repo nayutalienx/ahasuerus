@@ -32,12 +32,12 @@ const (
 type GameShader string
 
 const (
-	UndefinedShader    GameShader = ""
-	BloomShader        GameShader = "resources/shader/bloom.fs"
-	BlurShader         GameShader = "resources/shader/blur.fs"
-	TextureShader      GameShader = "resources/shader/texture.fs"
-	TextureLightShader GameShader = "resources/shader/texture_light.fs"
-	NpbBgImageShader   GameShader = "resources/shader/npc_bg_image.fs"
+	UndefinedShader GameShader = ""
+	BloomShader     GameShader = "resources/shader/bloom.fs"
+	BlurShader      GameShader = "resources/shader/blur.fs"
+	TextureShader   GameShader = "resources/shader/texture.fs"
+	PlayerShader    GameShader = "resources/shader/player.fs"
+	NpcShader       GameShader = "resources/shader/npc.fs"
 )
 
 var (
