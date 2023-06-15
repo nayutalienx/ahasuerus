@@ -188,6 +188,10 @@ func (p *Player) Update(delta float32) {
 }
 
 func (p *Player) savePlayerToRewind() {
+	if int(p.rewindLastIndex) == len(p.Rewind) - 1 {
+		p.rewindLastIndex = 0
+	}
+
 	p.Rewind[p.rewindLastIndex] = RewindItem{
 		Pos:              p.Pos,
 		orientation:      p.orientation,
