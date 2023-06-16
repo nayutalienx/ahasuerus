@@ -42,8 +42,11 @@ type Hitbox struct {
 	hasCollision bool
 	drawBgImage  bool
 
-	Rewind          []HitboxRewindData
-	rewindLastIndex int32
+	Rewind               []HitboxRewindData
+	rewindLastIndex      int32
+	rewindSpeed          int32
+	rewindModeStartIndex int32
+	rewindModeStarted    bool
 }
 
 func (p *Hitbox) ScreenChan(c chan Object) *Hitbox {
@@ -143,9 +146,12 @@ func (p *Hitbox) Update(delta float32) {
 
 		rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
 		if rewindEnabled {
+			p.updateRewindSpeed()
 			p.rewindNpc()
+			p.rewindModeStarted = true
 		} else {
 			p.saveNpcToRewind()
+			p.rewindModeStarted = false
 		}
 
 		detectedCollision, _ := p.CollisionProcessor.Detect(p.getDynamicHitbox())
@@ -205,6 +211,25 @@ func (p *Hitbox) Update(delta float32) {
 
 }
 
+func (p *Hitbox) updateRewindSpeed() {
+	rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
+	if rewindEnabled {
+		if rl.IsKeyReleased(rl.KeyDown) {
+			p.rewindSpeed--
+			if p.rewindSpeed < MIN_REWIND_SPEED {
+				p.rewindSpeed = MIN_REWIND_SPEED
+			}
+		}
+
+		if rl.IsKeyReleased(rl.KeyUp) {
+			p.rewindSpeed++
+			if p.rewindSpeed > MAX_REWIND_SPEED {
+				p.rewindSpeed = MAX_REWIND_SPEED
+			}
+		}
+	}
+}
+
 func (p *Hitbox) enterCollision() {
 	if p.bgImage != nil {
 		start := rl.NewVector2(WIDTH, 0)
@@ -235,13 +260,21 @@ func (p *Hitbox) saveNpcToRewind() {
 }
 
 func (p *Hitbox) rewindNpc() {
-	if p.rewindLastIndex > 0 {
-		rewind := p.Rewind[p.rewindLastIndex-1]
-		p.Properties["textCounter"] = rewind.TextCounter
-		p.Properties["choosed"] = rewind.Choosed
-		p.Properties["currentChoise"] = rewind.CurrentChoise
-		p.rewindLastIndex--
+	if !p.rewindModeStarted {
+		p.rewindModeStartIndex = p.rewindLastIndex
+		p.rewindSpeed = 1
 	}
+
+	rewind := p.Rewind[p.rewindLastIndex]
+
+	if p.rewindLastIndex > p.rewindSpeed && p.rewindLastIndex < p.rewindModeStartIndex+p.rewindSpeed {
+		rewind = p.Rewind[p.rewindLastIndex-p.rewindSpeed]
+		p.rewindLastIndex -= p.rewindSpeed
+	}
+
+	p.Properties["textCounter"] = rewind.TextCounter
+	p.Properties["choosed"] = rewind.Choosed
+	p.Properties["currentChoise"] = rewind.CurrentChoise
 }
 
 func (p Hitbox) drawSelectDialog(dialogRec rl.Rectangle) {

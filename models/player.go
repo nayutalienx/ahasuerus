@@ -13,6 +13,9 @@ const (
 	JUMP_SPEED        = 350
 	GRAVITY           = 10
 	PLAYER_MOVE_SPEED = 5
+
+	MIN_REWIND_SPEED = -4
+	MAX_REWIND_SPEED = 4
 )
 
 type PlayerRewindData struct {
@@ -165,7 +168,7 @@ func (p *Player) Update(delta float32) {
 
 		p.savePlayerToRewind()
 		p.rewindModeStarted = false
-	} else {		
+	} else {
 		p.updateRewindSpeed()
 		p.rewindPlayer()
 		if p.rewindSpeed > 0 {
@@ -223,10 +226,16 @@ func (p *Player) updateRewindSpeed() {
 	if rewindEnabled {
 		if rl.IsKeyReleased(rl.KeyDown) {
 			p.rewindSpeed--
+			if p.rewindSpeed < MIN_REWIND_SPEED {
+				p.rewindSpeed = MIN_REWIND_SPEED
+			}
 		}
 
 		if rl.IsKeyReleased(rl.KeyUp) {
 			p.rewindSpeed++
+			if p.rewindSpeed > MAX_REWIND_SPEED {
+				p.rewindSpeed = MAX_REWIND_SPEED
+			}
 		}
 	}
 }
