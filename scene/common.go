@@ -4,7 +4,6 @@ import (
 	"ahasuerus/config"
 	"ahasuerus/models"
 	"math"
-	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -25,6 +24,7 @@ const (
 	Menu SceneId = iota
 	Start
 	Editor
+	Close
 )
 
 var (
@@ -43,7 +43,7 @@ func GetScene(id SceneId) models.Scene {
 		Start: "start",
 	}
 
-	drawLoadScene(rl.NewVector2(float32(WIDTH/10), float32(HEIGHT/5)), time.Second)
+	drawLoadScene()
 
 	switch id {
 	case Menu:
@@ -54,8 +54,6 @@ func GetScene(id SceneId) models.Scene {
 		UnloadScene(Start)
 		scene = NewEditScene(sceneNames[lastScene], lastScene)
 	}
-
-	drawLoadScene(rl.NewVector2(WIDTH-float32(WIDTH/2), HEIGHT-float32(HEIGHT/5)), time.Second)
 
 	if scene == nil {
 		panic("scene not found")
@@ -69,15 +67,10 @@ func GetScene(id SceneId) models.Scene {
 	return scene
 }
 
-func drawLoadScene(pos rl.Vector2, dur time.Duration) {
+func drawLoadScene() {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.Black)
-
-	models.DrawSdfText("BROKEN WORLD", pos, 200, rl.White)
-
 	rl.EndDrawing()
-	time.Sleep(time.Duration(dur))
-
 }
 
 func UnloadScene(id SceneId) {

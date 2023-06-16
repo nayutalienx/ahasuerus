@@ -21,7 +21,7 @@ const (
 type MenuScene struct {
 	menuContainer   *container.ObjectResourceContainer
 	menuShouldClose bool
-	nextScene       models.Scene
+	nextScene       SceneId
 
 	currentButton MenuButton
 
@@ -57,8 +57,6 @@ func (m *MenuScene) Run() models.Scene {
 		m.menuContainer.Update(delta)
 		m.menuContainer.Draw()
 
-		m.menuShouldClose = rl.WindowShouldClose()
-
 		m.updateCurrentButton()
 
 		c := models.NewCounter()
@@ -66,7 +64,6 @@ func (m *MenuScene) Run() models.Scene {
 		m.drawButton("Exit", ExitButton, &c)
 
 		m.processMenuEnter()
-
 		rl.EndDrawing()
 	}
 
@@ -74,7 +71,11 @@ func (m *MenuScene) Run() models.Scene {
 
 	m.pause()
 
-	return m.nextScene
+	if m.nextScene == Close {
+		return nil
+	}
+
+	return GetScene(m.nextScene)
 }
 
 func (m *MenuScene) drawButton(text string, button MenuButton, c *models.Counter) {
@@ -106,15 +107,20 @@ func (m *MenuScene) updateCurrentButton() {
 }
 
 func (m *MenuScene) processMenuEnter() {
+	m.menuShouldClose = rl.WindowShouldClose()
+	if m.menuShouldClose {
+		m.nextScene = Close
+	}
+
 	if rl.IsKeyReleased(rl.KeyEnter) {
 		if m.currentButton == StartButton {
 			m.menuShouldClose = true
-			m.nextScene = GetScene(Start)
+			m.nextScene = Start
 		}
 
 		if m.currentButton == ExitButton {
 			m.menuShouldClose = true
-			m.nextScene = nil
+			m.nextScene = Close
 		}
 	}
 }
