@@ -92,6 +92,8 @@ func (p *Player) Load() {
 				rl.GetShaderLocation(p.Shader, "lightPosSize"),
 				rl.GetShaderLocation(p.Shader, "lightPos"),
 				rl.GetShaderLocation(p.Shader, "lightMaxDistance"),
+				rl.GetShaderLocation(p.Shader, "playerWidth"),
+				rl.GetShaderLocation(p.Shader, "playerHeight"),
 			}
 		}
 	}
@@ -182,6 +184,8 @@ func (p *Player) Update(delta float32) {
 
 		rl.SetShaderValueV(p.Shader, p.shaderLocs[3], lightPoints, rl.ShaderUniformVec2, int32(len(p.Lightboxes)))
 		rl.SetShaderValueV(p.Shader, p.shaderLocs[4], lightPointsRadius, rl.ShaderUniformFloat, int32(len(p.Lightboxes)))
+		rl.SetShaderValue(p.Shader, p.shaderLocs[5], []float32{float32(p.currentAnimation.Texture.Width)}, rl.ShaderUniformFloat)
+		rl.SetShaderValue(p.Shader, p.shaderLocs[6], []float32{float32(p.currentAnimation.Texture.Height)}, rl.ShaderUniformFloat)
 	}
 }
 
