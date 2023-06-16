@@ -13,6 +13,8 @@ uniform float lightMaxDistance[10];
 uniform float playerWidth = 200;
 uniform float playerHeight = 400;
 
+uniform float rewind = 0.0;
+
 const float minBrightness = 0.01;
 const float maxBrightness = 1.0;
 
@@ -41,32 +43,21 @@ vec4 blur(vec4 color) {
     return vec4(texelColor, color.w);
 }
 
-// tail flow
-
-// vec4 tailFlow(vec4 color) {
-//     vec4 result = color;
-//     if (color.a < 0.1) {
-        
-//         vec2 offset = vec2(0.05, 0.0);
-//         vec2 rightPoint = fragTexCoord + offset;
-//         if(rightPoint.x > 1.0) {
-//             rightPoint.x = 1.0;
-//         }
-//         //vec2 leftPoint = fragTexCoord - offset;
-
-//         vec4 rightTexel = texture2D(texture0, rightPoint);
-//         //vec4 leftTexel = texture2D(texture0, leftPoint);
-
-//         result = vec4(rightPoint.x, 0.0, 0.0, color.a+rightTexel.a);
-//     }
-//     return result;
-// }
+// black white
+vec4 blackWhite(vec4 color) {
+    color.rgb = vec3((color.r + color.g + color.b)/2.0);
+    return color;
+}
 
 // main
 void main()
 {
     // Сэмплирование цвета пикселя из текстуры
     vec4 color = texture2D(texture0, fragTexCoord);
+
+    if (rewind == 1.0) {
+        color = blackWhite(color);
+    }
 
     float brightness = 0.0;
 
