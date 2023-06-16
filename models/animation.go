@@ -41,6 +41,7 @@ type Animation struct {
 	steps           int32
 	framesPerSecond int32
 	timeInSeconds   float32
+	animationSpeed  uint8
 
 	reverse bool
 
@@ -49,9 +50,10 @@ type Animation struct {
 
 func NewAnimation(gameTexture resources.GameTexture, steps int32, animType AnimationType) *Animation {
 	return &Animation{
-		GameTexture:   gameTexture,
-		steps:         steps,
-		animationType: animType,
+		GameTexture:    gameTexture,
+		steps:          steps,
+		animationType:  animType,
+		animationSpeed: 1,
 	}
 }
 
@@ -62,6 +64,11 @@ func (a *Animation) Begin() {
 
 func (a *Animation) FramesPerSecond(framesPerSecond int32) *Animation {
 	a.framesPerSecond = framesPerSecond
+	return a
+}
+
+func (a *Animation) AnimationSpeed(animationSpeed uint8) *Animation {
+	a.animationSpeed = animationSpeed
 	return a
 }
 
@@ -85,7 +92,7 @@ func (a *Animation) Update(delta float32) {
 	a.framesCounter++
 
 	if a.animationType == Loop {
-		if a.framesCounter >= FPS/a.framesPerSecond {
+		if a.framesCounter >= FPS/(a.framesPerSecond*int32(a.animationSpeed)) {
 			a.framesCounter = 0
 			a.currentFrame++
 			if a.currentFrame > a.steps {

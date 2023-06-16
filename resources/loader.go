@@ -95,7 +95,6 @@ func LoadShader(gameShader GameShader) rl.Shader {
 }
 
 func LoadShaderCache(gameShader GameShader) rl.Shader {
-	fmt.Println("INFO: Load shader with cache" + gameShader)
 	sh, ok := shaderCache[GameShader(gameShader)]
 	if ok {
 		return sh

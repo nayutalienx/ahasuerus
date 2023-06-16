@@ -3,6 +3,8 @@ package models
 import (
 	"ahasuerus/collision"
 	"ahasuerus/resources"
+	"fmt"
+	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -42,8 +44,11 @@ type Player struct {
 	Lightboxes  []Hitbox
 	shaderLocs  []int32
 
-	Rewind          [REWIND_BUFFER_SIZE]PlayerRewindData
-	rewindLastIndex int32
+	Rewind               [REWIND_BUFFER_SIZE]PlayerRewindData
+	rewindLastIndex      int32
+	rewindSpeed          int32
+	rewindModeStartIndex int32
+	rewindModeStarted    bool
 
 	paused bool
 }
@@ -51,7 +56,8 @@ type Player struct {
 func NewPlayer(x float32, y float32) *Player {
 
 	p := &Player{
-		Pos: rl.NewVector2(x, y),
+		Pos:         rl.NewVector2(x, y),
+		rewindSpeed: 1,
 	}
 	hb := GetDynamicHitboxFromMap(GetDynamicHitboxMap(p.Pos, p.width, p.height))
 	p.currentHitbox = &hb
@@ -128,6 +134,8 @@ func (p Player) Draw() {
 	if DRAW_MODELS {
 		p.drawHitbox()
 	}
+
+	p.drawRewindSpeed()
 }
 
 func (p *Player) Update(delta float32) {
@@ -156,11 +164,18 @@ func (p *Player) Update(delta float32) {
 		p.resolveAndUpdateAnimation(hasCollision, posDelta, delta)
 
 		p.savePlayerToRewind()
-	} else {
+		p.rewindModeStarted = false
+	} else {		
+		p.updateRewindSpeed()
 		p.rewindPlayer()
-		p.currentAnimation.Reverse(true)
-		p.updateAnimation(delta)
-		p.currentAnimation.Reverse(false)
+		if p.rewindSpeed > 0 {
+			p.currentAnimation.Reverse(true)
+			p.updateAnimation(delta, uint8(p.rewindSpeed))
+			p.currentAnimation.Reverse(false)
+		} else if p.rewindSpeed < 0 {
+			p.updateAnimation(delta, uint8(math.Abs(float64(p.rewindSpeed))))
+		}
+		p.rewindModeStarted = true
 	}
 
 	// update hitbox for others
@@ -203,14 +218,42 @@ func (p *Player) savePlayerToRewind() {
 	p.rewindLastIndex++
 }
 
+func (p *Player) updateRewindSpeed() {
+	rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
+	if rewindEnabled {
+		if rl.IsKeyReleased(rl.KeyDown) {
+			p.rewindSpeed--
+		}
+
+		if rl.IsKeyReleased(rl.KeyUp) {
+			p.rewindSpeed++
+		}
+	}
+}
+
 func (p *Player) rewindPlayer() {
-	if p.rewindLastIndex > 0 {
-		rewind := p.Rewind[p.rewindLastIndex-1]
-		p.Pos = rewind.Pos
-		p.orientation = rewind.orientation
-		p.currentAnimation = rewind.currentAnimation
-		p.velocity = rewind.velocity
-		p.rewindLastIndex--
+	if !p.rewindModeStarted {
+		p.rewindModeStartIndex = p.rewindLastIndex
+		p.rewindSpeed = 1
+	}
+
+	rewind := p.Rewind[p.rewindLastIndex]
+
+	if p.rewindLastIndex > p.rewindSpeed && p.rewindLastIndex < p.rewindModeStartIndex+p.rewindSpeed {
+		rewind = p.Rewind[p.rewindLastIndex-p.rewindSpeed]
+		p.rewindLastIndex -= p.rewindSpeed
+	}
+
+	p.Pos = rewind.Pos
+	p.orientation = rewind.orientation
+	p.currentAnimation = rewind.currentAnimation
+	p.velocity = rewind.velocity
+}
+
+func (p *Player) drawRewindSpeed() {
+	rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
+	if rewindEnabled {
+		DrawSdfText(fmt.Sprintf("%dx", p.rewindSpeed), p.Pos, 60, rl.White)
 	}
 }
 
@@ -243,13 +286,14 @@ func (p *Player) resolveAndUpdateAnimation(hasCollision bool, posDelta rl.Vector
 	if p.currentAnimation != prevAnimation {
 		p.currentAnimation.Begin()
 	}
-	p.updateAnimation(delta)
+	p.updateAnimation(delta, 1)
 }
 
-func (p *Player) updateAnimation(delta float32) {
+func (p *Player) updateAnimation(delta float32, speed uint8) {
 	p.currentAnimation.Pos.X = p.Pos.X
 	p.currentAnimation.Pos.Y = p.Pos.Y
 	p.currentAnimation.Orientation = p.orientation
+	p.currentAnimation.AnimationSpeed(speed)
 	p.currentAnimation.Update(delta)
 }
 

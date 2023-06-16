@@ -3,7 +3,6 @@ package scene
 import (
 	"ahasuerus/config"
 	"ahasuerus/models"
-	"ahasuerus/resources"
 	"math"
 	"time"
 
@@ -76,10 +75,7 @@ func drawLoadScene(pos rl.Vector2, dur time.Duration) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.Black)
 
-	shader := resources.LoadShaderCache(resources.SdfShader)
-	rl.BeginShaderMode(shader)
-	rl.DrawTextEx(resources.LoadFont(resources.Literata), "BROKEN WORLD", pos, 200, 1, rl.White)
-	rl.EndShaderMode()
+	models.DrawSdfText("BROKEN WORLD", pos, 200, rl.White)
 
 	rl.EndDrawing()
 	time.Sleep(time.Duration(dur))
