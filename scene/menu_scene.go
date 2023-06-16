@@ -11,10 +11,19 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+type MenuButton int
+
+const (
+	StartButton MenuButton = iota
+	ExitButton
+)
+
 type MenuScene struct {
 	menuContainer   *container.ObjectResourceContainer
 	menuShouldClose bool
 	nextScene       models.Scene
+
+	currentButton MenuButton
 
 	paused bool
 }
@@ -42,7 +51,7 @@ func (m *MenuScene) Run() models.Scene {
 
 	for !m.menuShouldClose {
 		rl.BeginDrawing()
-		rl.ClearBackground(rl.Blank)
+		rl.ClearBackground(rl.Black)
 
 		delta := rl.GetFrameTime()
 		m.menuContainer.Update(delta)
@@ -50,20 +59,13 @@ func (m *MenuScene) Run() models.Scene {
 
 		m.menuShouldClose = rl.WindowShouldClose()
 
-		startButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/6, 500, 200), "New game")
-		closeButton := rg.Button(rl.NewRectangle(WIDTH/2-200, HEIGHT/3, 500, 200), "See you next time")
-		mouse := rl.GetMousePosition()
-		rl.DrawCircle(int32(mouse.X), int32(mouse.Y), 10, rl.Green)
+		m.updateCurrentButton()
 
-		if startButton {
-			m.menuShouldClose = true
-			m.nextScene = GetScene(Start)
-		}
+		c := models.NewCounter()
+		m.drawButton("Start", StartButton, &c)
+		m.drawButton("Exit", ExitButton, &c)
 
-		if closeButton {
-			m.menuShouldClose = true
-			m.nextScene = nil
-		}
+		m.processMenuEnter()
 
 		rl.EndDrawing()
 	}
@@ -73,6 +75,48 @@ func (m *MenuScene) Run() models.Scene {
 	m.pause()
 
 	return m.nextScene
+}
+
+func (m *MenuScene) drawButton(text string, button MenuButton, c *models.Counter) {
+	color := rl.White
+	if m.currentButton == button {
+		color = rl.Orange
+	}
+	models.DrawSdfText(text, rl.NewVector2(WIDTH/2-200, HEIGHT/10*float32(c.GetAndIncrement())), 100, color)
+}
+
+func (m *MenuScene) updateCurrentButton() {
+
+	if rl.IsKeyReleased(rl.KeyDown) {
+		m.currentButton++
+	}
+
+	if rl.IsKeyReleased(rl.KeyUp) {
+		m.currentButton--
+	}
+
+	if m.currentButton < StartButton {
+		m.currentButton = StartButton
+	}
+
+	if m.currentButton > ExitButton {
+		m.currentButton = ExitButton
+	}
+
+}
+
+func (m *MenuScene) processMenuEnter() {
+	if rl.IsKeyReleased(rl.KeyEnter) {
+		if m.currentButton == StartButton {
+			m.menuShouldClose = true
+			m.nextScene = GetScene(Start)
+		}
+
+		if m.currentButton == ExitButton {
+			m.menuShouldClose = true
+			m.nextScene = nil
+		}
+	}
 }
 
 func (m *MenuScene) Unload() {

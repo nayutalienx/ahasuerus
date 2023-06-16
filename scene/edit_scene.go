@@ -221,16 +221,16 @@ func (s *EditScene) drawEditorHub() {
 func (s *EditScene) drawMainHub() {
 	bc := models.NewCounter()
 
-	newGameImage := rg.Button(s.controlRect(bc), "NEW IMAGE")
-	newCollisionBox := rg.Button(s.controlRect(bc), "NEW COLLISIONBOX")
-	newLightBox := rg.Button(s.controlRect(bc), "NEW LIGHTBOX")
-	newNpc := rg.Button(s.controlRect(bc), "NEW NPC")
+	newGameImage := rg.Button(s.controlRect(&bc), "NEW IMAGE")
+	newCollisionBox := rg.Button(s.controlRect(&bc), "NEW COLLISIONBOX")
+	newLightBox := rg.Button(s.controlRect(&bc), "NEW LIGHTBOX")
+	newNpc := rg.Button(s.controlRect(&bc), "NEW NPC")
 
 	toggleModelsDrawText := "HIDE COLLISSION"
 	if !models.DRAW_MODELS {
 		toggleModelsDrawText = "SHOW COLLISSION"
 	}
-	toggleCollissionDrawButton := rg.Button(s.controlRect(bc), toggleModelsDrawText)
+	toggleCollissionDrawButton := rg.Button(s.controlRect(&bc), toggleModelsDrawText)
 
 	if toggleCollissionDrawButton {
 		models.DRAW_MODELS = !models.DRAW_MODELS
@@ -453,8 +453,8 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 
 	img, isImg := editorItem.(*models.Image)
 	if isImg {
-		delete := s.reactOnEditorItemSelection(s.worldContainer, &img.BaseEditorItem, buttonCounter)
-		s.reactOnImageEditorSelection(s.worldContainer, img, buttonCounter)
+		delete := s.reactOnEditorItemSelection(s.worldContainer, &img.BaseEditorItem, &buttonCounter)
+		s.reactOnImageEditorSelection(s.worldContainer, img, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(img)
 			repository.DeleteImage(s.sceneName, img)
@@ -463,7 +463,7 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 
 	hitbox, isHitbox := editorItem.(*models.Hitbox)
 	if isHitbox {
-		delete := s.reactOnEditorItemSelection(s.worldContainer, &hitbox.BaseEditorItem, buttonCounter)
+		delete := s.reactOnEditorItemSelection(s.worldContainer, &hitbox.BaseEditorItem, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(hitbox)
 			repository.DeleteHitbox(s.sceneName, hitbox.Id)

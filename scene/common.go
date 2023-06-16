@@ -70,8 +70,6 @@ func GetScene(id SceneId) models.Scene {
 }
 
 func drawLoadScene(pos rl.Vector2, dur time.Duration) {
-	rl.EndDrawing()
-
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.Black)
 

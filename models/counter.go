@@ -4,8 +4,8 @@ type Counter struct {
 	counter int
 }
 
-func NewCounter() *Counter {
-	return &Counter{
+func NewCounter() Counter {
+	return Counter{
 		counter: 1,
 	}
 }
