@@ -38,11 +38,13 @@ const (
 	TextureShader   GameShader = "resources/shader/texture.fs"
 	PlayerShader    GameShader = "resources/shader/player.fs"
 	NpcShader       GameShader = "resources/shader/npc.fs"
+	SdfShader       GameShader = "resources/shader/sdf.fs"
 )
 
 var (
 	textureCache = make(map[GameTexture]rl.Texture2D)
 	fontsCache   = make(map[FontTtf]rl.Font)
+	shaderCache  = make(map[GameShader]rl.Shader)
 )
 
 func LoadFont(f FontTtf) rl.Font {
@@ -92,6 +94,24 @@ func LoadShader(gameShader GameShader) rl.Shader {
 	return shader
 }
 
+func LoadShaderCache(gameShader GameShader) rl.Shader {
+	fmt.Println("INFO: Load shader with cache" + gameShader)
+	sh, ok := shaderCache[GameShader(gameShader)]
+	if ok {
+		return sh
+	}
+	shaderCache[GameShader(gameShader)] = rl.LoadShader("", string(gameShader))
+	return shaderCache[GameShader(gameShader)]
+}
+
 func UnloadShader(shader rl.Shader) {
 	rl.UnloadShader(shader)
+}
+
+func UnloadShaderCache(shader GameShader) {
+	sh, ok := shaderCache[GameShader(shader)]
+	if ok {
+		delete(shaderCache, shader)
+		rl.UnloadShader(sh)
+	}
 }

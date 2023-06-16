@@ -284,7 +284,11 @@ func (p Hitbox) drawSelectDialog(dialogRec rl.Rectangle) {
 				color = rl.Orange
 			}
 
+
+			shader := resources.LoadShaderCache(resources.SdfShader)
+			rl.BeginShaderMode(shader)
 			rl.DrawTextEx(resources.LoadFont(resources.Literata), choice, textPos, float32(fontSize), 2, color)
+			rl.EndShaderMode()
 
 		}
 
@@ -333,7 +337,11 @@ func (p Hitbox) drawDialog() {
 	rl.DrawRectangleRounded(roundedRec, 0.5, 0, rectColor)
 
 	textPos := rl.NewVector2(float32(int32(pos.X)+offsetX+int32(textOffsetX)), float32(int32(pos.Y)+offsetY+int32(textOffsetY)))
+
+	shader := resources.LoadShaderCache(resources.SdfShader)
+	rl.BeginShaderMode(shader)
 	rl.DrawTextEx(resources.LoadFont(resources.Literata), text, textPos, float32(fontSize), 2, rl.White)
+	rl.EndShaderMode()
 
 	p.drawSelectDialog(roundedRec)
 }

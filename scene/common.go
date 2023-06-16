@@ -3,9 +3,8 @@ package scene
 import (
 	"ahasuerus/config"
 	"ahasuerus/models"
+	"ahasuerus/resources"
 	"math"
-	"math/rand"
-	"strings"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -45,9 +44,7 @@ func GetScene(id SceneId) models.Scene {
 		Start: "start",
 	}
 
-	for i := 0; i < rand.Intn(5); i++ {
-		drawLoadScene(randomFunLoadMessage(), 20, time.Second/5)
-	}
+	drawLoadScene(rl.NewVector2(float32(WIDTH/10), float32(HEIGHT/5)), time.Second)
 
 	switch id {
 	case Menu:
@@ -59,9 +56,7 @@ func GetScene(id SceneId) models.Scene {
 		scene = NewEditScene(sceneNames[lastScene], lastScene)
 	}
 
-	for i := 0; i < rand.Intn(5); i++ {
-		drawLoadScene(randomFunLoadMessage(), 20, time.Second/5)
-	}
+	drawLoadScene(rl.NewVector2(WIDTH-float32(WIDTH/2), HEIGHT-float32(HEIGHT/5)), time.Second)
 
 	if scene == nil {
 		panic("scene not found")
@@ -75,51 +70,20 @@ func GetScene(id SceneId) models.Scene {
 	return scene
 }
 
-func randomFunLoadMessage() string {
-	messages := []string{
-		"Preparing for adventure",
-		"Loading dreams and imagination",
-		"Embarking on a journey of epic proportions",
-		"Brace yourself for a thrilling experience",
-		"Unleashing creativity and excitement",
-		"Loading pixels and magic",
-		"Getting ready to conquer new worlds",
-		"Buckle up and get ready for action",
-		"Venturing into the unknown",
-		"Loading happiness and excitement",
-		"Prepare for an epic adventure",
-		"Loading dreams and adventures",
-		"Unleash your inner hero",
-		"Loading pixels and magic",
-		"Embark on a journey of a lifetime",
-		"Loading... Brace yourself for excitement",
-		"Welcome to a world of wonders",
-		"Get ready to explore new realms",
-		"Loading... Embrace the challenge ahead",
-		"Adventure awaits just beyond this screen",
-	}
-	return messages[rand.Intn(len(messages))]
-}
-
-func drawLoadScene(message string, dots int, dur time.Duration) {
+func drawLoadScene(pos rl.Vector2, dur time.Duration) {
 	rl.EndDrawing()
-	timeOffsetNanos := float64(dur.Nanoseconds()) / float64(dots)
-	col := rl.NewColor(
-		uint8(rand.Intn(255)),
-		uint8(rand.Intn(255)),
-		uint8(rand.Intn(255)),
-		255,
-	)
 
-	for i := 1; i <= dots; i++ {
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.Black)
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.Black)
 
-		rl.DrawText(message+strings.Repeat(".", i), int32(WIDTH)/3, int32(HEIGHT)/2, 50, col)
+	shader := resources.LoadShaderCache(resources.SdfShader)
+	rl.BeginShaderMode(shader)
+	rl.DrawTextEx(resources.LoadFont(resources.Literata), "BROKEN WORLD", pos, 200, 1, rl.White)
+	rl.EndShaderMode()
 
-		rl.EndDrawing()
-		time.Sleep(time.Duration(timeOffsetNanos))
-	}
+	rl.EndDrawing()
+	time.Sleep(time.Duration(dur))
+
 }
 
 func UnloadScene(id SceneId) {

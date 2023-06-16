@@ -24,7 +24,9 @@ func Start() {
 	rl.InitAudioDevice()
 	rl.SetConfigFlags(rl.FlagMsaa4xHint)
 
-	resources.LoadFont(resources.Literata)
+	resources.LoadShaderCache(resources.SdfShader)
+	literata := resources.LoadFont(resources.Literata)
+	rl.SetTextureFilter(literata.Texture, rl.TextureFilterMode(rl.RL_TEXTURE_FILTER_BILINEAR))
 
 	nextScene := scene.GetScene(scene.Menu)
 	for nextScene != nil {
@@ -32,6 +34,7 @@ func Start() {
 	}
 
 	resources.UnloadFont(resources.Literata)
+	resources.UnloadShaderCache(resources.SdfShader)
 
 	scene.UnloadAllScenes()
 
