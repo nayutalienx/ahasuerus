@@ -89,6 +89,7 @@ type Image struct {
 	Width     int    `json:"width"`
 	Height    int    `json:"height"`
 	Rotation  int    `json:"rotation"`
+	Parallax  float32    `json:"parallax"`
 }
 
 type Vec2 struct {

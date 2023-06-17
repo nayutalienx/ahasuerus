@@ -1400,7 +1400,8 @@
 			"y": -936,
 			"width": 19000,
 			"height": 1437,
-			"rotation": 0
+			"rotation": 0,
+			"parallax": 0.02
 		},
 		{
 			"drawIndex": 1,

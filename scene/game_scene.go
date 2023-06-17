@@ -32,6 +32,13 @@ func NewGameScene(sceneName string) *GameScene {
 		onScreenQueue: make(chan models.Object, 1),
 	}
 
+	camera := rl.NewCamera2D(
+		rl.NewVector2(WIDTH/2, HEIGHT-250),
+		rl.NewVector2(0, 0),
+		0, 1.0)
+	camera.Target.Y = 250
+	scene.camera = &camera
+
 	scene.properties = map[SceneProp]interface{}{}
 	for k, v := range repository.GetSceneProperties(scene.sceneName) {
 		scene.properties[SceneProp(k)] = v
@@ -40,6 +47,7 @@ func NewGameScene(sceneName string) *GameScene {
 	worldImages := repository.GetAllImages(scene.sceneName)
 	for i, _ := range worldImages {
 		img := worldImages[i]
+		img.Camera(&camera)
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
@@ -71,13 +79,6 @@ func NewGameScene(sceneName string) *GameScene {
 	}
 
 	scene.worldContainer.Load()
-
-	camera := rl.NewCamera2D(
-		rl.NewVector2(WIDTH/2, HEIGHT-250),
-		rl.NewVector2(0, 0),
-		0, 1.0)
-	camera.Target.Y = 250
-	scene.camera = &camera
 
 	return &scene
 }

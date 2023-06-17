@@ -10,14 +10,19 @@ import (
 
 type Image struct {
 	BaseEditorItem
-	Pos          rl.Vector2
-	WidthHeight  rl.Vector2
-	DrawIndex    int
-	Texture      rl.Texture2D
-	Shader       rl.Shader
-	ImageTexture resources.GameTexture
-	ImageShader  resources.GameShader
-	preset       func(i *Image)
+	Pos            rl.Vector2
+	WidthHeight    rl.Vector2
+	DrawIndex      int
+	Texture        rl.Texture2D
+	Shader         rl.Shader
+	ImageTexture   resources.GameTexture
+	ImageShader    resources.GameShader
+	Parallax       float32
+	parallaxOffset float32
+	preset         func(i *Image)
+
+	camera        *rl.Camera2D
+	cameraLastPos rl.Vector2
 
 	Scale float32
 
@@ -48,6 +53,12 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 		img.initEditorItem()
 	}
 	return img
+}
+
+func (p *Image) Camera(camera *rl.Camera2D) *Image {
+	p.camera = camera
+	p.cameraLastPos = camera.Target
+	return p
 }
 
 func (p *Image) StartMove(startMovePos rl.Vector2, endMovePos rl.Vector2, moveSpeed float32) {
@@ -92,6 +103,13 @@ func (p *Image) Update(delta float32) {
 			rewind = 1.0
 		}
 		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{float32(rewind)}, rl.ShaderUniformFloat)
+	}
+	if p.Parallax > 0 {
+		delta := p.camera.Target.X - p.cameraLastPos.X
+		p.parallaxOffset -= delta * p.Parallax
+		p.cameraLastPos = p.camera.Target
+
+		p.Pos.X += p.parallaxOffset
 	}
 }
 
