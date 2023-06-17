@@ -80,16 +80,17 @@ type Color struct {
 }
 
 type Image struct {
-	DrawIndex int    `json:"drawIndex"`
-	Id        string `json:"id"`
-	Path      string `json:"path"`
-	Shader    string `json:"shader"`
-	X         int    `json:"x"`
-	Y         int    `json:"y"`
-	Width     int    `json:"width"`
-	Height    int    `json:"height"`
-	Rotation  int    `json:"rotation"`
-	Parallax  float32    `json:"parallax"`
+	DrawIndex int     `json:"drawIndex"`
+	Id        string  `json:"id"`
+	Path      string  `json:"path"`
+	Shader    string  `json:"shader"`
+	X         int     `json:"x"`
+	Y         int     `json:"y"`
+	Width     int     `json:"width"`
+	Height    int     `json:"height"`
+	Rotation  int     `json:"rotation"`
+	Parallax  float32 `json:"parallax"`
+	Particles string  `json:"particles"`
 }
 
 type Vec2 struct {

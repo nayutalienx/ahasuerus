@@ -1,7 +1,11 @@
 package resources
 
 import (
+	"encoding/xml"
 	"fmt"
+	"io/ioutil"
+	"strconv"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -46,6 +50,96 @@ var (
 	fontsCache   = make(map[FontTtf]rl.Font)
 	shaderCache  = make(map[GameShader]rl.Shader)
 )
+
+type Ellipse struct {
+	XMLName xml.Name `xml:"ellipse"`
+	Color   string   `xml:"fill,attr"`
+	X       string   `xml:"cx,attr"`
+	Y       string   `xml:"cy,attr"`
+	Radius  string   `xml:"rx,attr"`
+}
+
+type Geometry struct {
+	XMLName   xml.Name  `xml:"g"`
+	Transform string    `xml:"transform,attr"`
+	Ellipses  []Ellipse `xml:"ellipse"`
+}
+
+type Particles struct {
+	XMLName  xml.Name `xml:"svg"`
+	Geometry Geometry `xml:"g"`
+}
+
+type ParticlesDto struct {
+	Pos    rl.Vector2
+	Radius int32
+	Color  rl.Color
+}
+
+func LoadParticles(particleJson string) []ParticlesDto {
+	data, err := ioutil.ReadFile(particleJson)
+	if err != nil {
+		panic(err)
+	}
+
+	var particles Particles
+
+	err = xml.Unmarshal(data, &particles)
+	if err != nil {
+		panic(err)
+	}
+
+	result := make([]ParticlesDto, 0)
+
+	scaleString := strings.Split(particles.Geometry.Transform, " ")[0]
+	scaleString = strings.Replace(scaleString, "scale(", "", -1)
+	scaleString = strings.Replace(scaleString, ")", "", -1)
+	scaleFloat, err := strconv.ParseFloat(scaleString, 32)
+	if err != nil {
+		panic(err)
+	}
+
+	for i, _ := range particles.Geometry.Ellipses {
+		e := particles.Geometry.Ellipses[i]
+
+		radius, err := strconv.ParseFloat(e.Radius, 32)
+		if err != nil {
+			panic(err)
+		}
+
+		if int32(radius*scaleFloat) >= 400 {
+			continue
+		}
+
+		x, err := strconv.ParseFloat(e.X, 32)
+		if err != nil {
+			panic(err)
+		}
+
+		y, err := strconv.ParseFloat(e.Y, 32)
+		if err != nil {
+			panic(err)
+		}
+
+		r, g, b, err := HexToRGB(e.Color)
+		if err != nil {
+			panic(err)
+		}
+
+		result = append(result, ParticlesDto{
+			Pos:    rl.NewVector2(float32(x*scaleFloat), float32(y*scaleFloat)),
+			Radius: int32(radius*scaleFloat),
+			Color: rl.NewColor(
+				uint8(r),
+				uint8(g),
+				uint8(b),
+				uint8(100),
+			),
+		})
+	}
+
+	return result
+}
 
 func LoadFont(f FontTtf) rl.Font {
 	font, ok := fontsCache[f]
@@ -113,4 +207,24 @@ func UnloadShaderCache(shader GameShader) {
 		delete(shaderCache, shader)
 		rl.UnloadShader(sh)
 	}
+}
+
+func HexToRGB(hex string) (int, int, int, error) {
+	// Remove the "#" prefix if present
+	if len(hex) > 0 && hex[0] == '#' {
+		hex = hex[1:]
+	}
+
+	// Parse the hex values
+	rgbValue, err := strconv.ParseUint(hex, 16, 32)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	// Extract the RGB components
+	red := (rgbValue >> 16) & 0xFF
+	green := (rgbValue >> 8) & 0xFF
+	blue := rgbValue & 0xFF
+
+	return int(red), int(green), int(blue), nil
 }

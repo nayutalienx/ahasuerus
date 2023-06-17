@@ -1235,7 +1235,6 @@
 				"blockOffsetY": "-150.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc3\u0000",
-
 				"text": "...;What?;...;......",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1284,7 +1283,6 @@
 				"blockOffsetY": "-150.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc4\u0000",
-
 				"text": "Fucking jew!\nI hope you will die tomorrow",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1333,7 +1331,6 @@
 				"blockOffsetY": "-150.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc5\u0000",
-
 				"text": "I don't wanna talk with you;No!\nGo away.",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1382,7 +1379,6 @@
 				"blockOffsetY": "-150.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc6\u0000",
-
 				"text": "Hello friend\nYes, I can help you;Go with me",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -1396,6 +1392,7 @@
 			"id": "691f224e-3a59-4097-97a9-d0b162557bc3",
 			"path": "resources\\bg\\level1_bg.png",
 			"shader": "resources/shader/texture.fs",
+			"particles": "resources/bg/particles.svg",
 			"x": -226,
 			"y": -936,
 			"width": 19000,
