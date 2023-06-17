@@ -34,9 +34,6 @@ type Image struct {
 
 	Lightboxes []Hitbox
 	shaderLocs []int32
-
-	ParticlesSource string
-	particles       []*Particle
 }
 
 func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y, width, height, rotation float32) *Image {
@@ -52,7 +49,6 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 		Lightboxes:   make([]Hitbox, 0),
 		shaderLocs:   make([]int32, 0),
 		Scale:        1,
-		particles:    make([]*Particle, 0),
 	}
 	if width != 0 && height != 0 {
 		img.initEditorItem()
@@ -64,25 +60,6 @@ func (p *Image) Camera(camera *rl.Camera2D) *Image {
 	p.camera = camera
 	p.cameraLastPos = camera.Target
 	return p
-}
-
-func (img *Image) SetParticles(particlesSource string) *Image {
-	if particlesSource != "" {
-		img.ParticlesSource = particlesSource
-		particles := resources.LoadParticles(particlesSource)
-		for i, _ := range particles {
-			p := particles[i]
-			img.particles = append(img.particles, &Particle{
-				Pos:       rl.Vector2Add(p.Pos, img.Pos),
-				Color:     p.Color,
-				Type:      Circle,
-				Radius:    float32(p.Radius),
-				FadeSpeed: img.randomNotZero(20),
-				FallSpeed: img.randomNotZero(20),
-			})
-		}
-	}
-	return img
 }
 
 func (p *Image) StartMove(startMovePos rl.Vector2, endMovePos rl.Vector2, moveSpeed float32) {
@@ -106,7 +83,6 @@ func (p *Image) Draw() {
 		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.Pos.X), int32(p.Pos.Y), 40, rl.Red)
 	}
 	p.BaseEditorItem.Draw()
-	p.drawParticles()
 }
 
 func (p *Image) Update(delta float32) {
@@ -136,7 +112,6 @@ func (p *Image) Update(delta float32) {
 
 		p.Pos.X += p.parallaxOffset
 	}
-	p.updateParticles(delta)
 }
 
 func (p *Image) Load() {
@@ -202,20 +177,6 @@ func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
 
 func (p Image) Replicate(id string, x, y float32) *Image {
 	return NewImage(p.DrawIndex, id, p.ImageTexture, x, y, p.WidthHeight.X, p.WidthHeight.Y, p.Rotation)
-}
-
-func (img *Image) drawParticles() {
-	for i, _ := range img.particles {
-		particle := img.particles[i]
-		particle.Draw()
-	}
-}
-
-func (img *Image) updateParticles(delta float32) {
-	for i, _ := range img.particles {
-		particle := img.particles[i]
-		particle.Update(delta)
-	}
 }
 
 func (p *Image) syncBoxWithTexture() {

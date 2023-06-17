@@ -1392,7 +1392,6 @@
 			"id": "691f224e-3a59-4097-97a9-d0b162557bc3",
 			"path": "resources\\bg\\level1_bg.png",
 			"shader": "resources/shader/texture.fs",
-			"particles": "resources/bg/particles.svg",
 			"x": -226,
 			"y": -936,
 			"width": 19000,

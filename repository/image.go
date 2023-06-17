@@ -30,7 +30,6 @@ func GetAllImages(levelName string) []models.Image {
 
 		imageModel := models.NewImage(imageFound.DrawIndex, imageFound.Id, resources.GameTexture(imageFound.Path), float32(imageFound.X), float32(imageFound.Y), float32(imageFound.Width), float32(imageFound.Height), float32(imageFound.Rotation))
 		imageModel.Parallax = float32(imageFound.Parallax)
-		imageModel.SetParticles(imageFound.Particles)
 		if imageFound.Shader != string(resources.UndefinedShader) {
 			imageModel.WithShader(resources.GameShader(imageFound.Shader))
 		}
@@ -55,7 +54,6 @@ func mapImage(id string, img *models.Image) Image {
 		Y:         int(img.Pos.Y),
 		Rotation:  int(img.Rotation),
 		Parallax:  img.Parallax,
-		Particles: img.ParticlesSource,
 	}
 
 	if img.WidthHeight.X > 0 && img.WidthHeight.Y > 0 {
