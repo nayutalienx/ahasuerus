@@ -42,7 +42,7 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 		WidthHeight:  rl.NewVector2(width, height),
 		Lightboxes:   make([]Hitbox, 0),
 		shaderLocs:   make([]int32, 0),
-		Scale: 1,
+		Scale:        1,
 	}
 	if width != 0 && height != 0 {
 		img.initEditorItem()
@@ -84,6 +84,15 @@ func (p *Image) Update(delta float32) {
 	}
 	p.WidthHeight = rl.NewVector2(p.Width(), p.Height())
 	p.syncBoxWithTexture()
+
+	if p.ImageShader != resources.UndefinedShader {
+		rl.SetShaderValueTexture(p.Shader, p.shaderLocs[0], p.Texture)
+		rewind := 0.0
+		if rl.IsKeyDown(rl.KeyLeftShift) {
+			rewind = 1.0
+		}
+		rl.SetShaderValue(p.Shader, p.shaderLocs[1], []float32{float32(rewind)}, rl.ShaderUniformFloat)
+	}
 }
 
 func (p *Image) Load() {
@@ -110,8 +119,10 @@ func (p *Image) Load() {
 
 	if p.ImageShader != resources.UndefinedShader {
 		p.Shader = resources.LoadShader(p.ImageShader)
-		textureLoc := rl.GetShaderLocation(p.Shader, "texture0")
-		rl.SetShaderValueTexture(p.Shader, textureLoc, p.Texture)
+		p.shaderLocs = []int32{
+			rl.GetShaderLocation(p.Shader, "texture0"),
+			rl.GetShaderLocation(p.Shader, "rewind"),
+		}
 	}
 }
 
