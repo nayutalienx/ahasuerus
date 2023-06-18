@@ -12,6 +12,7 @@ import (
 const dataId = "data"
 
 type Level struct {
+	Name               string
 	Characters         []Character            `json:"characters"`
 	Lights             []Light                `json:"lights"`
 	CollissionHitboxes []CollisionHitbox      `json:"collissionHitboxes"`
@@ -25,11 +26,12 @@ func GetLevel(levelName string) Level {
 	if err != nil {
 		panic(err)
 	}
+	level.Name = levelName
 	return level
 }
 
-func SaveLevel(levelName string, level Level) {
-	err := db.Write(levelName, dataId, level)
+func (level *Level) SaveLevel() {
+	err := db.Write(level.Name, dataId, level)
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +56,7 @@ func (l *Level) SaveImage(imageModel *models.Image) {
 	}
 }
 
-func (l *Level) DeleteImage(id string) {
+func (l *Level) DeleteImage(id string) *Level{
 	found := false
 	foundIndex := 0
 	for index, _ := range l.Images {
@@ -67,6 +69,7 @@ func (l *Level) DeleteImage(id string) {
 	if found {
 		l.Images = append(l.Images[:foundIndex], l.Images[foundIndex+1:]...)
 	}
+	return l
 }
 
 func (l *Level) SaveCollisionHitbox(hitboxModel *models.CollisionHitbox) {
@@ -88,7 +91,7 @@ func (l *Level) SaveCollisionHitbox(hitboxModel *models.CollisionHitbox) {
 	}
 }
 
-func (l *Level) DeleteCollisionHitbox(id string) {
+func (l *Level) DeleteCollisionHitbox(id string) *Level {
 	found := false
 	foundIndex := 0
 	for index, _ := range l.CollissionHitboxes {
@@ -101,9 +104,10 @@ func (l *Level) DeleteCollisionHitbox(id string) {
 	if found {
 		l.CollissionHitboxes = append(l.CollissionHitboxes[:foundIndex], l.CollissionHitboxes[foundIndex+1:]...)
 	}
+	return l
 }
 
-func (l *Level) DeleteLight(id string) {
+func (l *Level) DeleteLight(id string) *Level {
 	found := false
 	foundIndex := 0
 	for index, _ := range l.Lights {
@@ -116,9 +120,10 @@ func (l *Level) DeleteLight(id string) {
 	if found {
 		l.Lights = append(l.Lights[:foundIndex], l.Lights[foundIndex+1:]...)
 	}
+	return l
 }
 
-func (l *Level) DeleteCharacter(id string) {
+func (l *Level) DeleteCharacter(id string) *Level {
 	found := false
 	foundIndex := 0
 	for index, _ := range l.Characters {
@@ -131,6 +136,7 @@ func (l *Level) DeleteCharacter(id string) {
 	if found {
 		l.Characters = append(l.Characters[:foundIndex], l.Characters[foundIndex+1:]...)
 	}
+	return l
 }
 
 func (level *Level) GetAllImages() []models.Image {

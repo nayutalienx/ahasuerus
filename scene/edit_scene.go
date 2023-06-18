@@ -26,7 +26,6 @@ const (
 )
 
 type EditScene struct {
-	sceneName      string
 	worldContainer *container.ObjectResourceContainer
 	camera         *rl.Camera2D
 	sourceScene    SceneId
@@ -50,14 +49,13 @@ func NewEditScene(
 
 	scene := &EditScene{
 		sourceScene:             sourceScene,
-		sceneName:               sceneName,
 		worldContainer:          container.NewObjectResourceContainer(),
 		cameraEditPos:           rl.NewVector2(0, 0),
 		editCameraSpeed:         5,
 		selectedGameObjectsItem: make([]models.EditorSelectedItem, 0),
 	}
 
-	scene.level = repository.GetLevel(scene.sceneName)
+	scene.level = repository.GetLevel(sceneName)
 
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT-500),
@@ -224,7 +222,7 @@ func (s *EditScene) saveEditor() {
 
 		}
 	})
-	repository.SaveLevel(s.sceneName, s.level)
+	s.level.SaveLevel()
 }
 
 func (s *EditScene) drawEditorHub() {
@@ -482,18 +480,34 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 		s.reactOnImageEditorSelection(s.worldContainer, img, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(img)
-			s.level.DeleteImage(img.Id)
-			repository.SaveLevel(s.sceneName, s.level)
+			s.level.DeleteImage(img.Id).SaveLevel()
 		}
 	}
 
-	hitbox, isHitbox := editorItem.(*models.CollisionHitbox)
+	collisionHitbox, isHitbox := editorItem.(*models.CollisionHitbox)
 	if isHitbox {
-		delete := s.reactOnEditorItemSelection(s.worldContainer, &hitbox.BaseEditorItem, &buttonCounter)
+		delete := s.reactOnEditorItemSelection(s.worldContainer, &collisionHitbox.BaseEditorItem, &buttonCounter)
 		if delete {
-			s.worldContainer.RemoveObject(hitbox)
-			s.level.DeleteCollisionHitbox(hitbox.Id)
-			repository.SaveLevel(s.sceneName, s.level)
+			s.worldContainer.RemoveObject(collisionHitbox)
+			s.level.DeleteCollisionHitbox(collisionHitbox.Id).SaveLevel()
+		}
+	}
+
+	light, isLight := editorItem.(*models.Light)
+	if isLight {
+		delete := s.reactOnEditorItemSelection(s.worldContainer, &light.BaseEditorItem, &buttonCounter)
+		if delete {
+			s.worldContainer.RemoveObject(light)
+			s.level.DeleteCollisionHitbox(light.Id).SaveLevel()
+		}
+	}
+
+	npc, isNpc := editorItem.(*models.Npc)
+	if isNpc {
+		delete := s.reactOnEditorItemSelection(s.worldContainer, &npc.BaseEditorItem, &buttonCounter)
+		if delete {
+			s.worldContainer.RemoveObject(npc)
+			s.level.DeleteCollisionHitbox(npc.Id).SaveLevel()
 		}
 	}
 

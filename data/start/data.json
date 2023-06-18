@@ -37,17 +37,18 @@
 				}
 			],
 			"properties": {
+				"bgImage": "resources/heroes/characters/kanade.png",
+				"bgImageScale": "0",
 				"blockOffsetX": "50.0\u0000",
 				"blockOffsetY": "-150.0\u0000",
+				"choice": "Hi:...;Fine:...;Bye",
+				"currentChoice": "0",
 				"fontSize": "60.0\u0000",
 				"label": "npc1\u0000",
-				"choice": "Hi:...;Fine:...;Bye",
 				"text": "Hi traveler!\nHow are you?;Glad to see you here;I don't know what are you\ntalking about",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
-				"textOffsetY": "15.0\u0000",
-				"currentChoice": "0",
-				"bgImage": "resources/heroes/characters/kanade.png"
+				"textOffsetY": "15.0\u0000"
 			}
 		},
 		{
@@ -87,12 +88,12 @@
 				}
 			],
 			"properties": {
+				"bgImage": "resources/heroes/characters/kanade_2.png",
+				"bgImageScale": "0.9",
 				"blockOffsetX": "50.0\u0000",
 				"blockOffsetY": "-150.0\u0000",
 				"fontSize": "60.0\u0000",
 				"label": "npc2\u0000",
-				"bgImage": "resources/heroes/characters/kanade_2.png",
-				"bgImageScale": "0.9",
 				"text": "I don't care man;Fuck off!;Stupid bastard",
 				"textCounter": "0.0\u0000",
 				"textOffsetX": "20.0\u0000",
@@ -862,44 +863,6 @@
 			"properties": {}
 		},
 		{
-			"id": "482b3f75-0ba1-4fa6-9ea7-77a5c0fcd72e",
-			"polygons": [
-				{
-					"points": [
-						{
-							"x": -222,
-							"y": -51
-						},
-						{
-							"x": 23,
-							"y": -51
-						},
-						{
-							"x": 23,
-							"y": 400
-						}
-					]
-				},
-				{
-					"points": [
-						{
-							"x": -222,
-							"y": -51
-						},
-						{
-							"x": -222,
-							"y": 400
-						},
-						{
-							"x": 23,
-							"y": 400
-						}
-					]
-				}
-			],
-			"properties": {}
-		},
-		{
 			"id": "542d8c0c-9abf-4dd5-ac49-9e2e41df2ec5",
 			"polygons": [
 				{
@@ -1354,6 +1317,44 @@
 				}
 			],
 			"properties": {}
+		},
+		{
+			"id": "04e07d11-14db-413b-9767-fa32cc50a5fd",
+			"polygons": [
+				{
+					"points": [
+						{
+							"x": -239,
+							"y": 31
+						},
+						{
+							"x": -65,
+							"y": 31
+						},
+						{
+							"x": -65,
+							"y": 386
+						}
+					]
+				},
+				{
+					"points": [
+						{
+							"x": -239,
+							"y": 31
+						},
+						{
+							"x": -239,
+							"y": 386
+						},
+						{
+							"x": -65,
+							"y": 386
+						}
+					]
+				}
+			],
+			"properties": {}
 		}
 	],
 	"images": [
@@ -1362,7 +1363,7 @@
 			"id": "691f224e-3a59-4097-97a9-d0b162557bc3",
 			"path": "resources\\bg\\level1_bg.png",
 			"shader": "resources/shader/texture.fs",
-			"x": -226,
+			"x": -239,
 			"y": -936,
 			"width": 19000,
 			"height": 1437,
@@ -1378,7 +1379,8 @@
 			"y": -925,
 			"width": 19000,
 			"height": 1437,
-			"rotation": 0
+			"rotation": 0,
+			"parallax": 0
 		}
 	],
 	"properties": {

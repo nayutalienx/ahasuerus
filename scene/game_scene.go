@@ -21,13 +21,11 @@ type GameScene struct {
 
 	onScreenQueue chan models.Object
 
-	sceneName string
 	paused    bool
 }
 
 func NewGameScene(sceneName string) *GameScene {
 	scene := GameScene{
-		sceneName:      sceneName,
 		worldContainer: container.NewObjectResourceContainer(),
 		onScreenQueue:  make(chan models.Object, 1),
 	}
@@ -41,7 +39,7 @@ func NewGameScene(sceneName string) *GameScene {
 
 	scene.properties = map[SceneProp]interface{}{}
 
-	level := repository.GetLevel(scene.sceneName)
+	level := repository.GetLevel(sceneName)
 	for k, v := range level.Properties {
 		scene.properties[SceneProp(k)] = v
 	}
