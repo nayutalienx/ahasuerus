@@ -38,7 +38,7 @@
 				}
 			],
 			"Rotation": 0,
-			"BgImagePath": "",
+			"BgImagePath": "resources\\heroes\\characters\\kanade.png",
 			"BgImageScale": 0,
 			"TextCounter": 0,
 			"CurrentChoise": 0,
@@ -92,8 +92,8 @@
 				}
 			],
 			"Rotation": 0,
-			"BgImagePath": "",
-			"BgImageScale": 0,
+			"BgImagePath": "resources\\heroes\\characters\\kanade_2.png",
+			"BgImageScale": 0.9,
 			"TextCounter": 0,
 			"CurrentChoise": 0,
 			"Text": "Hi there!;How are you?;Glad to see you here",
