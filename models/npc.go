@@ -17,21 +17,34 @@ var (
 
 type Npc struct {
 	CollisionHitbox
-	drawBgImage          bool
-	bgImage              *Image
-	bgImageHidePos       rl.Vector2
-	screenChan           chan Object
-	Rewind               []HitboxRewindData
-	rewindLastIndex      int32
-	rewindSpeed          int32
-	rewindModeStartIndex int32
-	rewindModeStarted    bool
+
+	BgImagePath   string
+	BgImageScale  float32
+	TextCounter   int
+	CurrentChoise int
+	Text          string
+	Choosed       string
+	Choice        string
+	FontSize      int32
+	TextOffset    rl.Vector2
+	BlockOffset   rl.Vector2
+
+	bgImage        *Image
+	drawBgImage    bool        `json:"-"`
+	bgImageHidePos rl.Vector2  `json:"-"`
+	screenChan     chan Object `json:"-"`
+
+	Rewind               [REWIND_BUFFER_SIZE]HitboxRewindData `json:"-"`
+	rewindLastIndex      int32              `json:"-"`
+	rewindSpeed          int32              `json:"-"`
+	rewindModeStartIndex int32              `json:"-"`
+	rewindModeStarted    bool               `json:"-"`
 }
 
 type HitboxRewindData struct {
-	TextCounter   string
+	TextCounter   int
 	Choosed       string
-	CurrentChoise string
+	CurrentChoise int
 }
 
 func (p *Npc) ScreenChan(c chan Object) *Npc {
@@ -40,19 +53,16 @@ func (p *Npc) ScreenChan(c chan Object) *Npc {
 }
 
 func (p *Npc) Load() {
-	bgImage, ok := p.Properties["bgImage"]
-	if ok {
-		p.bgImage = NewImage(0, uuid.NewString(), resources.GameTexture(bgImage), 0, 0, 0, 0, 0).
+	if p.BgImagePath != "" {
+		p.bgImage = NewImage(0, uuid.NewString(), resources.GameTexture(p.BgImagePath), 0, 0, 0).
 			WithShader(resources.NpcShader)
 		p.bgImage.Load()
 
-		scale := p.PropertyFloat("bgImageScale")
-		if scale > 0 {
-			p.bgImage.Scale = scale
+		if p.BgImageScale > 0 {
+			p.bgImage.Scale = p.BgImageScale
 		}
 
 	}
-	p.Rewind = make([]HitboxRewindData, REWIND_BUFFER_SIZE)
 }
 
 func (p *Npc) Unload() {
@@ -85,7 +95,7 @@ func (p *Npc) Draw() {
 	}
 
 	if !p.hasCollision && p.drawBgImage {
-		if p.bgImage.Pos.X > p.bgImageHidePos.X-INACCURACY && p.bgImage.Pos.Y > p.bgImageHidePos.Y-INACCURACY {
+		if p.bgImage.TopLeft().X > p.bgImageHidePos.X-INACCURACY && p.bgImage.TopLeft().Y > p.bgImageHidePos.Y-INACCURACY {
 			p.drawBgImage = false
 		}
 	}
@@ -119,37 +129,33 @@ func (p *Npc) Update(delta float32) {
 
 	if p.hasCollision {
 
-		textCounter := int32(p.PropertyFloat("textCounter"))
-		currentChoice := int(p.PropertyFloat("currentChoice"))
-
 		if rl.IsKeyReleased(rl.KeyEnter) {
-			phrases := strings.Split(p.PropertyString("text"), ";")
-			if len(phrases) > int(textCounter+1) {
-				p.Properties["textCounter"] = fmt.Sprintf("%.1f", float32(textCounter+1))
-				choosed := p.PropertyString("choosed")
-				p.Properties["choosed"] = fmt.Sprintf("%s;%d", choosed, currentChoice)
-				p.Properties["currentChoice"] = fmt.Sprintf("%.1f", float32(0))
+			phrases := strings.Split(p.Text, ";")
+			if len(phrases) > int(p.TextCounter+1) {
+				p.TextCounter++
+				p.Choosed = fmt.Sprintf("%s;%d", p.Choosed, p.CurrentChoise)
+				p.CurrentChoise = 0
 			}
 		}
 
 		if rl.IsKeyReleased(rl.KeyDown) || rl.IsKeyReleased(rl.KeyUp) {
 
-			choicesByPhrace := strings.Split(p.PropertyString("choice"), ";")
-			if len(choicesByPhrace) > int(textCounter) {
-				choices := strings.Split(choicesByPhrace[textCounter], ":")
+			choicesByPhrace := strings.Split(p.Choice, ";")
+			if len(choicesByPhrace) > int(p.TextCounter) {
+				choices := strings.Split(choicesByPhrace[p.TextCounter], ":")
 
 				futureChoice := 0
 
 				if rl.IsKeyReleased(rl.KeyDown) {
-					futureChoice = currentChoice + 1
+					futureChoice = p.CurrentChoise + 1
 				}
 
 				if rl.IsKeyReleased(rl.KeyUp) {
-					futureChoice = currentChoice - 1
+					futureChoice = p.CurrentChoise - 1
 				}
 
 				if len(choices) > futureChoice && futureChoice >= 0 {
-					p.Properties["currentChoice"] = fmt.Sprintf("%.1f", float32(futureChoice))
+					p.CurrentChoise = futureChoice
 				}
 
 			}
@@ -181,7 +187,7 @@ func (p *Npc) updateRewindSpeed() {
 func (p *Npc) enterCollision() {
 	if p.bgImage != nil {
 		start := rl.NewVector2(WIDTH, 0)
-		end := rl.NewVector2(WIDTH-(p.bgImage.WidthHeight.X*p.bgImage.Scale), 0)
+		end := rl.NewVector2(WIDTH-(p.bgImage.Width()*p.bgImage.Scale), 0)
 		p.bgImage.StartMove(start, end, 10)
 		p.drawBgImage = true
 	}
@@ -190,7 +196,7 @@ func (p *Npc) enterCollision() {
 func (p *Npc) exitCollision() {
 	if p.bgImage != nil {
 		p.bgImageHidePos = rl.NewVector2(WIDTH+INACCURACY, 0)
-		p.bgImage.StartMove(p.bgImage.Pos, p.bgImageHidePos, 10)
+		p.bgImage.StartMove(p.bgImage.TopLeft(), p.bgImageHidePos, 10)
 	}
 }
 
@@ -200,9 +206,9 @@ func (p *Npc) saveNpcToRewind() {
 	}
 
 	p.Rewind[p.rewindLastIndex] = HitboxRewindData{
-		TextCounter:   p.Properties["textCounter"],
-		Choosed:       p.Properties["choosed"],
-		CurrentChoise: p.Properties["currentChoise"],
+		TextCounter:   p.TextCounter,
+		Choosed:       p.Choosed,
+		CurrentChoise: p.CurrentChoise,
 	}
 	p.rewindLastIndex++
 }
@@ -220,52 +226,45 @@ func (p *Npc) rewindNpc() {
 		p.rewindLastIndex -= p.rewindSpeed
 	}
 
-	p.Properties["textCounter"] = rewind.TextCounter
-	p.Properties["choosed"] = rewind.Choosed
-	p.Properties["currentChoise"] = rewind.CurrentChoise
+	p.TextCounter = rewind.TextCounter
+	p.Choosed = rewind.Choosed
+	p.CurrentChoise = rewind.CurrentChoise
 }
 
 func (p Npc) drawSelectDialog(dialogRec rl.Rectangle) {
 
-	choice := p.PropertyString("choice")
-	if choice == "" {
+	if p.Choice == "" {
 		return
 	}
 
-	fontSize := int32(p.PropertyFloat("fontSize"))
-	textOffsetX := p.PropertyFloat("textOffsetX")
-	textOffsetY := p.PropertyFloat("textOffsetY")
+	choicesByPhrace := strings.Split(p.Choice, ";")
 
-	textCounter := int32(p.PropertyFloat("textCounter"))
-
-	choicesByPhrace := strings.Split(choice, ";")
-
-	if len(choicesByPhrace) > int(textCounter) {
+	if len(choicesByPhrace) > int(p.TextCounter) {
 
 		rectColor := rl.Black
 		rectColor.A = 150
 		dialogRec.X += dialogRec.Width / 1.1
 		dialogRec.Y += dialogRec.Height / 2
 
-		choices := strings.Split(choicesByPhrace[textCounter], ":")
+		choices := strings.Split(choicesByPhrace[p.TextCounter], ":")
 
-		dialogRec.Height = float32(fontSize*int32(len(choices))) + textOffsetY
+		dialogRec.Height = float32(p.FontSize*int32(len(choices))) + p.TextOffset.Y
 		rl.DrawRectangleRounded(dialogRec, 0.5, 0, rectColor)
 
 		for i, _ := range choices {
 			choice := choices[i]
 
 			textPos := rl.NewVector2(
-				dialogRec.X+textOffsetX,
-				dialogRec.Y+textOffsetY/2+float32(fontSize)*float32(i),
+				dialogRec.X+p.TextOffset.X,
+				dialogRec.Y+p.TextOffset.Y/2+float32(p.FontSize)*float32(i),
 			)
 
 			color := rl.White
-			if i == int(p.PropertyFloat("currentChoice")) {
+			if i == int(p.CurrentChoise) {
 				color = rl.Orange
 			}
 
-			DrawSdfText(choice, textPos, float32(fontSize), color)
+			DrawSdfText(choice, textPos, float32(p.FontSize), color)
 
 		}
 
@@ -276,19 +275,11 @@ func (p Npc) drawSelectDialog(dialogRec rl.Rectangle) {
 func (p Npc) drawDialog() {
 	pos := p.TopRight()
 
-	offsetX := int32(p.PropertyFloat("blockOffsetX"))
-	offsetY := int32(p.PropertyFloat("blockOffsetY"))
-
-	fontSize := int32(p.PropertyFloat("fontSize"))
-
-	textOffsetX := p.PropertyFloat("textOffsetX")
-	textOffsetY := p.PropertyFloat("textOffsetY")
-	phrases := strings.Split(p.PropertyString("text"), ";")
-	textCounter := int32(p.PropertyFloat("textCounter"))
+	phrases := strings.Split(p.Text, ";")
 
 	text := "empty phrase"
-	if len(phrases) > int(textCounter) {
-		text = phrases[textCounter]
+	if len(phrases) > int(p.TextCounter) {
+		text = phrases[p.TextCounter]
 	}
 
 	maxXLen := 0
@@ -299,8 +290,8 @@ func (p Npc) drawDialog() {
 		}
 	}
 
-	width := int32(maxXLen * int(float64(fontSize)/2.0))
-	height := int32(float64(fontSize)+(float64(fontSize)/1.5)) * (1 + (int32(strings.Count(text, "\n"))))
+	width := int32(maxXLen * int(float64(p.FontSize)/2.0))
+	height := int32(float64(p.FontSize)+(float64(p.FontSize)/1.5)) * (1 + (int32(strings.Count(text, "\n"))))
 
 	if width < 400 {
 		width = 400
@@ -309,13 +300,13 @@ func (p Npc) drawDialog() {
 	rectColor := rl.Black
 	rectColor.A = 150
 
-	roundedRec := rl.NewRectangle(float32(int32(pos.X)+offsetX), float32(int32(pos.Y)+offsetY), float32(width), float32(height))
+	roundedRec := rl.NewRectangle(float32(int32(pos.X)+int32(p.BlockOffset.X)), float32(int32(pos.Y)+int32(p.BlockOffset.Y)), float32(width), float32(height))
 
 	rl.DrawRectangleRounded(roundedRec, 0.5, 0, rectColor)
 
-	textPos := rl.NewVector2(float32(int32(pos.X)+offsetX+int32(textOffsetX)), float32(int32(pos.Y)+offsetY+int32(textOffsetY)))
+	textPos := rl.NewVector2(float32(int32(pos.X)+int32(p.BlockOffset.X)+int32(p.TextOffset.X)), float32(int32(pos.Y)+int32(p.BlockOffset.Y)+int32(p.TextOffset.Y)))
 
-	DrawSdfText(text, textPos, float32(fontSize), rl.White)
+	DrawSdfText(text, textPos, float32(p.FontSize), rl.White)
 
 	p.drawSelectDialog(roundedRec)
 }

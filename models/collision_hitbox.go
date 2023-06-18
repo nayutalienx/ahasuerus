@@ -8,8 +8,8 @@ import (
 
 type CollisionHitbox struct {
 	BaseEditorItem
-	CollisionProcessor collision.CollisionDetector
-	hasCollision       bool
+	CollisionProcessor collision.CollisionDetector `json:"-"`
+	hasCollision       bool                        `json:"-"`
 }
 
 func (p *CollisionHitbox) Load() {
@@ -25,7 +25,7 @@ func (p *CollisionHitbox) Resume() {}
 
 func (p *CollisionHitbox) Draw() {
 	if DRAW_MODELS {
-		polys := p.Polygons()
+		polys := p.PolygonsWithRotation()
 
 		for i, _ := range polys {
 			rl.DrawTriangleLines(

@@ -11,47 +11,49 @@ import (
 
 type Image struct {
 	BaseEditorItem
-	Pos            rl.Vector2
-	WidthHeight    rl.Vector2
 	DrawIndex      int
-	Texture        rl.Texture2D
-	Shader         rl.Shader
+	Texture        rl.Texture2D `json:"-"`
+	Shader         rl.Shader    `json:"-"`
 	ImageTexture   resources.GameTexture
 	ImageShader    resources.GameShader
 	Parallax       float32
-	parallaxOffset float32
-	preset         func(i *Image)
+	parallaxOffset float32        `json:"-"`
+	preset         func(i *Image) `json:"-"`
 
-	camera        *rl.Camera2D
-	cameraLastPos rl.Vector2
+	camera        *rl.Camera2D `json:"-"`
+	cameraLastPos rl.Vector2   `json:"-"`
 
 	Scale float32
 
-	isMoveMode   bool
-	startMovePos rl.Vector2
-	endMovePos   rl.Vector2
-	moveSpeed    float32
+	isMoveMode   bool       `json:"-"`
+	startMovePos rl.Vector2 `json:"-"`
+	endMovePos   rl.Vector2 `json:"-"`
+	moveSpeed    float32    `json:"-"`
 
-	Lightboxes []CollisionHitbox
-	shaderLocs []int32
+	Lightboxes []CollisionHitbox `json:"-"`
+	shaderLocs []int32           `json:"-"`
 }
 
-func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y, width, height, rotation float32) *Image {
-	img := &Image{
-		BaseEditorItem: BaseEditorItem{
-			Id:       id,
-			Rotation: rotation,
+func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y, rotation float32) *Image {
+	topLeft := rl.NewVector2(x, y)
+	bei := NewBaseEditorItem([2]collision.Polygon{
+		{
+			Points: [3]rl.Vector2{
+				topLeft,
+			},
 		},
-		DrawIndex:    drawIndex,
-		ImageTexture: imageTexture,
-		Pos:          rl.NewVector2(x, y),
-		WidthHeight:  rl.NewVector2(width, height),
-		Lightboxes:   make([]CollisionHitbox, 0),
-		shaderLocs:   make([]int32, 0),
-		Scale:        1,
-	}
-	if width != 0 && height != 0 {
-		img.initEditorItem()
+	})
+	bei.Id = id
+	bei.Rotation = rotation
+
+	img := &Image{
+		BaseEditorItem: bei,
+		DrawIndex:      drawIndex,
+		ImageTexture:   imageTexture,
+		Lightboxes:     make([]CollisionHitbox, 0),
+		ImageShader:    resources.TextureShader,
+		shaderLocs:     make([]int32, 0),
+		Scale:          1,
 	}
 	return img
 }
@@ -67,35 +69,31 @@ func (p *Image) StartMove(startMovePos rl.Vector2, endMovePos rl.Vector2, moveSp
 	p.startMovePos = startMovePos
 	p.endMovePos = endMovePos
 	p.moveSpeed = moveSpeed
-
-	p.Pos = p.startMovePos
+	p.ChangePosition(p.startMovePos)
 }
 
 func (p *Image) Draw() {
 	if p.ImageShader != resources.UndefinedShader {
 		rl.BeginShaderMode(p.Shader)
-		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, p.Scale, rl.White)
+		rl.DrawTextureEx(p.Texture, p.TopLeft(), p.Rotation, p.Scale, rl.White)
 		rl.EndShaderMode()
 	} else {
-		rl.DrawTextureEx(p.Texture, p.Pos, p.Rotation, p.Scale, rl.White)
+		rl.DrawTextureEx(p.Texture, p.TopLeft(), p.Rotation, p.Scale, rl.White)
 	}
 	if p.EditSelected {
-		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.Pos.X), int32(p.Pos.Y), 40, rl.Red)
+		position := p.TopLeft()
+		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex, position), int32(position.X), int32(position.Y), 40, rl.Red)
 	}
 	p.BaseEditorItem.Draw()
 }
 
 func (p *Image) Update(delta float32) {
 	if p.isMoveMode {
-		p.Pos = rl.Vector2Lerp(p.Pos, p.endMovePos, p.moveSpeed*delta)
-		if p.Pos == p.endMovePos {
+		p.ChangePosition(rl.Vector2Lerp(p.TopLeft(), p.endMovePos, p.moveSpeed*delta))
+		if p.TopLeft() == p.endMovePos {
 			p.isMoveMode = false
 		}
-	} else {
-		p.Pos = p.TopLeft()
 	}
-	p.WidthHeight = rl.NewVector2(p.Width(), p.Height())
-	p.syncBoxWithTexture()
 
 	if p.ImageShader != resources.UndefinedShader {
 		rl.SetShaderValueTexture(p.Shader, p.shaderLocs[0], p.Texture)
@@ -109,14 +107,11 @@ func (p *Image) Update(delta float32) {
 		delta := p.camera.Target.X - p.cameraLastPos.X
 		p.parallaxOffset -= delta * p.Parallax
 		p.cameraLastPos = p.camera.Target
-
-		p.Pos.X += p.parallaxOffset
+		p.Translate(rl.NewVector2(p.parallaxOffset, 0))
 	}
 }
 
 func (p *Image) Load() {
-
-	shouldInitEditorItem := p.WidthHeight.X == 0 && p.WidthHeight.Y == 0
 
 	p.Texture = resources.LoadTexture(p.ImageTexture)
 
@@ -124,17 +119,33 @@ func (p *Image) Load() {
 		p.preset(p)
 	}
 
-	if p.WidthHeight.X > 0 && p.WidthHeight.Y > 0 { // scale image
-		p.Texture.Width = int32(p.WidthHeight.X)
-		p.Texture.Height = int32(p.WidthHeight.Y)
-	} else {
-		p.WidthHeight.X = float32(p.Texture.Width)
-		p.WidthHeight.Y = float32(p.Texture.Height)
-	}
+	width := float32(p.Texture.Width)
+	height := float32(p.Texture.Height)
 
-	if shouldInitEditorItem {
-		p.initEditorItem()
-	}
+	pos := p.TopLeft()
+
+	topLeft := rl.NewVector2(pos.X, pos.Y)
+	bottomLeft := rl.Vector2{topLeft.X, topLeft.Y + height}
+
+	topRight := rl.Vector2{topLeft.X + width, topLeft.Y}
+	bottomRight := rl.Vector2{topLeft.X + width, topLeft.Y + height}
+
+	bei := NewBaseEditorItem([2]collision.Polygon{
+		{
+			Points: [3]rl.Vector2{
+				topLeft, topRight, bottomRight,
+			},
+		},
+		{
+			Points: [3]rl.Vector2{
+				topLeft, bottomLeft, bottomRight,
+			},
+		},
+	})
+	bei.Id = p.Id
+	bei.Rotation = p.Rotation
+
+	p.BaseEditorItem = bei
 
 	if p.ImageShader != resources.UndefinedShader {
 		p.Shader = resources.LoadShader(p.ImageShader)
@@ -176,12 +187,7 @@ func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
 }
 
 func (p Image) Replicate(id string, x, y float32) *Image {
-	return NewImage(p.DrawIndex, id, p.ImageTexture, x, y, p.WidthHeight.X, p.WidthHeight.Y, p.Rotation)
-}
-
-func (p *Image) syncBoxWithTexture() {
-	p.Texture.Width = int32(p.WidthHeight.X)
-	p.Texture.Height = int32(p.WidthHeight.Y)
+	return NewImage(p.DrawIndex, id, p.ImageTexture, x, y, p.Rotation)
 }
 
 func (img *Image) randomNotZero(n int) float32 {
@@ -193,17 +199,6 @@ func (img *Image) randomNotZero(n int) float32 {
 	}
 }
 
-func (img *Image) initEditorItem() {
-	img.BaseEditorItem.SetPolygons([2]collision.Polygon{
-		{
-			Points: [3]rl.Vector2{
-				img.Pos, {img.Pos.X + img.WidthHeight.X, img.Pos.Y}, {img.Pos.X + img.WidthHeight.X, img.Pos.Y + img.WidthHeight.Y},
-			},
-		},
-		{
-			Points: [3]rl.Vector2{
-				img.Pos, {img.Pos.X, img.Pos.Y + img.WidthHeight.Y}, {img.Pos.X + img.WidthHeight.X, img.Pos.Y + img.WidthHeight.Y},
-			},
-		},
-	})
+func (i *Image) loadFromProperties() {
+
 }

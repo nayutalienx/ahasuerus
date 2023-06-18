@@ -17,11 +17,12 @@ type GameScene struct {
 	worldContainer *container.ObjectResourceContainer
 	camera         *rl.Camera2D
 	player         *models.Player
-	properties     map[SceneProp]interface{}
+
+	level repository.Level
 
 	onScreenQueue chan models.Object
 
-	paused    bool
+	paused bool
 }
 
 func NewGameScene(sceneName string) *GameScene {
@@ -30,54 +31,43 @@ func NewGameScene(sceneName string) *GameScene {
 		onScreenQueue:  make(chan models.Object, 1),
 	}
 
+	scene.level = repository.GetLevel(sceneName)
+
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT-250),
-		rl.NewVector2(0, 0),
+		scene.level.CameraPos,
 		0, 1.0)
-	camera.Target.Y = 250
 	scene.camera = &camera
 
-	scene.properties = map[SceneProp]interface{}{}
-
-	level := repository.GetLevel(sceneName)
-	for k, v := range level.Properties {
-		scene.properties[SceneProp(k)] = v
-	}
-
-	worldImages := level.GetAllImages()
+	worldImages := scene.level.Images
 	for i, _ := range worldImages {
 		img := worldImages[i]
 		img.Camera(&camera)
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
-	scene.player = models.NewPlayer(float32(scene.properties[PlayerStartX].(float64)), float32(scene.properties[PlayerStartY].(float64)))
-	shaderAsInterface, hasShader := scene.properties[PlayerShader]
-	if hasShader {
-		shader := resources.GameShader(shaderAsInterface.(string))
-		scene.player.WithShader(shader)
-	}
+	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.PlayerShader)
 
 	scene.worldContainer.AddObjectResource(scene.player)
 
-	collisionHitboxes := level.GetAllCollisionHitboxes()
+	collisionHitboxes := scene.level.CollissionHitboxes
 	for i, _ := range collisionHitboxes {
 		hb := collisionHitboxes[i]
 		scene.worldContainer.AddObjectResource(&hb)
 		scene.player.CollisionProcessor.AddHitbox(&collision.Hitbox{
-			Polygons: hb.Polygons(),
+			Polygons: hb.PolygonsWithRotation(),
 		})
 
 	}
 
-	lights := level.GetAllLights()
+	lights := scene.level.Lights
 	for i, _ := range lights {
 		light := lights[i]
 		scene.worldContainer.AddObject(&light)
 		scene.player.AddLightbox(light)
 	}
 
-	characters := level.GetAllCharacters()
+	characters := scene.level.Characters
 	for i, _ := range characters {
 		npc := characters[i]
 		npc.CollisionProcessor.AddHitbox(scene.player.GetHitbox())
@@ -145,8 +135,8 @@ func (s *GameScene) Run() models.Scene {
 }
 
 func (s *GameScene) updateCamera(delta float32) {
-	if float64(s.player.Pos.X) > s.properties[StartCameraFollowPos].(float64) {
-		if float64(s.player.Pos.X) < s.properties[EndCameraFollowPos].(float64) {
+	if s.player.Pos.X > s.level.CameraStartEndMove.X {
+		if s.player.Pos.X < s.level.CameraStartEndMove.Y {
 
 			cameraNewPos := s.player.Pos
 			cameraNewPos.Y = s.camera.Target.Y
@@ -158,7 +148,7 @@ func (s *GameScene) updateCamera(delta float32) {
 			}
 
 		} else {
-			updateCameraWithMode(s.camera, rl.NewVector2(float32(s.properties[EndCameraFollowPos].(float64))+s.camera.Offset.X, s.camera.Target.Y), delta, FastSmooth)
+			updateCameraWithMode(s.camera, rl.NewVector2(float32(s.level.CameraStartEndMove.Y)+s.camera.Offset.X, s.camera.Target.Y), delta, FastSmooth)
 		}
 	} else {
 		updateCameraWithMode(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta, FastSmooth)

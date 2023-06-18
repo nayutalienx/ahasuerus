@@ -8,7 +8,6 @@ import (
 	"ahasuerus/repository"
 	"ahasuerus/resources"
 	"fmt"
-	"sort"
 
 	"strings"
 
@@ -31,7 +30,6 @@ type EditScene struct {
 	sourceScene    SceneId
 
 	editorHubEnabled        bool
-	cameraEditPos           rl.Vector2
 	editCameraSpeed         float32
 	selectedGameObjectsItem []models.EditorSelectedItem
 
@@ -47,48 +45,48 @@ func NewEditScene(
 
 	rg.LoadStyleDefault()
 
+	level := repository.GetLevel(sceneName)
+
+	camera := rl.NewCamera2D(
+		rl.NewVector2(WIDTH/2, HEIGHT-500),
+		level.CameraPos,
+		0, 1)
+
 	scene := &EditScene{
+		level:                   level,
+		camera:                  &camera,
 		sourceScene:             sourceScene,
 		worldContainer:          container.NewObjectResourceContainer(),
-		cameraEditPos:           rl.NewVector2(0, 0),
 		editCameraSpeed:         5,
 		selectedGameObjectsItem: make([]models.EditorSelectedItem, 0),
 	}
 
-	scene.level = repository.GetLevel(sceneName)
-
-	camera := rl.NewCamera2D(
-		rl.NewVector2(WIDTH/2, HEIGHT-500),
-		rl.NewVector2(0, 0),
-		0, 1)
-	scene.camera = &camera
-
-	worldImages := scene.level.GetAllImages()
+	worldImages := scene.level.Images
 	for i, _ := range worldImages {
 		img := worldImages[i]
 		img.Camera(scene.camera)
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
-	collisionHitboxes := scene.level.GetAllCollisionHitboxes()
+	collisionHitboxes := scene.level.CollissionHitboxes
 	for i, _ := range collisionHitboxes {
 		hb := collisionHitboxes[i]
 		scene.worldContainer.AddObjectResource(&hb)
 	}
 
-	lights := scene.level.GetAllLights()
+	lights := scene.level.Lights
 	for i, _ := range lights {
 		light := lights[i]
 		scene.worldContainer.AddObject(&light)
 	}
 
-	characters := scene.level.GetAllCharacters()
+	characters := scene.level.Characters
 	for i, _ := range characters {
 		npc := characters[i]
 		scene.worldContainer.AddObjectResource(&npc)
 	}
 
-	controls.SetMousePosition(int(scene.cameraEditPos.X), int(scene.cameraEditPos.Y), 661)
+	controls.SetMousePosition(int(scene.camera.Target.X), int(scene.camera.Target.Y), 661)
 
 	scene.worldContainer.Load()
 
@@ -112,8 +110,6 @@ func (s EditScene) Run() models.Scene {
 		}
 
 		s.processInputs()
-
-		updateCameraCenter(s.camera, s.cameraEditPos, delta)
 
 		rl.BeginMode2D(*s.camera)
 
@@ -206,23 +202,46 @@ func (s EditScene) hasAnySelectedGameObjectEditorItem() (bool, models.EditorItem
 }
 
 func (s *EditScene) saveEditor() {
+	newLevel := s.level
+
+	newLevel.Characters = []models.Npc{}
+	newLevel.Lights = []models.Light{}
+	newLevel.CollissionHitboxes = []models.CollisionHitbox{}
+	newLevel.Images = []models.Image{}
+	newLevel.ParticleSources = []models.ParticleSource{}
+
 	s.worldContainer.ForEachObject(func(obj models.Object) {
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
 
 			image, ok := editorItem.(*models.Image)
 			if ok {
-				s.level.SaveImage(image)
+				newLevel.Images = append(newLevel.Images, *image)
 			}
 
 			hitbox, ok := editorItem.(*models.CollisionHitbox)
 			if ok {
-				s.level.SaveCollisionHitbox(hitbox)
+				newLevel.CollissionHitboxes = append(newLevel.CollissionHitboxes, *hitbox)
+			}
+
+			light, ok := editorItem.(*models.Light)
+			if ok {
+				newLevel.Lights = append(newLevel.Lights, *light)
+			}
+
+			npc, ok := editorItem.(*models.Npc)
+			if ok {
+				newLevel.Characters = append(newLevel.Characters, *npc)
+			}
+
+			particleSource, ok := editorItem.(*models.ParticleSource)
+			if ok {
+				newLevel.ParticleSources = append(newLevel.ParticleSources, *particleSource)
 			}
 
 		}
 	})
-	s.level.SaveLevel()
+	newLevel.SaveLevel()
 }
 
 func (s *EditScene) drawEditorHub() {
@@ -241,6 +260,7 @@ func (s *EditScene) drawMainHub() {
 	newCollisionBox := rg.Button(s.controlRect(&bc), "NEW COLLISIONBOX")
 	newLightBox := rg.Button(s.controlRect(&bc), "NEW LIGHTBOX")
 	newNpc := rg.Button(s.controlRect(&bc), "NEW NPC")
+	newParticleSource := rg.Button(s.controlRect(&bc), "NEW PARTICLE SOURCE")
 
 	toggleModelsDrawText := "HIDE COLLISSION"
 	if !models.DRAW_MODELS {
@@ -267,8 +287,9 @@ func (s *EditScene) drawMainHub() {
 				s.worldContainer.Size(),
 				uuid.NewString(),
 				resources.GameTexture(path),
-				s.camera.Target.X,
-				s.camera.Target.Y, 0, 0, 0)
+				0,
+				0, 
+				0)
 
 			image.Load()
 
@@ -285,7 +306,7 @@ func (s *EditScene) drawMainHub() {
 		s.editMenuGameImageDropMode = true
 	}
 
-	if newCollisionBox || newLightBox || newNpc {
+	if newCollisionBox || newLightBox || newNpc || newParticleSource {
 		height := float32(100)
 		width := float32(100)
 
@@ -321,21 +342,18 @@ func (s *EditScene) drawMainHub() {
 				BaseEditorItem: baseEditorItem,
 			}
 		}
+
+		if newParticleSource {
+			newObject = models.NewParticleSource(baseEditorItem, resources.ParticleFogTexture, 1)
+		}
+
 		if newNpc {
-			baseEditorItem.Properties = map[string]string{
-				"label":         "npc",
-				"blockOffsetX":  "50.0",
-				"blockOffsetY":  "-150.0",
-				"fontSize":      "60.0",
-				"textOffsetX":   "20.0",
-				"textOffsetY":   "15.0",
-				"textCounter":   "0.0",
-				"text":          "Hi there!;How are you?;Glad to see you here",
-				"choice":        "Hi:...;Fine:...;Bye",
-				"choosed":       "",
-				"currentChoice": "0",
-			}
 			newObject = &models.Npc{
+				BlockOffset: rl.NewVector2(50, -150),
+				FontSize:    60.0,
+				TextOffset:  rl.NewVector2(20, 15),
+				Text:        "Hi there!;How are you?;Glad to see you here",
+				Choice:      "Hi:...;Fine:...;Bye",
 				CollisionHitbox: models.CollisionHitbox{
 					BaseEditorItem: baseEditorItem,
 				},
@@ -352,19 +370,10 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 	resize := rg.Button(s.controlRect(bc), "RESIZE")
 	rotate := rg.Button(s.controlRect(bc), "ROTATE")
 	deleteItem := rg.Button(s.controlRect(bc), "DELETE")
-	toggleProps := rg.Button(s.controlRect(bc), "PROPERTIES")
 	unselect := rg.Button(s.controlRect(bc), "UNSELECT(F11)")
 
 	if unselect {
 		item.ExternalUnselect = true
-	}
-
-	if toggleProps {
-		item.ShowProperties = !item.ShowProperties
-	}
-
-	if item.ShowProperties {
-		s.drawEditorItemProperties(item, bc)
 	}
 
 	if changePos {
@@ -384,47 +393,6 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 	}
 
 	return deleteItem
-}
-
-func (s EditScene) drawEditorItemProperties(item *models.BaseEditorItem, bc *models.Counter) {
-	propertiesMargin := float32(20)
-	propsLen := float32(len(item.Properties)) + 2
-	propertiesPanelRect := s.controlRectWithMarginUp(bc, 10)
-	propertiesPanelRect.Width *= 2.2
-	propertiesPanelRect.Height *= propsLen
-	rg.Panel(propertiesPanelRect, "Properties")
-
-	keys := []string{}
-	for k, _ := range item.Properties {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-
-	for i, _ := range keys {
-		k := keys[i]
-		propertiesRect := s.controlRectWithMargin(bc, propertiesMargin)
-
-		rg.Label(propertiesRect, k)
-		propertiesRect.X += propertiesRect.Width + propertiesMargin
-		val := item.Properties[k]
-		isActive := false
-		if rl.CheckCollisionPointRec(rl.GetMousePosition(), propertiesRect) {
-			isActive = true
-		}
-
-		shortText := val
-		if len(val) >= 20 {
-			shortText = val[:20]
-			isActive = false
-			rg.TextBoxMulti(propertiesRect, &shortText, maxTextSize, isActive)
-		} else {
-			rg.TextBoxMulti(propertiesRect, &val, maxTextSize, isActive)
-		}
-
-		item.Properties[k] = val
-	}
-
 }
 
 func (s EditScene) itemPosY(buttonCounter *models.Counter) float32 {
@@ -463,7 +431,8 @@ func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResou
 	}
 
 	if replicate {
-		imageReplica := image.Replicate(uuid.NewString(), image.Pos.X-100, image.Pos.Y-100)
+		topLeft := image.TopLeft()
+		imageReplica := image.Replicate(uuid.NewString(), topLeft.X-100, topLeft.Y-100)
 		imageReplica.Load()
 		container.AddObjectResource(imageReplica)
 	}
@@ -480,7 +449,6 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 		s.reactOnImageEditorSelection(s.worldContainer, img, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(img)
-			s.level.DeleteImage(img.Id).SaveLevel()
 		}
 	}
 
@@ -489,7 +457,6 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 		delete := s.reactOnEditorItemSelection(s.worldContainer, &collisionHitbox.BaseEditorItem, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(collisionHitbox)
-			s.level.DeleteCollisionHitbox(collisionHitbox.Id).SaveLevel()
 		}
 	}
 
@@ -498,7 +465,6 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 		delete := s.reactOnEditorItemSelection(s.worldContainer, &light.BaseEditorItem, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(light)
-			s.level.DeleteCollisionHitbox(light.Id).SaveLevel()
 		}
 	}
 
@@ -507,7 +473,14 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 		delete := s.reactOnEditorItemSelection(s.worldContainer, &npc.BaseEditorItem, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(npc)
-			s.level.DeleteCollisionHitbox(npc.Id).SaveLevel()
+		}
+	}
+
+	particleSource, isParticleSource := editorItem.(*models.ParticleSource)
+	if isParticleSource {
+		delete := s.reactOnEditorItemSelection(s.worldContainer, &particleSource.BaseEditorItem, &buttonCounter)
+		if delete {
+			s.worldContainer.RemoveObject(particleSource)
 		}
 	}
 
@@ -520,7 +493,7 @@ func (s *EditScene) processInputs() {
 	updateMouse := false
 
 	if rl.IsKeyDown(rl.KeyRight) {
-		s.cameraEditPos.X += s.editCameraSpeed
+		s.camera.Target.X += s.editCameraSpeed
 		if !s.editorHubEnabled {
 			mousePos.X += s.editCameraSpeed
 			updateMouse = true
@@ -528,7 +501,7 @@ func (s *EditScene) processInputs() {
 	}
 
 	if rl.IsKeyDown(rl.KeyLeft) {
-		s.cameraEditPos.X -= s.editCameraSpeed
+		s.camera.Target.X -= s.editCameraSpeed
 		if !s.editorHubEnabled {
 			mousePos.X -= s.editCameraSpeed
 			updateMouse = true
@@ -537,7 +510,7 @@ func (s *EditScene) processInputs() {
 
 	if rl.IsKeyDown(rl.KeySpace) {
 		mouseDelta := rl.Vector2Negate(rl.GetMouseDelta())
-		s.cameraEditPos = rl.Vector2Add(s.cameraEditPos, mouseDelta)
+		s.camera.Target = rl.Vector2Add(s.camera.Target, mouseDelta)
 		mousePos = rl.Vector2Add(mousePos, mouseDelta)
 		updateMouse = true
 	}
@@ -587,7 +560,7 @@ func (s *EditScene) processInputs() {
 		if rl.IsKeyDown(rl.KeyN) && s.editorHubEnabled {
 			s.editorHubEnabled = false
 			controls.DisableCursor(666)
-			controls.SetMousePosition(int(s.cameraEditPos.X), int(s.cameraEditPos.Y), 661)
+			controls.SetMousePosition(int(s.camera.Target.X), int(s.camera.Target.Y), 661)
 		}
 
 	}

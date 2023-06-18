@@ -26,34 +26,34 @@ type PlayerRewindData struct {
 }
 
 type Player struct {
-	Pos                rl.Vector2
-	CollisionProcessor collision.CollisionDetector
-	velocity           rl.Vector2
+	Pos                rl.Vector2 `json:"-"`
+	CollisionProcessor collision.CollisionDetector `json:"-"`
+	velocity           rl.Vector2 `json:"-"`
 
-	width, height float32
-	orientation   Orientation
-	currentHitbox *collision.Hitbox
+	width, height float32           `json:"-"`
+	orientation   Orientation       `json:"-"`
+	currentHitbox *collision.Hitbox `json:"-"`
 
-	currentAnimation    *Animation
-	runAnimation        *Animation
-	stayAnimation       *Animation
-	directUpAnimation   *Animation
-	directDownAnimation *Animation
-	sideUpAnimation     *Animation
-	sideDownAnimation   *Animation
+	currentAnimation    *Animation `json:"-"`
+	runAnimation        *Animation `json:"-"`
+	stayAnimation       *Animation `json:"-"`
+	directUpAnimation   *Animation `json:"-"`
+	directDownAnimation *Animation `json:"-"`
+	sideUpAnimation     *Animation `json:"-"`
+	sideDownAnimation   *Animation `json:"-"`
 
-	Shader      rl.Shader
-	ImageShader resources.GameShader
-	Lightboxes  []Light
-	shaderLocs  []int32
+	Shader      rl.Shader            `json:"-"`
+	ImageShader resources.GameShader `json:"-"`
+	Lightboxes  []Light              `json:"-"`
+	shaderLocs  []int32              `json:"-"`
 
-	Rewind               [REWIND_BUFFER_SIZE]PlayerRewindData
-	rewindLastIndex      int32
-	rewindSpeed          int32
-	rewindModeStartIndex int32
-	rewindModeStarted    bool
+	Rewind               [REWIND_BUFFER_SIZE]PlayerRewindData `json:"-"`
+	rewindLastIndex      int32                                `json:"-"`
+	rewindSpeed          int32                                `json:"-"`
+	rewindModeStartIndex int32                                `json:"-"`
+	rewindModeStarted    bool                                 `json:"-"`
 
-	paused bool
+	paused bool `json:"-"`
 }
 
 func NewPlayer(x float32, y float32) *Player {

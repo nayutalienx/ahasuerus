@@ -8,16 +8,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type SceneProp string
-
-const (
-	StartCameraFollowPos SceneProp = "startCameraFollowPos"
-	EndCameraFollowPos   SceneProp = "endCameraFollowPos"
-	PlayerShader         SceneProp = "playerShader"
-	PlayerStartX         SceneProp = "playerStartX"
-	PlayerStartY         SceneProp = "playerStartY"
-)
-
 type SceneId int
 
 const (
