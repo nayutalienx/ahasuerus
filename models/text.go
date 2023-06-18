@@ -2,11 +2,13 @@ package models
 
 import (
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"github.com/google/uuid"
 )
 
 type textUpdateCallback func(text *Text)
 
 type Text struct {
+	id             string
 	x              int32
 	y              int32
 	data           string
@@ -22,12 +24,17 @@ type Text struct {
 
 func NewText(x int32, y int32) *Text {
 	return &Text{
+		id:             uuid.NewString(),
 		x:              x,
 		y:              y,
 		color:          rl.DarkGray,
 		fontSize:       20,
 		updateCallback: func(text *Text) {},
 	}
+}
+
+func (p *Text) GetId() string {
+	return p.id
 }
 
 func (p *Text) GetDrawIndex() int {

@@ -25,7 +25,7 @@ func (w *ObjectContainer) AddObject(obj ...models.Object) {
 func (w *ObjectContainer) RemoveObject(obj models.Object) {
 	for i, _ := range w.objects {
 		o := w.objects[i]
-		if o == obj {
+		if o.GetId() == obj.GetId() {
 			w.objects = w.removeObject(i)
 			break
 		}

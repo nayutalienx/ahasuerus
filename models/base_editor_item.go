@@ -29,6 +29,10 @@ func NewBaseEditorItem(polygons [2]collision.Polygon) BaseEditorItem {
 	}
 }
 
+func (p *BaseEditorItem) GetId() string {
+	return p.Id
+}
+
 func (p *BaseEditorItem) GetDrawIndex() int {
 	return p.DrawIndex
 }

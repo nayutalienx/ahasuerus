@@ -9,11 +9,14 @@ import (
 
 type ParticleSource struct {
 	BaseEditorItem
-	ParticleTexture    resources.GameTexture
-	ParticleShader     resources.GameShader
-	Amount             int
-	BackgroundParticle bool
-	texture            rl.Texture2D `json:"-"`
+	ParticleTexture resources.GameTexture
+	ParticleShader  resources.GameShader
+	Amount          int
+	Direction       rl.Vector2
+	MoveSpeed       float32
+	Scale           float32
+	MaxOpacity      float32
+	texture         rl.Texture2D `json:"-"`
 
 	particles []Particle `json:"-"`
 
@@ -28,7 +31,12 @@ func NewParticleSource(
 	p := ParticleSource{
 		BaseEditorItem:  bei,
 		ParticleTexture: particleTexture,
+		ParticleShader:  resources.ParticleShader,
 		Amount:          particlesSize,
+		Direction:       rl.NewVector2(0, -1),
+		MoveSpeed:       0.5,
+		Scale:           0.5,
+		MaxOpacity:      100,
 	}
 
 	return &p
@@ -104,12 +112,12 @@ func (p *ParticleSource) loadParticleBuffer() {
 		p.particles = append(p.particles, *NewParticle(
 			lifeRect,
 			p.texture,
-			rl.NewVector2(0, -1),
+			p.Direction,
 			time.Second*5,
-			0.5,
-			0.5,
-			0.0,
-			100.0,
+			p.MoveSpeed,
+			p.Scale,
+			p.Rotation,
+			p.MaxOpacity,
 		).WithShader(p.shader, p.shaderLocs))
 	}
 

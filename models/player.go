@@ -68,6 +68,10 @@ func NewPlayer(x float32, y float32) *Player {
 	return p
 }
 
+func (p *Player) GetId() string {
+	return "player"
+}
+
 func (p *Player) GetDrawIndex() int {
 	return -999
 }

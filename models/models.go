@@ -9,6 +9,7 @@ type Object interface {
 	Draw()
 	Update(delta float32)
 	GetDrawIndex() int
+	GetId() string
 }
 
 type Resource interface {
