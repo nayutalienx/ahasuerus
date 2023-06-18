@@ -41,6 +41,7 @@ const (
 	PlayerShader    GameShader = "resources/shader/player.fs"
 	NpcShader       GameShader = "resources/shader/npc.fs"
 	SdfShader       GameShader = "resources/shader/sdf.fs"
+	ParticleShader  GameShader = "resources/shader/particle.fs"
 )
 
 var (

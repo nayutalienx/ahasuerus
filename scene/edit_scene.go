@@ -86,6 +86,12 @@ func NewEditScene(
 		scene.worldContainer.AddObjectResource(&npc)
 	}
 
+	particles := scene.level.ParticleSources
+	for i, _ := range particles {
+		particle := particles[i]
+		scene.worldContainer.AddObjectResource(&particle)
+	}
+
 	controls.SetMousePosition(int(scene.camera.Target.X), int(scene.camera.Target.Y), 661)
 
 	scene.worldContainer.Load()
@@ -260,7 +266,7 @@ func (s *EditScene) drawMainHub() {
 	newCollisionBox := rg.Button(s.controlRect(&bc), "NEW COLLISIONBOX")
 	newLightBox := rg.Button(s.controlRect(&bc), "NEW LIGHTBOX")
 	newNpc := rg.Button(s.controlRect(&bc), "NEW NPC")
-	newParticleSource := rg.Button(s.controlRect(&bc), "NEW PARTICLE SOURCE")
+	newParticleSource := rg.Button(s.controlRect(&bc), "PARTICLES")
 
 	toggleModelsDrawText := "HIDE COLLISSION"
 	if !models.DRAW_MODELS {
@@ -344,7 +350,9 @@ func (s *EditScene) drawMainHub() {
 		}
 
 		if newParticleSource {
-			newObject = models.NewParticleSource(baseEditorItem, resources.ParticleFogTexture, 1)
+			ps := models.NewParticleSource(baseEditorItem, resources.ParticleFogTexture, 1)
+			ps.Load()
+			newObject = ps
 		}
 
 		if newNpc {

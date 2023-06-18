@@ -46,6 +46,12 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.worldContainer.AddObjectResource(&img)
 	}
 
+	particles := scene.level.ParticleSources
+	for i, _ := range particles {
+		particle := particles[i]
+		scene.worldContainer.AddObjectResource(&particle)
+	}
+
 	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.PlayerShader)
 
 	scene.worldContainer.AddObjectResource(scene.player)

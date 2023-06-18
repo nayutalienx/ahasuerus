@@ -1000,7 +1000,49 @@
 			"Scale": 1
 		}
 	],
-	"ParticleSources": [],
+	"ParticleSources": [
+		{
+			"Id": "894bd408-b63a-4082-80e7-b7409a41ce0b",
+			"Polygons": [
+				{
+					"Points": [
+						{
+							"X": 231,
+							"Y": 644
+						},
+						{
+							"X": 1743,
+							"Y": 644
+						},
+						{
+							"X": 1743,
+							"Y": 881
+						}
+					]
+				},
+				{
+					"Points": [
+						{
+							"X": 231,
+							"Y": 644
+						},
+						{
+							"X": 231,
+							"Y": 881
+						},
+						{
+							"X": 1743,
+							"Y": 881
+						}
+					]
+				}
+			],
+			"Rotation": 0,
+			"ParticleTexture": "resources/particles/fog2.png",
+			"ParticleShader": "resources/shader/particle.fs",
+			"Amount": 2
+		}
+	],
 	"CameraPos": {
 		"X": 800,
 		"Y": 1200
