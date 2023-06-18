@@ -29,7 +29,7 @@ func NewGameScene(sceneName string) *GameScene {
 	scene := GameScene{
 		sceneName:      sceneName,
 		worldContainer: container.NewObjectResourceContainer(),
-		onScreenQueue: make(chan models.Object, 1),
+		onScreenQueue:  make(chan models.Object, 1),
 	}
 
 	camera := rl.NewCamera2D(
@@ -40,11 +40,13 @@ func NewGameScene(sceneName string) *GameScene {
 	scene.camera = &camera
 
 	scene.properties = map[SceneProp]interface{}{}
-	for k, v := range repository.GetSceneProperties(scene.sceneName) {
+
+	level := repository.GetLevel(scene.sceneName)
+	for k, v := range level.Properties {
 		scene.properties[SceneProp(k)] = v
 	}
 
-	worldImages := repository.GetAllImages(scene.sceneName)
+	worldImages := level.GetAllImages()
 	for i, _ := range worldImages {
 		img := worldImages[i]
 		img.Camera(&camera)
@@ -60,22 +62,28 @@ func NewGameScene(sceneName string) *GameScene {
 
 	scene.worldContainer.AddObjectResource(scene.player)
 
-	hitboxes := repository.GetAllHitboxes(scene.sceneName)
-	for i, _ := range hitboxes {
-		hb := hitboxes[i]
-		scene.worldContainer.AddObjectResource(hb.ScreenChan(scene.onScreenQueue))
-		if hb.Type == models.Collision {
-			scene.player.CollisionProcessor.AddHitbox(&collision.Hitbox{
-				Polygons: hb.Polygons(),
-			})
-		}
-		if hb.Type == models.Light {
-			scene.player.AddLightbox(hb)
-		}
-		if hb.Type == models.Npc {
-			hb.CollisionProcessor.AddHitbox(scene.player.GetHitbox())
-		}
+	collisionHitboxes := level.GetAllCollisionHitboxes()
+	for i, _ := range collisionHitboxes {
+		hb := collisionHitboxes[i]
+		scene.worldContainer.AddObjectResource(&hb)
+		scene.player.CollisionProcessor.AddHitbox(&collision.Hitbox{
+			Polygons: hb.Polygons(),
+		})
 
+	}
+
+	lights := level.GetAllLights()
+	for i, _ := range lights {
+		light := lights[i]
+		scene.worldContainer.AddObject(&light)
+		scene.player.AddLightbox(light)
+	}
+
+	characters := level.GetAllCharacters()
+	for i, _ := range characters {
+		npc := characters[i]
+		npc.CollisionProcessor.AddHitbox(scene.player.GetHitbox())
+		scene.worldContainer.AddObjectResource(npc.ScreenChan(scene.onScreenQueue))
 	}
 
 	scene.worldContainer.Load()
@@ -117,7 +125,7 @@ func (s *GameScene) Run() models.Scene {
 		rl.EndMode2D()
 
 		if len(s.onScreenQueue) > 0 {
-			onScreenObject := <- s.onScreenQueue
+			onScreenObject := <-s.onScreenQueue
 			onScreenObject.Draw()
 			onScreenObject.Update(delta)
 		}

@@ -32,7 +32,7 @@ type Image struct {
 	endMovePos   rl.Vector2
 	moveSpeed    float32
 
-	Lightboxes []Hitbox
+	Lightboxes []CollisionHitbox
 	shaderLocs []int32
 }
 
@@ -46,7 +46,7 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 		ImageTexture: imageTexture,
 		Pos:          rl.NewVector2(x, y),
 		WidthHeight:  rl.NewVector2(width, height),
-		Lightboxes:   make([]Hitbox, 0),
+		Lightboxes:   make([]CollisionHitbox, 0),
 		shaderLocs:   make([]int32, 0),
 		Scale:        1,
 	}
@@ -165,7 +165,7 @@ func (p *Image) WithShader(gs resources.GameShader) *Image {
 	return p
 }
 
-func (p *Image) AddLightbox(lp Hitbox) *Image {
+func (p *Image) AddLightbox(lp CollisionHitbox) *Image {
 	p.Lightboxes = append(p.Lightboxes, lp)
 	return p
 }

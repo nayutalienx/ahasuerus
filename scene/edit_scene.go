@@ -37,6 +37,8 @@ type EditScene struct {
 	selectedGameObjectsItem []models.EditorSelectedItem
 
 	editMenuGameImageDropMode bool
+
+	level repository.Level
 }
 
 func NewEditScene(
@@ -55,23 +57,38 @@ func NewEditScene(
 		selectedGameObjectsItem: make([]models.EditorSelectedItem, 0),
 	}
 
-	worldImages := repository.GetAllImages(scene.sceneName)
-	for i, _ := range worldImages {
-		img := worldImages[i]
-		scene.worldContainer.AddObjectResource(&img)
-	}
-
-	hitboxes := repository.GetAllHitboxes(scene.sceneName)
-	for i, _ := range hitboxes {
-		hb := hitboxes[i]
-		scene.worldContainer.AddObjectResource(&hb)
-	}
+	scene.level = repository.GetLevel(scene.sceneName)
 
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT-500),
 		rl.NewVector2(0, 0),
 		0, 1)
 	scene.camera = &camera
+
+	worldImages := scene.level.GetAllImages()
+	for i, _ := range worldImages {
+		img := worldImages[i]
+		img.Camera(scene.camera)
+		scene.worldContainer.AddObjectResource(&img)
+	}
+
+	collisionHitboxes := scene.level.GetAllCollisionHitboxes()
+	for i, _ := range collisionHitboxes {
+		hb := collisionHitboxes[i]
+		scene.worldContainer.AddObjectResource(&hb)
+	}
+
+	lights := scene.level.GetAllLights()
+	for i, _ := range lights {
+		light := lights[i]
+		scene.worldContainer.AddObject(&light)
+	}
+
+	characters := scene.level.GetAllCharacters()
+	for i, _ := range characters {
+		npc := characters[i]
+		scene.worldContainer.AddObjectResource(&npc)
+	}
 
 	controls.SetMousePosition(int(scene.cameraEditPos.X), int(scene.cameraEditPos.Y), 661)
 
@@ -197,16 +214,17 @@ func (s *EditScene) saveEditor() {
 
 			image, ok := editorItem.(*models.Image)
 			if ok {
-				repository.SaveImage(s.sceneName, image)
+				s.level.SaveImage(image)
 			}
 
-			hitbox, ok := editorItem.(*models.Hitbox)
+			hitbox, ok := editorItem.(*models.CollisionHitbox)
 			if ok {
-				repository.SaveHitbox(s.sceneName, hitbox)
+				s.level.SaveCollisionHitbox(hitbox)
 			}
 
 		}
 	})
+	repository.SaveLevel(s.sceneName, s.level)
 }
 
 func (s *EditScene) drawEditorHub() {
@@ -279,47 +297,54 @@ func (s *EditScene) drawMainHub() {
 		topRight := rl.Vector2{topLeft.X + width, topLeft.Y}
 		bottomRight := rl.Vector2{topLeft.X + width, topLeft.Y + height}
 
-		hitboxType := models.Collision
-		if newLightBox {
-			hitboxType = models.Light
-		}
-		if newNpc {
-			hitboxType = models.Npc
-		}
+		var newObject models.Object
 
-		hitbox := models.Hitbox{
-			Type: hitboxType,
-			BaseEditorItem: models.NewBaseEditorItem([2]collision.Polygon{
-				{
-					Points: [3]rl.Vector2{
-						topLeft, topRight, bottomRight,
-					},
+		baseEditorItem := models.NewBaseEditorItem([2]collision.Polygon{
+			{
+				Points: [3]rl.Vector2{
+					topLeft, topRight, bottomRight,
 				},
-				{
-					Points: [3]rl.Vector2{
-						topLeft, bottomLeft, bottomRight,
-					},
+			},
+			{
+				Points: [3]rl.Vector2{
+					topLeft, bottomLeft, bottomRight,
 				},
-			}),
-		}
+			},
+		})
 
-		if newNpc {
-			hitbox.Properties = map[string]string{
-				"label": "npc",
-				"blockOffsetX": "50.0",
-				"blockOffsetY": "-150.0",
-				"fontSize":     "60.0",
-				"textOffsetX":  "20.0",
-				"textOffsetY":  "15.0",
-				"textCounter":  "0.0",
-				"text":         "Hi there!;How are you?;Glad to see you here",
-				"choice": "Hi:...;Fine:...;Bye",
-				"choosed": "",
-				"currentChoice": "0",
+		if newCollisionBox {
+			newObject = &models.CollisionHitbox{
+				BaseEditorItem: baseEditorItem,
 			}
 		}
 
-		s.worldContainer.AddObject(&hitbox)
+		if newLightBox {
+			newObject = &models.Light{
+				BaseEditorItem: baseEditorItem,
+			}
+		}
+		if newNpc {
+			baseEditorItem.Properties = map[string]string{
+				"label":         "npc",
+				"blockOffsetX":  "50.0",
+				"blockOffsetY":  "-150.0",
+				"fontSize":      "60.0",
+				"textOffsetX":   "20.0",
+				"textOffsetY":   "15.0",
+				"textCounter":   "0.0",
+				"text":          "Hi there!;How are you?;Glad to see you here",
+				"choice":        "Hi:...;Fine:...;Bye",
+				"choosed":       "",
+				"currentChoice": "0",
+			}
+			newObject = &models.Npc{
+				CollisionHitbox: models.CollisionHitbox{
+					BaseEditorItem: baseEditorItem,
+				},
+			}
+		}
+
+		s.worldContainer.AddObject(newObject)
 	}
 }
 
@@ -457,16 +482,18 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 		s.reactOnImageEditorSelection(s.worldContainer, img, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(img)
-			repository.DeleteImage(s.sceneName, img)
+			s.level.DeleteImage(img.Id)
+			repository.SaveLevel(s.sceneName, s.level)
 		}
 	}
 
-	hitbox, isHitbox := editorItem.(*models.Hitbox)
+	hitbox, isHitbox := editorItem.(*models.CollisionHitbox)
 	if isHitbox {
 		delete := s.reactOnEditorItemSelection(s.worldContainer, &hitbox.BaseEditorItem, &buttonCounter)
 		if delete {
 			s.worldContainer.RemoveObject(hitbox)
-			repository.DeleteHitbox(s.sceneName, hitbox.Id)
+			s.level.DeleteCollisionHitbox(hitbox.Id)
+			repository.SaveLevel(s.sceneName, s.level)
 		}
 	}
 

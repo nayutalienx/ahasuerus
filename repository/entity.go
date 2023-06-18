@@ -1,12 +1,42 @@
 package repository
 
+import (
+	"ahasuerus/collision"
+	"ahasuerus/models"
+	"ahasuerus/resources"
+	"sort"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
+
+const dataId = "data"
+
 type Level struct {
-	Hitboxes   []Hitbox        `json:"hitboxes"`
-	Images     []Image         `json:"images"`
-	Properties SceneProperties `json:"properties"`
+	Characters         []Character            `json:"characters"`
+	Lights             []Light                `json:"lights"`
+	CollissionHitboxes []CollisionHitbox      `json:"collissionHitboxes"`
+	Images             []Image                `json:"images"`
+	Properties         map[string]interface{} `json:"properties"`
 }
 
-func (l *Level) SaveImage(img Image) {
+func GetLevel(levelName string) Level {
+	var level Level
+	err := db.Read(levelName, dataId, &level)
+	if err != nil {
+		panic(err)
+	}
+	return level
+}
+
+func SaveLevel(levelName string, level Level) {
+	err := db.Write(levelName, dataId, level)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (l *Level) SaveImage(imageModel *models.Image) {
+	img := l.mapImage(imageModel)
 	found := false
 	foundIndex := 0
 	for index, _ := range l.Images {
@@ -39,11 +69,12 @@ func (l *Level) DeleteImage(id string) {
 	}
 }
 
-func (l *Level) SaveHitbox(hitbox Hitbox) {
+func (l *Level) SaveCollisionHitbox(hitboxModel *models.CollisionHitbox) {
+	hitbox := l.mapCollisionHitbox(hitboxModel)
 	found := false
 	foundIndex := 0
-	for index, _ := range l.Hitboxes {
-		if l.Hitboxes[index].Id == hitbox.Id {
+	for index, _ := range l.CollissionHitboxes {
+		if l.CollissionHitboxes[index].Id == hitbox.Id {
 			found = true
 			foundIndex = index
 			break
@@ -51,25 +82,184 @@ func (l *Level) SaveHitbox(hitbox Hitbox) {
 	}
 
 	if found {
-		l.Hitboxes[foundIndex] = hitbox
+		l.CollissionHitboxes[foundIndex] = hitbox
 	} else {
-		l.Hitboxes = append(l.Hitboxes, hitbox)
+		l.CollissionHitboxes = append(l.CollissionHitboxes, hitbox)
 	}
 }
 
-func (l *Level) DeleteHitbox(id string) {
+func (l *Level) DeleteCollisionHitbox(id string) {
 	found := false
 	foundIndex := 0
-	for index, _ := range l.Hitboxes {
-		if l.Hitboxes[index].Id == id {
+	for index, _ := range l.CollissionHitboxes {
+		if l.CollissionHitboxes[index].Id == id {
 			found = true
 			foundIndex = index
 			break
 		}
 	}
 	if found {
-		l.Hitboxes = append(l.Hitboxes[:foundIndex], l.Hitboxes[foundIndex+1:]...)
+		l.CollissionHitboxes = append(l.CollissionHitboxes[:foundIndex], l.CollissionHitboxes[foundIndex+1:]...)
 	}
+}
+
+func (l *Level) DeleteLight(id string) {
+	found := false
+	foundIndex := 0
+	for index, _ := range l.Lights {
+		if l.Lights[index].Id == id {
+			found = true
+			foundIndex = index
+			break
+		}
+	}
+	if found {
+		l.Lights = append(l.Lights[:foundIndex], l.Lights[foundIndex+1:]...)
+	}
+}
+
+func (l *Level) DeleteCharacter(id string) {
+	found := false
+	foundIndex := 0
+	for index, _ := range l.Characters {
+		if l.Characters[index].Id == id {
+			found = true
+			foundIndex = index
+			break
+		}
+	}
+	if found {
+		l.Characters = append(l.Characters[:foundIndex], l.Characters[foundIndex+1:]...)
+	}
+}
+
+func (level *Level) GetAllImages() []models.Image {
+	images := []models.Image{}
+	for i, _ := range level.Images {
+		imageFound := level.Images[i]
+
+		imageModel := models.NewImage(imageFound.DrawIndex, imageFound.Id, resources.GameTexture(imageFound.Path), float32(imageFound.X), float32(imageFound.Y), float32(imageFound.Width), float32(imageFound.Height), float32(imageFound.Rotation))
+		imageModel.Parallax = float32(imageFound.Parallax)
+		if imageFound.Shader != string(resources.UndefinedShader) {
+			imageModel.WithShader(resources.GameShader(imageFound.Shader))
+		}
+
+		images = append(images, *imageModel)
+	}
+
+	sort.Slice(images, func(i, j int) bool {
+		return images[i].DrawIndex < images[j].DrawIndex
+	})
+
+	return images
+}
+
+func (level *Level) GetAllCollisionHitboxes() []models.CollisionHitbox {
+	result := []models.CollisionHitbox{}
+	for i, _ := range level.CollissionHitboxes {
+		element := models.CollisionHitbox{
+			BaseEditorItem: level.getBaseEditorItem(level.CollissionHitboxes[i].BaseEditorItem),
+		}
+		result = append(result, element)
+	}
+	return result
+}
+
+func (level *Level) GetAllLights() []models.Light {
+	result := []models.Light{}
+	for i, _ := range level.Lights {
+		element := models.Light{
+			BaseEditorItem: level.getBaseEditorItem(level.Lights[i].BaseEditorItem),
+		}
+		result = append(result, element)
+	}
+	return result
+}
+
+func (level *Level) GetAllCharacters() []models.Npc {
+	result := []models.Npc{}
+	for i, _ := range level.Characters {
+		element := models.Npc{
+			CollisionHitbox: models.CollisionHitbox{
+				BaseEditorItem: level.getBaseEditorItem(level.Characters[i].BaseEditorItem),
+			},
+		}
+		result = append(result, element)
+	}
+	return result
+}
+
+func (l *Level) getBaseEditorItem(item BaseEditorItem) models.BaseEditorItem {
+	bei := models.BaseEditorItem{
+		Id:         item.Id,
+		Properties: item.Properties,
+	}
+	if bei.Properties == nil {
+		bei.Properties = map[string]string{}
+	}
+
+	polys := [2]collision.Polygon{}
+
+	for i, _ := range item.Polygons {
+		polys[i] = collision.Polygon{
+			Points: [3]rl.Vector2{
+				{item.Polygons[i].Points[0].X, item.Polygons[i].Points[0].Y},
+				{item.Polygons[i].Points[1].X, item.Polygons[i].Points[1].Y},
+				{item.Polygons[i].Points[2].X, item.Polygons[i].Points[2].Y},
+			},
+		}
+	}
+
+	bei.SetPolygons(polys)
+	return bei
+}
+
+func (level *Level) mapCollisionHitbox(hb *models.CollisionHitbox) CollisionHitbox {
+	return CollisionHitbox{
+		BaseEditorItem: level.mapBaseEditorItem(&hb.BaseEditorItem),
+	}
+}
+
+func (level *Level) mapBaseEditorItem(bei *models.BaseEditorItem) BaseEditorItem {
+	result := BaseEditorItem{
+		Id:         bei.Id,
+		Polygons:   []Polygon{},
+		Properties: bei.Properties,
+	}
+
+	polygons := bei.Polygons()
+
+	for i, _ := range polygons {
+		p := polygons[i]
+		result.Polygons = append(result.Polygons, Polygon{
+			Points: [3]Vec2{
+				{p.Points[0].X, p.Points[0].Y},
+				{p.Points[1].X, p.Points[1].Y},
+				{p.Points[2].X, p.Points[2].Y},
+			},
+		})
+	}
+	return result
+}
+
+func (l *Level) mapImage(img *models.Image) Image {
+	i := Image{
+		DrawIndex: img.DrawIndex,
+		Id:        img.Id,
+		Path:      string(img.ImageTexture),
+		Shader:    string(img.ImageShader),
+		X:         int(img.Pos.X),
+		Y:         int(img.Pos.Y),
+		Rotation:  int(img.Rotation),
+		Parallax:  img.Parallax,
+	}
+
+	if img.WidthHeight.X > 0 && img.WidthHeight.Y > 0 {
+		i.Width = int(img.WidthHeight.X)
+		i.Height = int(img.WidthHeight.Y)
+	}
+
+	return i
 }
 
 type Color struct {
@@ -101,11 +291,20 @@ type Polygon struct {
 	Points [3]Vec2 `json:"points"`
 }
 
-type Hitbox struct {
+type BaseEditorItem struct {
 	Id         string            `json:"id"`
 	Polygons   []Polygon         `json:"polygons"`
-	Type       int               `json:"type"`
 	Properties map[string]string `json:"properties"`
 }
 
-type SceneProperties map[string]interface{}
+type CollisionHitbox struct {
+	BaseEditorItem
+}
+
+type Light struct {
+	BaseEditorItem
+}
+
+type Character struct {
+	BaseEditorItem
+}

@@ -44,7 +44,7 @@ type Player struct {
 
 	Shader      rl.Shader
 	ImageShader resources.GameShader
-	Lightboxes  []Hitbox
+	Lightboxes  []Light
 	shaderLocs  []int32
 
 	Rewind               [REWIND_BUFFER_SIZE]PlayerRewindData
@@ -209,7 +209,7 @@ func (p *Player) Update(delta float32) {
 		if p.rewindModeStarted {
 			rewind = 1.0
 		}
-		rl.SetShaderValue(p.Shader, p.shaderLocs[7], []float32{float32(rewind)}, rl.ShaderUniformFloat)		
+		rl.SetShaderValue(p.Shader, p.shaderLocs[7], []float32{float32(rewind)}, rl.ShaderUniformFloat)
 	}
 }
 
@@ -328,7 +328,7 @@ func (p *Player) processMoveXInput() bool {
 	return false
 }
 
-func (p *Player) AddLightbox(lp Hitbox) *Player {
+func (p *Player) AddLightbox(lp Light) *Player {
 	p.Lightboxes = append(p.Lightboxes, lp)
 	return p
 }
