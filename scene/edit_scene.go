@@ -349,7 +349,7 @@ func (s *EditScene) drawMainHub() {
 		}
 
 		if newParticleSource {
-			ps := models.NewParticleSource(baseEditorItem, resources.ParticleFogTexture, 1)
+			ps := models.NewParticleSource(baseEditorItem)
 			ps.Load()
 			newObject = ps
 		}

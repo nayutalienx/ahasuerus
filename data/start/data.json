@@ -1025,53 +1025,65 @@
 	],
 	"ParticleSources": [
 		{
-			"Id": "fda12ac1-1552-420b-b1f0-7319a3bae617",
+			"Id": "7fad7706-9308-40cd-9085-ba5af3e599a9",
 			"Polygons": [
 				{
 					"Points": [
 						{
-							"X": 1245,
-							"Y": 344
+							"X": 1450,
+							"Y": 746
 						},
 						{
-							"X": 2430,
-							"Y": 344
+							"X": 1550,
+							"Y": 746
 						},
 						{
-							"X": 2430,
-							"Y": 759
+							"X": 1550,
+							"Y": 846
 						}
 					]
 				},
 				{
 					"Points": [
 						{
-							"X": 1245,
-							"Y": 344
+							"X": 1450,
+							"Y": 746
 						},
 						{
-							"X": 1245,
-							"Y": 759
+							"X": 1450,
+							"Y": 846
 						},
 						{
-							"X": 2430,
-							"Y": 759
+							"X": 1550,
+							"Y": 846
 						}
 					]
 				}
 			],
-			"DrawIndex": 0,
+			"DrawIndex": 850,
 			"Rotation": 0,
-			"ParticleTexture": "resources/particles/fog2.png",
+			"ParticleTexture": "",
 			"ParticleShader": "resources/shader/particle.fs",
-			"Amount": 3,
-			"Direction": {
-				"X": 0,
-				"Y": -1
-			},
-			"MoveSpeed": 0.5,
-			"Scale": 0.5,
-			"MaxOpacity": 100
+			"Type": "bubble",
+			"SystemSettings": {
+				"MaxParticles": 300,
+				"EmissionRate": 20,
+				"EmissionRateVariance": 10,
+				"MoveTime": 20,
+				"MoveTimeVariance": 2,
+				"FadeOutTime": 5,
+				"StartPositionMaxDistance": 50,
+				"StartSpeed": 50,
+				"StartSpeedVariance": 10,
+				"StartScale": 0.2,
+				"EndScale": 0.65,
+				"EndScaleVariance": 0.3,
+				"MinAlpha": 0.35,
+				"Gravity": {
+					"X": 0,
+					"Y": 150
+				}
+			}
 		}
 	],
 	"CameraPos": {

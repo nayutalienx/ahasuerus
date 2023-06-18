@@ -1,49 +1,52 @@
 package models
 
 import (
+	"ahasuerus/particle"
 	"ahasuerus/resources"
 	"time"
 
+	"github.com/blizzy78/twodeeparticles"
 	rl "github.com/gen2brain/raylib-go/raylib"
+)
+
+type ParticleSourceType string
+
+const (
+	Bubble   ParticleSourceType = "bubble"
+	Fountain ParticleSourceType = "fountain"
+	Vortex   ParticleSourceType = "vortex"
 )
 
 type ParticleSource struct {
 	BaseEditorItem
 	ParticleTexture resources.GameTexture
 	ParticleShader  resources.GameShader
-	Amount          int
-	Direction       rl.Vector2
-	MoveSpeed       float32
-	Scale           float32
-	MaxOpacity      float32
-	texture         rl.Texture2D `json:"-"`
+	Type            ParticleSourceType
 
-	particles []Particle `json:"-"`
+	texture        rl.Texture2D `json:"-"`
+	SystemSettings particle.ParticleSystemSettings
+	system         *twodeeparticles.ParticleSystem `json:"-"`
 
 	shader     *rl.Shader `json:"-"`
 	shaderLocs []int32    `json:"-"`
 }
 
 func NewParticleSource(
-	bei BaseEditorItem,
-	particleTexture resources.GameTexture,
-	particlesSize int) *ParticleSource {
+	bei BaseEditorItem) *ParticleSource {
 	p := ParticleSource{
-		BaseEditorItem:  bei,
-		ParticleTexture: particleTexture,
-		ParticleShader:  resources.ParticleShader,
-		Amount:          particlesSize,
-		Direction:       rl.NewVector2(0, -1),
-		MoveSpeed:       0.5,
-		Scale:           0.5,
-		MaxOpacity:      100,
+		BaseEditorItem: bei,
+		ParticleShader: resources.ParticleShader,
+		Type:           Bubble,
+		SystemSettings: particle.DefaultParticleSystemSettings(),
 	}
 
 	return &p
 }
 
 func (p *ParticleSource) Load() {
-	p.texture = resources.LoadTexture(p.ParticleTexture)
+	if p.ParticleTexture != "" {
+		p.texture = resources.LoadTexture(p.ParticleTexture)
+	}
 
 	if p.ParticleShader != resources.UndefinedShader {
 		sh := resources.LoadShader(p.ParticleShader)
@@ -54,12 +57,21 @@ func (p *ParticleSource) Load() {
 			rl.GetShaderLocation(*p.shader, "rewind"),
 		}
 	}
-
-	p.loadParticleBuffer()
+	if p.Type == Bubble {
+		p.system = p.SystemSettings.Bubbles()
+	}
+	if p.Type == Fountain {
+		p.system = p.SystemSettings.Fountain()
+	}
+	if p.Type == Vortex {
+		p.system = p.SystemSettings.Vortex()
+	}
 }
 
 func (p *ParticleSource) Unload() {
-	resources.UnloadTexture(p.ParticleTexture)
+	if p.ParticleTexture != "" {
+		resources.UnloadTexture(p.ParticleTexture)
+	}
 
 	if p.ParticleShader != resources.UndefinedShader {
 		resources.UnloadShader(*p.shader)
@@ -81,44 +93,29 @@ func (p *ParticleSource) Draw() {
 				polys[i].Points[0],
 				polys[i].Points[1],
 				polys[i].Points[2],
-				rl.Brown,
+				rl.Violet,
 			)
 		}
 
 		p.BaseEditorItem.Draw()
 	}
 
-	for i, _ := range p.particles {
-		p.particles[i].Draw()
-	}
+	p.system.ForEachParticle(func(particle *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) {
+
+		particlePos := particle.Position()
+		translatedPos := rl.Vector2Add(rl.NewVector2(float32(particlePos.X), float32(particlePos.Y)), p.Center())
+
+		_, _, _, a := particle.Color().RGBA()
+
+		col := rl.Orange
+		col.A = uint8(a)
+
+		rl.DrawCircle(int32(translatedPos.X), int32(translatedPos.Y), 10, col)
+
+	}, time.Now())
+
 }
 
 func (p *ParticleSource) Update(delta float32) {
-	for i, _ := range p.particles {
-		if p.EditorMoveWithCursor {
-			p.particles[i].LifeRect = rl.NewRectangle(p.TopLeft().X, p.TopLeft().Y, p.Width(), p.Height())
-		}
-
-		p.particles[i].Update(delta)
-	}
-}
-
-func (p *ParticleSource) loadParticleBuffer() {
-	p.particles = make([]Particle, 0)
-
-	lifeRect := rl.NewRectangle(p.TopLeft().X, p.TopLeft().Y, p.Width(), p.Height())
-
-	for i := 0; i < p.Amount; i++ {
-		p.particles = append(p.particles, *NewParticle(
-			lifeRect,
-			p.texture,
-			p.Direction,
-			time.Second*5,
-			p.MoveSpeed,
-			p.Scale,
-			p.Rotation,
-			p.MaxOpacity,
-		).WithShader(p.shader, p.shaderLocs))
-	}
-
+	p.system.Update(time.Now())
 }

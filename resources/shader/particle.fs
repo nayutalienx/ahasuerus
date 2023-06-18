@@ -20,9 +20,9 @@ void main()
         color = blackWhite(color);
     }
 
-    if (color.a > 0) {
-        color.a = color.a*opacity;
-    }
+    // if (color.a > 0) {
+    //     color.a = color.a*opacity;
+    // }
 
     gl_FragColor = color;
 }
