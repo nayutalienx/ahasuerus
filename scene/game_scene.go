@@ -39,6 +39,8 @@ func NewGameScene(sceneName string) *GameScene {
 		0, 1.0)
 	scene.camera = &camera
 
+	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.PlayerShader)
+
 	worldImages := scene.level.Images
 	for i, _ := range worldImages {
 		img := worldImages[i]
@@ -51,8 +53,6 @@ func NewGameScene(sceneName string) *GameScene {
 		particle := particles[i]
 		scene.worldContainer.AddObjectResource(&particle)
 	}
-
-	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.PlayerShader)
 
 	scene.worldContainer.AddObjectResource(scene.player)
 
@@ -80,6 +80,7 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.worldContainer.AddObjectResource(npc.ScreenChan(scene.onScreenQueue))
 	}
 
+	scene.worldContainer.Sort()
 	scene.worldContainer.Load()
 
 	return &scene

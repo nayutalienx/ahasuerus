@@ -2,6 +2,7 @@ package container
 
 import (
 	"ahasuerus/models"
+	"sort"
 )
 
 type ObjectContainer struct {
@@ -14,7 +15,7 @@ func NewObjectContainer() ObjectContainer {
 	}
 }
 
-func (w *ObjectContainer) AddObject(obj... models.Object) {
+func (w *ObjectContainer) AddObject(obj ...models.Object) {
 	for i, _ := range obj {
 		o := obj[i]
 		w.objects = append(w.objects, o)
@@ -47,16 +48,16 @@ func (w ObjectContainer) Size() int {
 	return len(w.objects)
 }
 
-func (w ObjectContainer) ForEachObject(cb func (obj models.Object)) {
+func (w ObjectContainer) ForEachObject(cb func(obj models.Object)) {
 	for i, _ := range w.objects {
 		o := w.objects[i]
 		cb(o)
 	}
 }
 
-func (w ObjectContainer) ForEachObjectReverseWithPredicate(cb func (obj models.Object) bool) {
+func (w ObjectContainer) ForEachObjectReverseWithPredicate(cb func(obj models.Object) bool) {
 	for i, _ := range w.objects {
-		o := w.objects[len(w.objects) - 1 - i]
+		o := w.objects[len(w.objects)-1-i]
 		shouldLeave := cb(o)
 		if shouldLeave {
 			break
@@ -78,8 +79,8 @@ func (w *ObjectContainer) MoveUp(obj models.Object) int {
 		return index
 	}
 
-	swapIndex := index + 1	
-		
+	swapIndex := index + 1
+
 	tempItem := w.objects[swapIndex]
 	w.objects[swapIndex] = w.objects[index]
 	w.objects[index] = tempItem
@@ -101,18 +102,21 @@ func (w *ObjectContainer) MoveDown(obj models.Object) int {
 		return index
 	}
 
-	 
-	swapIndex := index - 1	
-	
+	swapIndex := index - 1
 
 	tempItem := w.objects[swapIndex]
 	w.objects[swapIndex] = w.objects[index]
 	w.objects[index] = tempItem
 
-
 	return swapIndex
 }
 
+func (w *ObjectContainer) Sort() {
+	sort.Slice(w.objects, func(i, j int) bool {
+		return w.objects[i].GetDrawIndex() > w.objects[j].GetDrawIndex()
+	})
+}
+
 func (w ObjectContainer) removeObject(s int) []models.Object {
-    return append(w.objects[:s], w.objects[s+1:]...)
+	return append(w.objects[:s], w.objects[s+1:]...)
 }

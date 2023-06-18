@@ -2,14 +2,16 @@ package models
 
 import (
 	"ahasuerus/collision"
+	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/google/uuid"
 )
 
 type BaseEditorItem struct {
-	Id       string
-	Polygons [2]collision.Polygon
+	Id        string
+	Polygons  [2]collision.Polygon
+	DrawIndex int
 
 	Rotation float32
 
@@ -25,6 +27,10 @@ func NewBaseEditorItem(polygons [2]collision.Polygon) BaseEditorItem {
 		Id:       uuid.NewString(),
 		Polygons: polygons,
 	}
+}
+
+func (p *BaseEditorItem) GetDrawIndex() int {
+	return p.DrawIndex
 }
 
 func (p *BaseEditorItem) SetEditorMoveWithCursorTrue() {
@@ -220,8 +226,16 @@ func (p *BaseEditorItem) SetPolygons(polys [2]collision.Polygon) {
 	p.Polygons = polys
 }
 
-func (p BaseEditorItem) Draw() {
+func (p *BaseEditorItem) Draw() {
 	if p.EditorRotateMode {
 		rl.DrawText("Rotate on [R and T]", int32(p.TopLeft().X), int32(p.TopLeft().Y+40), 40, rl.Red)
 	}
+
+	if p.EditSelected {
+		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex), int32(p.TopLeft().X), int32(p.TopLeft().Y+40), 40, rl.Red)
+	}
+}
+
+func (p *BaseEditorItem) Update(delta float32) {
+
 }

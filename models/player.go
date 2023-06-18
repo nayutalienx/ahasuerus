@@ -26,9 +26,9 @@ type PlayerRewindData struct {
 }
 
 type Player struct {
-	Pos                rl.Vector2 `json:"-"`
+	Pos                rl.Vector2                  `json:"-"`
 	CollisionProcessor collision.CollisionDetector `json:"-"`
-	velocity           rl.Vector2 `json:"-"`
+	velocity           rl.Vector2                  `json:"-"`
 
 	width, height float32           `json:"-"`
 	orientation   Orientation       `json:"-"`
@@ -66,6 +66,10 @@ func NewPlayer(x float32, y float32) *Player {
 	p.currentHitbox = &hb
 
 	return p
+}
+
+func (p *Player) GetDrawIndex() int {
+	return -999
 }
 
 func (p *Player) Load() {

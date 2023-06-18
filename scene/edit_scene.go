@@ -290,11 +290,10 @@ func (s *EditScene) drawMainHub() {
 			files := rl.LoadDroppedFiles()
 			path := "resources" + strings.Split(files[0], "resources")[1]
 			image := models.NewImage(
-				s.worldContainer.Size(),
 				uuid.NewString(),
 				resources.GameTexture(path),
 				0,
-				0, 
+				0,
 				0)
 
 			image.Load()
@@ -372,13 +371,26 @@ func (s *EditScene) drawMainHub() {
 	}
 }
 
-func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResourceContainer, item *models.BaseEditorItem, bc *models.Counter) bool {
+func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResourceContainer, item *models.BaseEditorItem, bc *models.Counter) {
 
 	changePos := rg.Button(s.controlRect(bc), "CHANGE POS")
 	resize := rg.Button(s.controlRect(bc), "RESIZE")
 	rotate := rg.Button(s.controlRect(bc), "ROTATE")
 	deleteItem := rg.Button(s.controlRect(bc), "DELETE")
 	unselect := rg.Button(s.controlRect(bc), "UNSELECT(F11)")
+
+	moveUpper := rg.Button(s.controlRect(bc), "MOVE UPPER")
+	moveDown := rg.Button(s.controlRect(bc), "MOVE DOWN")
+
+	if moveUpper {
+		container.MoveUp(item)
+		item.DrawIndex--
+	}
+
+	if moveDown {
+		container.MoveDown(item)
+		item.DrawIndex++
+	}
 
 	if unselect {
 		item.ExternalUnselect = true
@@ -400,7 +412,10 @@ func (s *EditScene) reactOnEditorItemSelection(container *container.ObjectResour
 		item.SetEditorRotateModeTrue()
 	}
 
-	return deleteItem
+	if deleteItem {
+		s.worldContainer.RemoveObject(item)
+	}
+
 }
 
 func (s EditScene) itemPosY(buttonCounter *models.Counter) float32 {
@@ -421,22 +436,7 @@ func (s EditScene) controlRectWithMargin(bc *models.Counter, margin float32) rl.
 
 func (s *EditScene) reactOnImageEditorSelection(container *container.ObjectResourceContainer, image *models.Image, bc *models.Counter) {
 
-	moveUpper := rg.Button(s.controlRect(bc), "MOVE UPPER")
-	moveDown := rg.Button(s.controlRect(bc), "MOVE DOWN")
-
 	replicate := rg.Button(s.controlRect(bc), "REPLICATE")
-
-	if moveUpper {
-		drawIndex := container.MoveUp(image)
-		image.DrawIndex = drawIndex
-		s.syncDrawIndex(container)
-	}
-
-	if moveDown {
-		drawIndex := container.MoveDown(image)
-		image.DrawIndex = drawIndex
-		s.syncDrawIndex(container)
-	}
 
 	if replicate {
 		topLeft := image.TopLeft()
@@ -453,43 +453,28 @@ func (s *EditScene) drawHubForItem(editorItem models.EditorItem) {
 
 	img, isImg := editorItem.(*models.Image)
 	if isImg {
-		delete := s.reactOnEditorItemSelection(s.worldContainer, &img.BaseEditorItem, &buttonCounter)
+		s.reactOnEditorItemSelection(s.worldContainer, &img.BaseEditorItem, &buttonCounter)
 		s.reactOnImageEditorSelection(s.worldContainer, img, &buttonCounter)
-		if delete {
-			s.worldContainer.RemoveObject(img)
-		}
 	}
 
 	collisionHitbox, isHitbox := editorItem.(*models.CollisionHitbox)
 	if isHitbox {
-		delete := s.reactOnEditorItemSelection(s.worldContainer, &collisionHitbox.BaseEditorItem, &buttonCounter)
-		if delete {
-			s.worldContainer.RemoveObject(collisionHitbox)
-		}
+		s.reactOnEditorItemSelection(s.worldContainer, &collisionHitbox.BaseEditorItem, &buttonCounter)
 	}
 
 	light, isLight := editorItem.(*models.Light)
 	if isLight {
-		delete := s.reactOnEditorItemSelection(s.worldContainer, &light.BaseEditorItem, &buttonCounter)
-		if delete {
-			s.worldContainer.RemoveObject(light)
-		}
+		s.reactOnEditorItemSelection(s.worldContainer, &light.BaseEditorItem, &buttonCounter)
 	}
 
 	npc, isNpc := editorItem.(*models.Npc)
 	if isNpc {
-		delete := s.reactOnEditorItemSelection(s.worldContainer, &npc.BaseEditorItem, &buttonCounter)
-		if delete {
-			s.worldContainer.RemoveObject(npc)
-		}
+		s.reactOnEditorItemSelection(s.worldContainer, &npc.BaseEditorItem, &buttonCounter)
 	}
 
 	particleSource, isParticleSource := editorItem.(*models.ParticleSource)
 	if isParticleSource {
-		delete := s.reactOnEditorItemSelection(s.worldContainer, &particleSource.BaseEditorItem, &buttonCounter)
-		if delete {
-			s.worldContainer.RemoveObject(particleSource)
-		}
+		s.reactOnEditorItemSelection(s.worldContainer, &particleSource.BaseEditorItem, &buttonCounter)
 	}
 
 }
@@ -572,15 +557,4 @@ func (s *EditScene) processInputs() {
 		}
 
 	}
-}
-
-func (s *EditScene) syncDrawIndex(container *container.ObjectResourceContainer) {
-	index := 0
-	container.ForEachObject(func(obj models.Object) {
-		image, ok := obj.(*models.Image)
-		if ok {
-			image.DrawIndex = index
-		}
-		index++
-	})
 }

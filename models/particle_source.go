@@ -9,10 +9,11 @@ import (
 
 type ParticleSource struct {
 	BaseEditorItem
-	ParticleTexture resources.GameTexture
-	ParticleShader  resources.GameShader
-	Amount          int
-	texture         rl.Texture2D `json:"-"`
+	ParticleTexture    resources.GameTexture
+	ParticleShader     resources.GameShader
+	Amount             int
+	BackgroundParticle bool
+	texture            rl.Texture2D `json:"-"`
 
 	particles []Particle `json:"-"`
 

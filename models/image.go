@@ -3,7 +3,6 @@ package models
 import (
 	"ahasuerus/collision"
 	"ahasuerus/resources"
-	"fmt"
 	"math/rand"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -11,7 +10,6 @@ import (
 
 type Image struct {
 	BaseEditorItem
-	DrawIndex      int
 	Texture        rl.Texture2D `json:"-"`
 	Shader         rl.Shader    `json:"-"`
 	ImageTexture   resources.GameTexture
@@ -34,7 +32,7 @@ type Image struct {
 	shaderLocs []int32           `json:"-"`
 }
 
-func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y, rotation float32) *Image {
+func NewImage(id string, imageTexture resources.GameTexture, x, y, rotation float32) *Image {
 	topLeft := rl.NewVector2(x, y)
 	bei := NewBaseEditorItem([2]collision.Polygon{
 		{
@@ -48,7 +46,6 @@ func NewImage(drawIndex int, id string, imageTexture resources.GameTexture, x, y
 
 	img := &Image{
 		BaseEditorItem: bei,
-		DrawIndex:      drawIndex,
 		ImageTexture:   imageTexture,
 		Lightboxes:     make([]CollisionHitbox, 0),
 		ImageShader:    resources.TextureShader,
@@ -79,10 +76,6 @@ func (p *Image) Draw() {
 		rl.EndShaderMode()
 	} else {
 		rl.DrawTextureEx(p.Texture, p.TopLeft(), p.Rotation, p.Scale, rl.White)
-	}
-	if p.EditSelected {
-		position := p.TopLeft()
-		rl.DrawText(fmt.Sprintf("DrawIndex: %d", p.DrawIndex, position), int32(position.X), int32(position.Y), 40, rl.Red)
 	}
 	p.BaseEditorItem.Draw()
 }
@@ -130,7 +123,7 @@ func (p *Image) Load() {
 	topRight := rl.Vector2{topLeft.X + width, topLeft.Y}
 	bottomRight := rl.Vector2{topLeft.X + width, topLeft.Y + height}
 
-	bei := NewBaseEditorItem([2]collision.Polygon{
+	p.BaseEditorItem.Polygons = [2]collision.Polygon{
 		{
 			Points: [3]rl.Vector2{
 				topLeft, topRight, bottomRight,
@@ -141,11 +134,7 @@ func (p *Image) Load() {
 				topLeft, bottomLeft, bottomRight,
 			},
 		},
-	})
-	bei.Id = p.Id
-	bei.Rotation = p.Rotation
-
-	p.BaseEditorItem = bei
+	}
 
 	if p.ImageShader != resources.UndefinedShader {
 		p.Shader = resources.LoadShader(p.ImageShader)
@@ -187,7 +176,7 @@ func (p *Image) AfterLoadPreset(preset func(i *Image)) *Image {
 }
 
 func (p Image) Replicate(id string, x, y float32) *Image {
-	return NewImage(p.DrawIndex, id, p.ImageTexture, x, y, p.Rotation)
+	return NewImage(id, p.ImageTexture, x, y, p.Rotation)
 }
 
 func (img *Image) randomNotZero(n int) float32 {

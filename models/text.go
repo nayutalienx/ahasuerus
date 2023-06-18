@@ -7,27 +7,31 @@ import (
 type textUpdateCallback func(text *Text)
 
 type Text struct {
-	x int32
-	y int32
-	data string
-	color rl.Color
-	fontSize int32
+	x              int32
+	y              int32
+	data           string
+	color          rl.Color
+	fontSize       int32
 	updateCallback textUpdateCallback
 
-	expireMode bool
-	expireCounter int
-	expireFrames int
+	expireMode     bool
+	expireCounter  int
+	expireFrames   int
 	expireCallback func(*Text)
 }
 
 func NewText(x int32, y int32) *Text {
 	return &Text{
-		x: x,
-		y: y,
-		color: rl.DarkGray,
-		fontSize: 20,
+		x:              x,
+		y:              y,
+		color:          rl.DarkGray,
+		fontSize:       20,
 		updateCallback: func(text *Text) {},
 	}
+}
+
+func (p *Text) GetDrawIndex() int {
+	return -999
 }
 
 func (p Text) Draw() {
@@ -40,7 +44,7 @@ func (p *Text) SetUpdateCallback(callback textUpdateCallback) *Text {
 }
 
 func (p *Text) WithExpire(liveSeconds int, expireCallback func(text *Text)) *Text {
-	p.expireFrames = liveSeconds*int(FPS)
+	p.expireFrames = liveSeconds * int(FPS)
 	p.expireMode = true
 	p.expireCallback = expireCallback
 	return p
@@ -56,8 +60,8 @@ func (p *Text) Update(delta float32) {
 			p.expireCallback(p)
 		} else {
 			frameDiff := p.expireFrames - p.expireCounter
-			percentage := float32(frameDiff)/float32(p.expireFrames)
-			p.color.A = uint8(float32(255)*percentage)
+			percentage := float32(frameDiff) / float32(p.expireFrames)
+			p.color.A = uint8(float32(255) * percentage)
 		}
 	}
 }

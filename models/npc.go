@@ -54,7 +54,7 @@ func (p *Npc) ScreenChan(c chan Object) *Npc {
 
 func (p *Npc) Load() {
 	if p.BgImagePath != "" {
-		p.bgImage = NewImage(0, uuid.NewString(), resources.GameTexture(p.BgImagePath), 0, 0, 0).
+		p.bgImage = NewImage(uuid.NewString(), resources.GameTexture(p.BgImagePath), 0, 0, 0).
 			WithShader(resources.NpcShader)
 		p.bgImage.Load()
 

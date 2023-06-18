@@ -8,6 +8,7 @@ type Scene interface {
 type Object interface {
 	Draw()
 	Update(delta float32)
+	GetDrawIndex() int
 }
 
 type Resource interface {
