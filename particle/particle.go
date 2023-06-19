@@ -10,6 +10,7 @@ import (
 
 	"github.com/blizzy78/twodeeparticles"
 	"github.com/fogleman/ease"
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type ParticleSystemSettings struct {
@@ -107,7 +108,7 @@ func (pss *ParticleSystemSettings) Bubbles() *twodeeparticles.ParticleSystem {
 		if s == 0 {
 			a := randomValue(0.0, 360.0, rand)
 			dir := angleToDirection(a)
-			return dir.Multiply(data.speed)
+			return rewind(dir.Multiply(data.speed))
 		}
 
 		moveTime := p.Lifetime().Seconds() - pss.FadeOutTime
@@ -117,7 +118,7 @@ func (pss *ParticleSystemSettings) Bubbles() *twodeeparticles.ParticleSystem {
 
 		dir := p.Velocity().Normalize()
 		m := 1.0 - ease.OutSine(s/moveTime)
-		return dir.Multiply(data.speed * m)
+		return rewind(dir.Multiply(data.speed * m))
 	}
 
 	s.ScaleOverLifetime = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) twodeeparticles.Vector {
@@ -291,4 +292,11 @@ func rotate(v twodeeparticles.Vector, a float64) twodeeparticles.Vector {
 
 func distance(v1 twodeeparticles.Vector, v2 twodeeparticles.Vector) float64 {
 	return v1.Add(v2.Multiply(-1.0)).Magnitude()
+}
+
+func rewind(v twodeeparticles.Vector) twodeeparticles.Vector {
+	if rl.IsKeyDown(rl.KeyLeftShift) {
+		return v.Multiply(5)
+	}
+	return v
 }

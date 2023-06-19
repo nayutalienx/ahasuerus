@@ -108,6 +108,10 @@ func (p *ParticleSource) Draw() {
 		_, _, _, a := particle.Color().RGBA()
 
 		col := rl.Orange
+		if rl.IsKeyDown(rl.KeyLeftShift) {
+			col = rl.Gray
+		}
+
 		col.A = uint8(a)
 
 		rl.DrawCircle(int32(translatedPos.X), int32(translatedPos.Y), 10, col)
