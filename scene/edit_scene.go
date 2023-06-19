@@ -356,11 +356,6 @@ func (s *EditScene) drawMainHub() {
 
 		if newNpc {
 			newObject = &models.Npc{
-				BlockOffset: rl.NewVector2(50, -150),
-				FontSize:    60.0,
-				TextOffset:  rl.NewVector2(20, 15),
-				Text:        "Hi there!;How are you?;Glad to see you here",
-				Choice:      "Hi:...;Fine:...;Bye",
 				CollisionHitbox: models.CollisionHitbox{
 					BaseEditorItem: baseEditorItem,
 				},

@@ -41,19 +41,53 @@
 			"Rotation": 0,
 			"BgImagePath": "resources\\heroes\\characters\\kanade.png",
 			"BgImageScale": 0,
-			"TextCounter": 0,
-			"CurrentChoise": 0,
-			"Text": "Hi there!;How are you?;Glad to see you here",
-			"Choosed": "",
-			"Choice": "Hi:...;Fine:...;Bye",
-			"FontSize": 60,
-			"TextOffset": {
-				"X": 20,
-				"Y": 15
-			},
-			"BlockOffset": {
-				"X": 50,
-				"Y": -150
+			"Dialogues": {
+				"CurrentInteraction": 0,
+				"Interactions": [
+					{
+						"Text": "Hello!",
+						"Options": [
+							"Hi, my friend",
+							"I wanna find Anna, can you help ?",
+							"Bye"
+						],
+						"Routes": [
+							1,
+							2,
+							3
+						],
+						"CurrentOption": 0
+					},
+					{
+						"Text": "Can I help you ?",
+						"Options": [
+							"I wanna find Anna, can you help ?",
+							"Bye"
+						],
+						"Routes": [
+							2,
+							3
+						],
+						"CurrentOption": 0
+					},
+					{
+						"Text": "You can look her in next house",
+						"Options": [
+							"Thanks!"
+						],
+						"Routes": [
+							3
+						],
+						"CurrentOption": 0
+					},
+					{
+						"Text": "See you next time",
+						"Routes": [
+							3
+						],
+						"CurrentOption": 0
+					}
+				]
 			}
 		},
 		{
@@ -96,19 +130,53 @@
 			"Rotation": 0,
 			"BgImagePath": "resources\\heroes\\characters\\kanade_2.png",
 			"BgImageScale": 0.9,
-			"TextCounter": 0,
-			"CurrentChoise": 0,
-			"Text": "Hi there!;How are you?;Glad to see you here",
-			"Choosed": "",
-			"Choice": "Hi:...;Fine:...;Bye",
-			"FontSize": 60,
-			"TextOffset": {
-				"X": 20,
-				"Y": 15
-			},
-			"BlockOffset": {
-				"X": 50,
-				"Y": -150
+			"Dialogues": {
+				"CurrentInteraction": 0,
+				"Interactions": [
+					{
+						"Text": "Hello!",
+						"Options": [
+							"Hi, my friend",
+							"I wanna find Anna, can you help ?",
+							"Bye"
+						],
+						"Routes": [
+							1,
+							2,
+							3
+						],
+						"CurrentOption": 0
+					},
+					{
+						"Text": "Can I help you ?",
+						"Options": [
+							"I wanna find Anna, can you help ?",
+							"Bye"
+						],
+						"Routes": [
+							2,
+							3
+						],
+						"CurrentOption": 0
+					},
+					{
+						"Text": "You can look her in next house",
+						"Options": [
+							"Thanks!"
+						],
+						"Routes": [
+							3
+						],
+						"CurrentOption": 0
+					},
+					{
+						"Text": "See you next time",
+						"Routes": [
+							3
+						],
+						"CurrentOption": 0
+					}
+				]
 			}
 		}
 	],

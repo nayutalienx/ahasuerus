@@ -3,8 +3,6 @@ package models
 import (
 	"ahasuerus/config"
 	"ahasuerus/resources"
-	"fmt"
-	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/google/uuid"
@@ -18,16 +16,10 @@ var (
 type Npc struct {
 	CollisionHitbox
 
-	BgImagePath   string
-	BgImageScale  float32
-	TextCounter   int
-	CurrentChoise int
-	Text          string
-	Choosed       string
-	Choice        string
-	FontSize      int32
-	TextOffset    rl.Vector2
-	BlockOffset   rl.Vector2
+	Dialogues NpcDialog
+
+	BgImagePath  string
+	BgImageScale float32
 
 	bgImage        *Image
 	drawBgImage    bool        `json:"-"`
@@ -35,16 +27,14 @@ type Npc struct {
 	screenChan     chan Object `json:"-"`
 
 	Rewind               [REWIND_BUFFER_SIZE]HitboxRewindData `json:"-"`
-	rewindLastIndex      int32              `json:"-"`
-	rewindSpeed          int32              `json:"-"`
-	rewindModeStartIndex int32              `json:"-"`
-	rewindModeStarted    bool               `json:"-"`
+	rewindLastIndex      int32                                `json:"-"`
+	rewindSpeed          int32                                `json:"-"`
+	rewindModeStartIndex int32                                `json:"-"`
+	rewindModeStarted    bool                                 `json:"-"`
 }
 
 type HitboxRewindData struct {
-	TextCounter   int
-	Choosed       string
-	CurrentChoise int
+	Dialogues NpcDialog
 }
 
 func (p *Npc) ScreenChan(c chan Object) *Npc {
@@ -85,7 +75,7 @@ func (p *Npc) Draw() {
 	}
 
 	if p.hasCollision || p.EditSelected {
-		p.drawDialog()
+		p.screenChan <- &p.Dialogues
 	}
 
 	if p.drawBgImage {
@@ -126,43 +116,6 @@ func (p *Npc) Update(delta float32) {
 	}
 
 	p.hasCollision = detectedCollision
-
-	if p.hasCollision {
-
-		if rl.IsKeyReleased(rl.KeyEnter) {
-			phrases := strings.Split(p.Text, ";")
-			if len(phrases) > int(p.TextCounter+1) {
-				p.TextCounter++
-				p.Choosed = fmt.Sprintf("%s;%d", p.Choosed, p.CurrentChoise)
-				p.CurrentChoise = 0
-			}
-		}
-
-		if rl.IsKeyReleased(rl.KeyDown) || rl.IsKeyReleased(rl.KeyUp) {
-
-			choicesByPhrace := strings.Split(p.Choice, ";")
-			if len(choicesByPhrace) > int(p.TextCounter) {
-				choices := strings.Split(choicesByPhrace[p.TextCounter], ":")
-
-				futureChoice := 0
-
-				if rl.IsKeyReleased(rl.KeyDown) {
-					futureChoice = p.CurrentChoise + 1
-				}
-
-				if rl.IsKeyReleased(rl.KeyUp) {
-					futureChoice = p.CurrentChoise - 1
-				}
-
-				if len(choices) > futureChoice && futureChoice >= 0 {
-					p.CurrentChoise = futureChoice
-				}
-
-			}
-
-		}
-
-	}
 }
 
 func (p *Npc) updateRewindSpeed() {
@@ -206,9 +159,7 @@ func (p *Npc) saveNpcToRewind() {
 	}
 
 	p.Rewind[p.rewindLastIndex] = HitboxRewindData{
-		TextCounter:   p.TextCounter,
-		Choosed:       p.Choosed,
-		CurrentChoise: p.CurrentChoise,
+		Dialogues: p.Dialogues,
 	}
 	p.rewindLastIndex++
 }
@@ -226,87 +177,5 @@ func (p *Npc) rewindNpc() {
 		p.rewindLastIndex -= p.rewindSpeed
 	}
 
-	p.TextCounter = rewind.TextCounter
-	p.Choosed = rewind.Choosed
-	p.CurrentChoise = rewind.CurrentChoise
-}
-
-func (p Npc) drawSelectDialog(dialogRec rl.Rectangle) {
-
-	if p.Choice == "" {
-		return
-	}
-
-	choicesByPhrace := strings.Split(p.Choice, ";")
-
-	if len(choicesByPhrace) > int(p.TextCounter) {
-
-		rectColor := rl.Black
-		rectColor.A = 150
-		dialogRec.X += dialogRec.Width / 1.1
-		dialogRec.Y += dialogRec.Height / 2
-
-		choices := strings.Split(choicesByPhrace[p.TextCounter], ":")
-
-		dialogRec.Height = float32(p.FontSize*int32(len(choices))) + p.TextOffset.Y
-		rl.DrawRectangleRounded(dialogRec, 0.5, 0, rectColor)
-
-		for i, _ := range choices {
-			choice := choices[i]
-
-			textPos := rl.NewVector2(
-				dialogRec.X+p.TextOffset.X,
-				dialogRec.Y+p.TextOffset.Y/2+float32(p.FontSize)*float32(i),
-			)
-
-			color := rl.White
-			if i == int(p.CurrentChoise) {
-				color = rl.Orange
-			}
-
-			DrawSdfText(choice, textPos, float32(p.FontSize), color)
-
-		}
-
-	}
-
-}
-
-func (p Npc) drawDialog() {
-	pos := p.TopRight()
-
-	phrases := strings.Split(p.Text, ";")
-
-	text := "empty phrase"
-	if len(phrases) > int(p.TextCounter) {
-		text = phrases[p.TextCounter]
-	}
-
-	maxXLen := 0
-	splittenByNewLine := strings.Split(text, "\n")
-	for i, _ := range splittenByNewLine {
-		if len(splittenByNewLine[i]) > maxXLen {
-			maxXLen = len(splittenByNewLine[i])
-		}
-	}
-
-	width := int32(maxXLen * int(float64(p.FontSize)/2.0))
-	height := int32(float64(p.FontSize)+(float64(p.FontSize)/1.5)) * (1 + (int32(strings.Count(text, "\n"))))
-
-	if width < 400 {
-		width = 400
-	}
-
-	rectColor := rl.Black
-	rectColor.A = 150
-
-	roundedRec := rl.NewRectangle(float32(int32(pos.X)+int32(p.BlockOffset.X)), float32(int32(pos.Y)+int32(p.BlockOffset.Y)), float32(width), float32(height))
-
-	rl.DrawRectangleRounded(roundedRec, 0.5, 0, rectColor)
-
-	textPos := rl.NewVector2(float32(int32(pos.X)+int32(p.BlockOffset.X)+int32(p.TextOffset.X)), float32(int32(pos.Y)+int32(p.BlockOffset.Y)+int32(p.TextOffset.Y)))
-
-	DrawSdfText(text, textPos, float32(p.FontSize), rl.White)
-
-	p.drawSelectDialog(roundedRec)
+	p.Dialogues = rewind.Dialogues
 }

@@ -28,7 +28,7 @@ type GameScene struct {
 func NewGameScene(sceneName string) *GameScene {
 	scene := GameScene{
 		worldContainer: container.NewObjectResourceContainer(),
-		onScreenQueue:  make(chan models.Object, 1),
+		onScreenQueue:  make(chan models.Object, 2),
 	}
 
 	scene.level = repository.GetLevel(sceneName)
@@ -119,7 +119,7 @@ func (s *GameScene) Run() models.Scene {
 		s.worldContainer.Draw()
 		rl.EndMode2D()
 
-		if len(s.onScreenQueue) > 0 {
+		for len(s.onScreenQueue) > 0 {
 			onScreenObject := <-s.onScreenQueue
 			onScreenObject.Draw()
 			onScreenObject.Update(delta)
