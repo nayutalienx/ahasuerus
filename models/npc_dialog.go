@@ -7,6 +7,7 @@ import (
 )
 
 type NpcDialog struct {
+	CharacterName      string
 	CurrentInteraction uint
 	Interactions       []NpcInteraction
 }
@@ -62,7 +63,7 @@ func (p *NpcDialog) drawDialog() {
 
 	interaction := p.Interactions[p.CurrentInteraction]
 
-	npcTextRows := p.splitNpcTextAndAddLine(interaction.Text, 80)
+	npcTextRows := p.splitNpcTextAndAddLine(interaction.Text, 40)
 
 	allRows := append(npcTextRows, interaction.Options...)
 
@@ -70,12 +71,20 @@ func (p *NpcDialog) drawDialog() {
 
 	rl.DrawRectangleRounded(dialogRectangle, 0, 0, rl.NewColor(0, 0, 0, 150))
 
+	fontSize := float32(60)
+
+	// draw name
+	DrawSdfText(p.CharacterName, rl.Vector2{
+		X: positions[0].X + dialogRectangle.Width*0.83,
+		Y: positions[0].Y,
+	}, fontSize, rl.Purple)
+
 	for i, _ := range positions {
 		color := rl.White
 		if i == len(npcTextRows)+int(interaction.CurrentOption) {
 			color = rl.Orange
 		}
-		DrawSdfText(allRows[i], positions[i], 60, color)
+		DrawSdfText(allRows[i], positions[i], fontSize, color)
 	}
 
 }

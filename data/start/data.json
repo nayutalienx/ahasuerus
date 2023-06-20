@@ -42,6 +42,7 @@
 			"BgImagePath": "resources\\heroes\\characters\\kanade.png",
 			"BgImageScale": 0,
 			"Dialogues": {
+				"CharacterName": "Kanade",
 				"CurrentInteraction": 0,
 				"Interactions": [
 					{
@@ -131,6 +132,7 @@
 			"BgImagePath": "resources\\heroes\\characters\\kanade_2.png",
 			"BgImageScale": 0.9,
 			"Dialogues": {
+				"CharacterName": "Camellia",
 				"CurrentInteraction": 0,
 				"Interactions": [
 					{
