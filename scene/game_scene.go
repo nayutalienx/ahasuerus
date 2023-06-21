@@ -41,6 +41,10 @@ func NewGameScene(sceneName string) *GameScene {
 
 	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.PlayerShader)
 
+	if scene.level.MusicTheme != "" {
+		scene.worldContainer.AddObjectResource(models.NewMusicStream(scene.level.MusicTheme, scene.level.MusicThemeReverse))
+	}
+
 	worldImages := scene.level.Images
 	for i, _ := range worldImages {
 		img := worldImages[i]

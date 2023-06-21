@@ -1167,5 +1167,7 @@
 	"PlayerPos": {
 		"X": 800,
 		"Y": 800
-	}
+	},
+	"MusicTheme": "resources/music/theme_lite.mp3",
+	"MusicThemeReverse": "resources/music/theme_reverse.mp3"
 }

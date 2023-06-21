@@ -19,6 +19,9 @@ type Level struct {
 	CameraPos          rl.Vector2
 	CameraStartEndMove rl.Vector2
 	PlayerPos          rl.Vector2
+
+	MusicTheme        string
+	MusicThemeReverse        string
 }
 
 func GetLevel(levelName string) Level {
