@@ -14,12 +14,15 @@ type MusicStream struct {
 	directAudioPanel  *audio.AudioPanel
 	reverseAudioPanel *audio.AudioPanel
 	currentAudioPanel *audio.AudioPanel
+	isDirectPlay      bool
+	isReversePlay     bool
 
 	directAudioSpeed  float64
 	reverseAudioSpeed float64
 
-	rewindStarted bool
-	rewindSpeed   int32 `json:"-"`
+	rewindStarted        bool
+	rewindSpeed          float64 `json:"-"`
+	rewindCollisionCheck func() bool
 }
 
 func NewMusicStream(directResourcePath, reverseResourcePath string) *MusicStream {
@@ -39,10 +42,24 @@ func (p *MusicStream) GetId() string {
 	return "music-theme"
 }
 
+func (p *MusicStream) SetRewindCollisionCheck(f func() bool) *MusicStream {
+	p.rewindCollisionCheck = f
+	return p
+}
+
 func (p *MusicStream) Draw() {
 }
 
 func (p *MusicStream) Update(delta float32) {
+
+	if !p.isDirectPlay && !p.isReversePlay {
+		p.directAudioPanel.Play()
+		p.reverseAudioPanel.Play()
+		p.reverseAudioPanel.Pause()
+		p.currentAudioPanel = p.directAudioPanel
+		p.isDirectPlay = true
+		p.isReversePlay = true
+	}
 
 	rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
 	if rewindEnabled {
@@ -54,26 +71,30 @@ func (p *MusicStream) Update(delta float32) {
 
 		p.updateRewindSpeed()
 
-		if p.rewindSpeed > 0 {
+		if p.rewindSpeed > 0 { // rewind back
 			if p.currentAudioPanel != p.reverseAudioPanel {
 				p.currentAudioPanel = p.reverseAudioPanel
 				p.directAudioPanel.Pause()
+				p.reverseAudioPanel.Unpause()
 				mirrorPos := p.directAudioPanel.Length() - p.directAudioPanel.Position()
 				p.reverseAudioPanel.SetPosition(mirrorPos)
-				p.reverseAudioPanel.Unpause()
 			}
 		}
 
-		if p.rewindSpeed < 0 {
+		if p.rewindSpeed < 0 { // rewind direct
 
 			if p.currentAudioPanel != p.directAudioPanel {
 				p.currentAudioPanel = p.directAudioPanel
 				p.reverseAudioPanel.Pause()
+				p.directAudioPanel.Unpause()
 				mirrorPos := p.reverseAudioPanel.Length() - p.reverseAudioPanel.Position()
 				p.directAudioPanel.SetPosition(mirrorPos)
-				p.directAudioPanel.Unpause()
 			}
 
+		}
+
+		if p.rewindCollisionCheck != nil && p.rewindCollisionCheck() || p.rewindSpeed == 0 {
+			p.rewindSpeed = 0.1
 		}
 
 		if p.rewindSpeed != 0 {
@@ -83,8 +104,6 @@ func (p *MusicStream) Update(delta float32) {
 			}
 
 			p.currentAudioPanel.SetSpeed(math.Abs(float64(p.rewindSpeed)))
-		} else {
-			p.currentAudioPanel.SetSpeed(0.1)
 		}
 
 	} else {
@@ -113,13 +132,6 @@ func (p *MusicStream) Load() {
 
 	p.reverseAudioPanel = audio.NewAudioPanel(p.reverseResourcePath)
 	p.reverseAudioPanel.SetVolume(-3.0)
-
-	p.directAudioPanel.Play()
-	p.reverseAudioPanel.Play()
-
-	p.reverseAudioPanel.Pause()
-
-	p.currentAudioPanel = p.directAudioPanel
 }
 
 func (p *MusicStream) Unload() {

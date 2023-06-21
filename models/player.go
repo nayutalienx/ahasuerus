@@ -52,6 +52,7 @@ type Player struct {
 	rewindSpeed          int32                                `json:"-"`
 	rewindModeStartIndex int32                                `json:"-"`
 	rewindModeStarted    bool                                 `json:"-"`
+	rewindCollision      bool
 
 	paused bool `json:"-"`
 }
@@ -74,6 +75,10 @@ func (p *Player) GetId() string {
 
 func (p *Player) GetDrawIndex() int {
 	return -999
+}
+
+func (p *Player) IsCollisionRewind() bool {
+	return p.rewindCollision
 }
 
 func (p *Player) Load() {
@@ -177,6 +182,7 @@ func (p *Player) Update(delta float32) {
 
 		p.savePlayerToRewind()
 		p.rewindModeStarted = false
+		p.rewindCollision = false
 	} else {
 		p.updateRewindSpeed()
 		p.rewindPlayer()
@@ -265,6 +271,9 @@ func (p *Player) rewindPlayer() {
 	if p.rewindLastIndex > p.rewindSpeed && p.rewindLastIndex < p.rewindModeStartIndex+p.rewindSpeed {
 		rewind = p.Rewind[p.rewindLastIndex-p.rewindSpeed]
 		p.rewindLastIndex -= p.rewindSpeed
+		p.rewindCollision = false
+	} else {
+		p.rewindCollision = true
 	}
 
 	p.Pos = rewind.Pos
