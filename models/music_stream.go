@@ -53,8 +53,6 @@ func (p *MusicStream) Draw() {
 func (p *MusicStream) Update(delta float32) {
 
 	if !p.isDirectPlay && !p.isReversePlay {
-		p.directAudioPanel.Play()
-		p.reverseAudioPanel.Play()
 		p.reverseAudioPanel.Pause()
 		p.currentAudioPanel = p.directAudioPanel
 		p.isDirectPlay = true

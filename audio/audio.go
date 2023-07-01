@@ -10,9 +10,10 @@ import (
 	"github.com/faiface/beep/speaker"
 )
 
-func init() {
-	speaker.Clear()
-}
+var (
+	speakerInited = false
+	volume     *effects.Volume
+)
 
 type AudioPanel struct {
 	sampleRate beep.SampleRate
@@ -33,9 +34,12 @@ func NewAudioPanel(path string) *AudioPanel {
 		panic(err)
 	}
 
-	err = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/27))
-	if err != nil {
-		panic(err)
+	if !speakerInited {
+		err = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/27))
+		if err != nil {
+			panic(err)
+		}	
+		speakerInited = true
 	}
 
 	return newAudioPanel(format.SampleRate, streamer)
@@ -44,12 +48,11 @@ func NewAudioPanel(path string) *AudioPanel {
 func newAudioPanel(sampleRate beep.SampleRate, streamer beep.StreamSeekCloser) *AudioPanel {
 	ctrl := &beep.Ctrl{Streamer: beep.Loop(-1, streamer)}
 	resampler := beep.ResampleRatio(4, 1, ctrl)
-	volume := &effects.Volume{Streamer: resampler, Base: 2}
+	if volume == nil {
+		volume = &effects.Volume{Streamer: resampler, Base: 2}
+		speaker.Play(volume)
+	}
 	return &AudioPanel{sampleRate, streamer, ctrl, resampler, volume}
-}
-
-func (ap *AudioPanel) Play() {
-	speaker.Play(ap.volume)
 }
 
 func (ap *AudioPanel) IsPaused() bool {
@@ -68,6 +71,7 @@ func (ap *AudioPanel) Unpause() {
 	speaker.Lock()
 	defer speaker.Unlock()
 	ap.ctrl.Paused = false
+	volume.Streamer = ap.resampler
 }
 
 func (ap *AudioPanel) Position() int {
