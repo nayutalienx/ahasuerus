@@ -23,6 +23,7 @@ func Start() {
 	rl.SetTargetFPS(FPS)
 	rl.InitAudioDevice()
 	rl.SetConfigFlags(rl.FlagMsaa4xHint)
+	rl.SetConfigFlags(rl.FlagVsyncHint)
 
 	resources.LoadShaderCache(resources.SdfShader)
 	literata := resources.LoadFont(resources.Literata)

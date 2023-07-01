@@ -15,6 +15,8 @@ const (
 	Start
 	Editor
 	Close
+
+	Level1
 )
 
 var (
@@ -30,7 +32,8 @@ func GetScene(id SceneId) models.Scene {
 	}
 
 	sceneNames := map[SceneId]string{
-		Start: "start",
+		Start:  "start",
+		Level1: "level1",
 	}
 
 	drawLoadScene()
@@ -38,11 +41,11 @@ func GetScene(id SceneId) models.Scene {
 	switch id {
 	case Menu:
 		scene = NewMenuScene()
-	case Start:
-		scene = NewGameScene(sceneNames[Start])
 	case Editor:
-		UnloadScene(Start)
+		UnloadScene(lastScene)
 		scene = NewEditScene(sceneNames[lastScene], lastScene)
+	default:
+		scene = NewGameScene(sceneNames[id])
 	}
 
 	if scene == nil {

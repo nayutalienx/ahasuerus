@@ -115,7 +115,7 @@ func (m *MenuScene) processMenuEnter() {
 	if rl.IsKeyReleased(rl.KeyEnter) {
 		if m.currentButton == StartButton {
 			m.menuShouldClose = true
-			m.nextScene = Start
+			m.nextScene = Level1
 		}
 
 		if m.currentButton == ExitButton {
