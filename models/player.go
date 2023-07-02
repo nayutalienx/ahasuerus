@@ -11,7 +11,9 @@ import (
 
 const (
 	JUMP_SPEED        = 350
-	GRAVITY           = 10
+	FALL_GRAVITY      = 20
+	PUSH_FORCE        = 5
+	JUMP_FORCE      = 10
 	PLAYER_MOVE_SPEED = 5
 
 	MIN_REWIND_SPEED = -4
@@ -161,7 +163,7 @@ func (p *Player) Update(delta float32) {
 
 	if !rewindEnabled {
 		p.movementResist(1, delta)
-		p.velocity.Y += GRAVITY * delta
+		p.velocity.Y += FALL_GRAVITY * delta
 
 		moveByXButtonPressed := p.processMoveXInput()
 
@@ -376,24 +378,24 @@ func (p *Player) resolveCollission(moveByXButtonPressed bool, collisionMap map[i
 	pushFromWall := false
 
 	if leftTop && leftBottom { // left wall collision (push side)
-		p.velocity.X = GRAVITY * 5 * delta
+		p.velocity.X = PUSH_FORCE * 5 * delta
 		pushFromWall = true
 	}
 
 	if rightTop && rightBottom { // right wall collision (push side)
-		p.velocity.X = (-1) * GRAVITY * 5 * delta
+		p.velocity.X = (-1) * PUSH_FORCE * 5 * delta
 		pushFromWall = true
 	}
 
 	if (rightBottom && bottomRight || bottomLeft && leftBottom) && moveByXButtonPressed && !pushFromWall { // push hero up when go stairs
-		p.velocity.Y = (-1) * GRAVITY * 5 * delta
+		p.velocity.Y = (-1) * PUSH_FORCE * 5 * delta
 	}
 
 	// jump
 	if bottomRight || bottomLeft {
 		spacePressed := rl.IsKeyDown(rl.KeySpace)
 		if spacePressed {
-			p.velocity.Y = (-1) * (GRAVITY / 1.5)
+			p.velocity.Y = (-1) * (JUMP_FORCE)
 		}
 	}
 
