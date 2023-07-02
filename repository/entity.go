@@ -16,10 +16,11 @@ type Level struct {
 	Images             []models.Image
 	ParticleSources    []models.ParticleSource
 
-	PlayerPos          rl.Vector2
+	PlayerPos    rl.Vector2
+	PlayerShader string
 
 	MusicTheme        string
-	MusicThemeReverse        string
+	MusicThemeReverse string
 }
 
 func GetLevel(levelName string) Level {

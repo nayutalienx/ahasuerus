@@ -1160,6 +1160,7 @@
 		"X": 800,
 		"Y": 800
 	},
+	"PlayerShader": "resources/shader/player.fs",
 	"MusicTheme": "resources/music/theme_lite.mp3",
 	"MusicThemeReverse": "resources/music/theme_reverse.mp3"
 }

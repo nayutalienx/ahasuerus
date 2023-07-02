@@ -25,6 +25,7 @@ type Npc struct {
 	drawBgImage    bool        `json:"-"`
 	bgImageHidePos rl.Vector2  `json:"-"`
 	screenChan     chan Object `json:"-"`
+	screenScale    float32     `json:"-"`
 
 	Rewind               [REWIND_BUFFER_SIZE]HitboxRewindData `json:"-"`
 	rewindLastIndex      int32                                `json:"-"`
@@ -42,10 +43,17 @@ func (p *Npc) ScreenChan(c chan Object) *Npc {
 	return p
 }
 
+func (p *Npc) ScreenScale(scale float32) *Npc {
+	p.screenScale = scale
+	p.Dialogues.ScreenScale(scale)
+	return p
+}
+
 func (p *Npc) Load() {
 	if p.BgImagePath != "" {
 		p.bgImage = NewImage(uuid.NewString(), resources.GameTexture(p.BgImagePath), 0, 0, 0).
 			WithShader(resources.NpcShader)
+		p.bgImage.Scale = p.screenScale
 		p.bgImage.Load()
 
 		if p.BgImageScale > 0 {
