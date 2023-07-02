@@ -1156,14 +1156,6 @@
 			}
 		}
 	],
-	"CameraPos": {
-		"X": 800,
-		"Y": 1190
-	},
-	"CameraStartEndMove": {
-		"X": 700,
-		"Y": 15000
-	},
 	"PlayerPos": {
 		"X": 800,
 		"Y": 800

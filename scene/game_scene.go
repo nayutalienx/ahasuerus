@@ -7,7 +7,6 @@ import (
 	"ahasuerus/repository"
 	"ahasuerus/resources"
 	"fmt"
-	"math"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -23,6 +22,7 @@ type GameScene struct {
 	onScreenQueue chan models.Object
 
 	paused bool
+	size rl.Vector2
 }
 
 func NewGameScene(sceneName string) *GameScene {
@@ -33,13 +33,16 @@ func NewGameScene(sceneName string) *GameScene {
 
 	scene.level = repository.GetLevel(sceneName)
 
+	scene.size = scene.level.Size()
+
 	camera := rl.NewCamera2D(
-		rl.NewVector2(WIDTH/2, HEIGHT-250),
-		scene.level.CameraPos,
-		0, 1.0)
+		rl.NewVector2(WIDTH/2, HEIGHT/2),
+		rl.NewVector2(WIDTH/2, scene.size.Y/2),
+		0, HEIGHT/scene.size.Y)
+
 	scene.camera = &camera
 
-	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.PlayerShader)
+	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.TextureShader)
 
 	if scene.level.MusicTheme != "" {
 		scene.worldContainer.AddObjectResource(models.NewMusicStream(scene.level.MusicTheme, scene.level.MusicThemeReverse).SetRewindCollisionCheck(scene.player.IsCollisionRewind))
@@ -133,7 +136,7 @@ func (s *GameScene) Run() models.Scene {
 			models.NewText(10, 10).
 				SetFontSize(40).
 				SetColor(rl.White).
-				SetData(fmt.Sprintf("fps: %d [movement(arrow keys), jump(space), edit mode(F1)]", rl.GetFPS())).
+				SetData(fmt.Sprintf("fps: %d [movement(arrow keys), jump(space), edit mode(F1)] camera: %.1f %.1f %.1f", rl.GetFPS(), s.camera.Target.X, s.camera.Target.Y, s.camera.Zoom)).
 				Draw()
 		}
 
@@ -146,24 +149,15 @@ func (s *GameScene) Run() models.Scene {
 }
 
 func (s *GameScene) updateCamera(delta float32) {
-	if s.player.Pos.X > s.level.CameraStartEndMove.X {
-		if s.player.Pos.X < s.level.CameraStartEndMove.Y {
+	cameraNewPos := s.player.Pos
+	cameraNewPos.Y = s.camera.Target.Y
 
-			cameraNewPos := s.player.Pos
-			cameraNewPos.Y = s.camera.Target.Y
-			distanceToCamera := math.Abs(float64(s.player.Pos.X - s.camera.Target.X))
-			if distanceToCamera > models.PLAYER_MOVE_SPEED+models.PLAYER_MOVE_SPEED/3 {
-				updateCameraWithMode(s.camera, cameraNewPos, delta, FastSmooth)
-			} else {
-				updateCameraWithMode(s.camera, cameraNewPos, delta, InstantSmooth)
-			}
-
-		} else {
-			updateCameraWithMode(s.camera, rl.NewVector2(float32(s.level.CameraStartEndMove.Y)+s.camera.Offset.X, s.camera.Target.Y), delta, FastSmooth)
-		}
-	} else {
-		updateCameraWithMode(s.camera, rl.NewVector2(0, s.camera.Target.Y), delta, FastSmooth)
+	leftCameraLimit := WIDTH/2 + (WIDTH - (WIDTH*s.camera.Zoom))
+	if cameraNewPos.X < leftCameraLimit {
+		cameraNewPos.X = leftCameraLimit
 	}
+
+	updateCameraWithMode(s.camera, cameraNewPos, delta)
 }
 
 func (m *GameScene) Unload() {

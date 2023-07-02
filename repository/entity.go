@@ -16,8 +16,6 @@ type Level struct {
 	Images             []models.Image
 	ParticleSources    []models.ParticleSource
 
-	CameraPos          rl.Vector2
-	CameraStartEndMove rl.Vector2
 	PlayerPos          rl.Vector2
 
 	MusicTheme        string
@@ -39,4 +37,18 @@ func (level *Level) SaveLevel() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (level *Level) Size() rl.Vector2 {
+	var size rl.Vector2
+	for _, point := range level.Images {
+		for _, polygon := range point.BaseEditorItem.Polygons {
+			for _, polygonPoint := range polygon.Points {
+				if polygonPoint.X > size.X && polygonPoint.Y > size.Y {
+					size = polygonPoint
+				}
+			}
+		}
+	}
+	return size
 }

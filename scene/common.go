@@ -82,32 +82,17 @@ func UnloadAllScenes() {
 	}
 }
 
-type CameraUpdateMode int
-
-const (
-	FastSmooth CameraUpdateMode = iota
-	InstantSmooth
-)
-
 func updateCameraWithMode(
 	camera *rl.Camera2D,
 	pos rl.Vector2,
-	delta float32,
-	mode CameraUpdateMode) {
+	delta float32) {
 
 	minSpeed := 0.0
 	minEffectLength := 10
 	fractionSpeed := 0.0
 
-	if mode == FastSmooth {
-		minSpeed = 30.0
-		fractionSpeed = 5.0
-	}
-
-	if mode == InstantSmooth {
-		minSpeed = 100.0
-		fractionSpeed = 10.0
-	}
+	minSpeed = 30.0
+	fractionSpeed = 5.0
 
 	diff := rl.Vector2Subtract(pos, camera.Target)
 	length := rl.Vector2Length(diff)

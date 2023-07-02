@@ -46,11 +46,13 @@ func NewEditScene(
 	rg.LoadStyleDefault()
 
 	level := repository.GetLevel(sceneName)
+	
+	levelSize := level.Size()
 
 	camera := rl.NewCamera2D(
-		rl.NewVector2(WIDTH/2, HEIGHT-500),
-		level.CameraPos,
-		0, 1)
+		rl.NewVector2(WIDTH/2, HEIGHT/2),
+		rl.NewVector2(WIDTH/2, levelSize.Y/2),
+		0, HEIGHT/levelSize.Y)
 
 	scene := &EditScene{
 		level:                   level,
@@ -159,6 +161,12 @@ func (s *EditScene) resolveEditorGameObjectsSelection() {
 	selectedItem := make([]models.EditorSelectedItem, 0)
 
 	s.worldContainer.ForEachObjectReverseWithPredicate(func(obj models.Object) bool {
+
+		_, isImage := obj.(*models.Image)
+		if models.DRAW_MODELS && isImage {
+			return false // skip image selection when draw game objects
+		}
+
 		editorItem, ok := obj.(models.EditorItem)
 		if ok {
 			resolveResult := editorItem.EditorDetectSelection()
