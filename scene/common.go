@@ -3,20 +3,21 @@ package scene
 import (
 	"ahasuerus/config"
 	"ahasuerus/models"
+	"fmt"
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type SceneId int
+type SceneId string
 
 const (
-	Menu SceneId = iota
-	Start
-	Editor
-	Close
-
-	Level1
+	Undefined SceneId = ""
+	Menu SceneId = "menu"
+	Start SceneId = "start"
+	Editor SceneId = "editor"
+	Close SceneId = "close"
+	Level1 SceneId = "level1"
 )
 
 var (
@@ -31,11 +32,6 @@ func GetScene(id SceneId) models.Scene {
 		return scene
 	}
 
-	sceneNames := map[SceneId]string{
-		Start:  "start",
-		Level1: "level1",
-	}
-
 	drawLoadScene()
 
 	switch id {
@@ -43,9 +39,10 @@ func GetScene(id SceneId) models.Scene {
 		scene = NewMenuScene()
 	case Editor:
 		UnloadScene(lastScene)
-		scene = NewEditScene(sceneNames[lastScene], lastScene)
+		scene = NewEditScene(string(lastScene), lastScene)
 	default:
-		scene = NewGameScene(sceneNames[id])
+		UnloadScene(lastScene)
+		scene = NewGameScene(string(id))
 	}
 
 	if scene == nil {
@@ -72,7 +69,9 @@ func UnloadScene(id SceneId) {
 		scene.Unload()
 		delete(sceneMap, id)
 	} else {
-		panic("scene to unload not found")
+		for i := 0; i < 10; i++ {
+			fmt.Println("scene to unload not found")
+		}
 	}
 }
 

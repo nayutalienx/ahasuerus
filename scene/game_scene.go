@@ -134,6 +134,11 @@ func (s *GameScene) Run() models.Scene {
 			onScreenObject.Draw()
 			onScreenObject.Update(delta)
 		}
+		isWannaChangeScene, sc := models.IsWannaChangeScene()
+		if isWannaChangeScene {
+			nextScene = SceneId(sc)
+			break
+		}
 
 		if models.DRAW_MODELS {
 			models.NewText(10, 10).

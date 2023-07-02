@@ -375,11 +375,13 @@ func (s *EditScene) drawMainHub() {
 		}
 
 		if newNpc {
-			newObject = &models.Npc{
+			npc := &models.Npc{
 				CollisionHitbox: models.CollisionHitbox{
 					BaseEditorItem: baseEditorItem,
 				},
 			}
+			npc.ScreenChan(s.onScreenQueue)
+			newObject = npc
 		}
 
 		s.worldContainer.AddObject(newObject)

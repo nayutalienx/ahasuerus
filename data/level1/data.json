@@ -1,6 +1,65 @@
 {
 	"Name": "level1",
-	"Characters": [],
+	"Characters": [
+		{
+			"Id": "7b3f4a3a-9792-4952-bada-177c59587a97",
+			"Polygons": [
+				{
+					"Points": [
+						{
+							"X": 681,
+							"Y": 788
+						},
+						{
+							"X": 726,
+							"Y": 788
+						},
+						{
+							"X": 726,
+							"Y": 880
+						}
+					]
+				},
+				{
+					"Points": [
+						{
+							"X": 681,
+							"Y": 788
+						},
+						{
+							"X": 681,
+							"Y": 880
+						},
+						{
+							"X": 726,
+							"Y": 880
+						}
+					]
+				}
+			],
+			"DrawIndex": 0,
+			"Rotation": 0,
+			"Dialogues": {
+				"CharacterName": "Hub",
+				"LevelJump": "start",
+				"CurrentInteraction": 0,
+				"Interactions": [
+					{
+						"Text": "Comeback to hub",
+						"Options": [
+							"Accept leave"
+						],
+						"Routes": [
+							0
+						],
+						"CurrentOption": 0
+					}
+				]
+			},
+			"BgImagePath": "",
+			"BgImageScale": 0
+		}
+	],
 	"Lights": [],
 	"CollissionHitboxes": [
 		{

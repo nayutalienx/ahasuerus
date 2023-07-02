@@ -39,8 +39,6 @@
 			],
 			"DrawIndex": 0,
 			"Rotation": 0,
-			"BgImagePath": "resources\\heroes\\characters\\kanade.png",
-			"BgImageScale": 0,
 			"Dialogues": {
 				"CharacterName": "Kanade",
 				"CurrentInteraction": 0,
@@ -83,13 +81,16 @@
 					},
 					{
 						"Text": "See you next time",
+						"Options": null,
 						"Routes": [
 							3
 						],
 						"CurrentOption": 0
 					}
 				]
-			}
+			},
+			"BgImagePath": "resources\\heroes\\characters\\kanade.png",
+			"BgImageScale": 0
 		},
 		{
 			"Id": "8c239ff9-ba60-4419-928c-d9a764ad1894",
@@ -129,8 +130,6 @@
 			],
 			"DrawIndex": 0,
 			"Rotation": 0,
-			"BgImagePath": "resources\\heroes\\characters\\kanade_2.png",
-			"BgImageScale": 0.9,
 			"Dialogues": {
 				"CharacterName": "Camellia",
 				"CurrentInteraction": 0,
@@ -173,13 +172,74 @@
 					},
 					{
 						"Text": "See you next time",
+						"Options": null,
 						"Routes": [
 							3
 						],
 						"CurrentOption": 0
 					}
 				]
-			}
+			},
+			"BgImagePath": "resources\\heroes\\characters\\kanade_2.png",
+			"BgImageScale": 0.9
+		},
+		{
+			"Id": "3dae6461-f5ac-4331-bc5d-6c1c4f70744f",
+			"Polygons": [
+				{
+					"Points": [
+						{
+							"X": 1666,
+							"Y": 1198
+						},
+						{
+							"X": 1766,
+							"Y": 1198
+						},
+						{
+							"X": 1766,
+							"Y": 1298
+						}
+					]
+				},
+				{
+					"Points": [
+						{
+							"X": 1666,
+							"Y": 1198
+						},
+						{
+							"X": 1666,
+							"Y": 1298
+						},
+						{
+							"X": 1766,
+							"Y": 1298
+						}
+					]
+				}
+			],
+			"DrawIndex": 0,
+			"Rotation": 0,
+			"Dialogues": {
+				"CharacterName": "Level1",
+				"LevelJump": "level1",
+				"CurrentInteraction": 0,
+				"Interactions": [
+					{
+						"Text": "Leave location",
+						"Options": [
+							"Accept leave"
+						],
+						"Routes": [
+							0
+						],
+						"CurrentOption": 0
+					}
+				]
+			},
+			"BgImagePath": "",
+			"BgImageScale": 0
 		}
 	],
 	"Lights": [
