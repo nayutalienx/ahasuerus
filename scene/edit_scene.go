@@ -35,6 +35,8 @@ type EditScene struct {
 
 	editMenuGameImageDropMode bool
 
+	onScreenQueue chan models.Object
+	screenScale float32
 	level repository.Level
 }
 
@@ -49,10 +51,12 @@ func NewEditScene(
 	
 	levelSize := level.Size()
 
+	screenScale := HEIGHT/levelSize.Y
+
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT/2),
 		rl.NewVector2(WIDTH/2, levelSize.Y/2),
-		0, HEIGHT/levelSize.Y)
+		0, screenScale)
 
 	scene := &EditScene{
 		level:                   level,
@@ -61,6 +65,8 @@ func NewEditScene(
 		worldContainer:          container.NewObjectResourceContainer(),
 		editCameraSpeed:         5,
 		selectedGameObjectsItem: make([]models.EditorSelectedItem, 0),
+		onScreenQueue:  make(chan models.Object, 2),
+		screenScale: screenScale,
 	}
 
 	worldImages := scene.level.Images
@@ -84,8 +90,8 @@ func NewEditScene(
 
 	characters := scene.level.Characters
 	for i, _ := range characters {
-		npc := characters[i]
-		scene.worldContainer.AddObjectResource(&npc)
+		npc := characters[i].ScreenChan(scene.onScreenQueue).ScreenScale(scene.screenScale)
+		scene.worldContainer.AddObjectResource(npc)
 	}
 
 	particles := scene.level.ParticleSources
@@ -133,6 +139,12 @@ func (s EditScene) Run() models.Scene {
 		}
 
 		rl.EndMode2D()
+
+		for len(s.onScreenQueue) > 0 {
+			onScreenObject := <-s.onScreenQueue
+			onScreenObject.Draw()
+			onScreenObject.Update(delta)
+		}
 
 		if s.editorHubEnabled {
 			s.drawEditorHub()
