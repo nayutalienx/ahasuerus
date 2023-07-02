@@ -3295,6 +3295,7 @@
 		"X": 900,
 		"Y": 600
 	},
+	"PlayerShader": "resources/shader/texture.fs",
 	"MusicTheme": "",
 	"MusicThemeReverse": ""
 }

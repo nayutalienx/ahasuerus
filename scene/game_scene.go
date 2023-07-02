@@ -23,6 +23,8 @@ type GameScene struct {
 
 	paused bool
 	size rl.Vector2
+
+	screenScale float32
 }
 
 func NewGameScene(sceneName string) *GameScene {
@@ -34,15 +36,16 @@ func NewGameScene(sceneName string) *GameScene {
 	scene.level = repository.GetLevel(sceneName)
 
 	scene.size = scene.level.Size()
+	scene.screenScale = HEIGHT/scene.size.Y
 
 	camera := rl.NewCamera2D(
 		rl.NewVector2(WIDTH/2, HEIGHT/2),
 		rl.NewVector2(WIDTH/2, scene.size.Y/2),
-		0, HEIGHT/scene.size.Y)
+		0, scene.screenScale)
 
 	scene.camera = &camera
 
-	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.TextureShader)
+	scene.player = models.NewPlayer(float32(scene.level.PlayerPos.X), float32(scene.level.PlayerPos.Y)).WithShader(resources.GameShader(scene.level.PlayerShader))
 
 	if scene.level.MusicTheme != "" {
 		scene.worldContainer.AddObjectResource(models.NewMusicStream(scene.level.MusicTheme, scene.level.MusicThemeReverse).SetRewindCollisionCheck(scene.player.IsCollisionRewind))
@@ -84,7 +87,7 @@ func NewGameScene(sceneName string) *GameScene {
 	for i, _ := range characters {
 		npc := characters[i]
 		npc.CollisionProcessor.AddHitbox(scene.player.GetHitbox())
-		scene.worldContainer.AddObjectResource(npc.ScreenChan(scene.onScreenQueue))
+		scene.worldContainer.AddObjectResource(npc.ScreenChan(scene.onScreenQueue).ScreenScale(scene.screenScale))
 	}
 
 	scene.worldContainer.Sort()

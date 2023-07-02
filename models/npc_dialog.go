@@ -10,6 +10,7 @@ type NpcDialog struct {
 	CharacterName      string
 	CurrentInteraction uint
 	Interactions       []NpcInteraction
+	screenScale    float32     `json:"-"`
 }
 
 type NpcInteraction struct {
@@ -17,6 +18,11 @@ type NpcInteraction struct {
 	Options       []string
 	Routes        []uint
 	CurrentOption uint
+}
+
+func (p *NpcDialog) ScreenScale(scale float32) *NpcDialog {
+	p.screenScale = scale
+	return p
 }
 
 func (p *NpcDialog) Draw() {
@@ -71,7 +77,7 @@ func (p *NpcDialog) drawDialog() {
 
 	rl.DrawRectangleRounded(dialogRectangle, 0, 0, rl.NewColor(0, 0, 0, 150))
 
-	fontSize := float32(60)
+	fontSize := float32(60)*p.screenScale
 
 	// draw name
 	DrawSdfText(p.CharacterName, rl.Vector2{
