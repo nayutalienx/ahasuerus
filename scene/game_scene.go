@@ -72,6 +72,7 @@ func NewGameScene(sceneName string) *GameScene {
 		scene.worldContainer.AddObjectResource(&hb)
 		scene.player.CollisionProcessor.AddHitbox(&collision.Hitbox{
 			Polygons: hb.PolygonsWithRotation(),
+			Rotation: hb.Rotation,
 		})
 
 	}

@@ -13,7 +13,7 @@ const (
 	JUMP_SPEED        = 350
 	FALL_GRAVITY      = 20
 	PUSH_FORCE        = 5
-	JUMP_FORCE      = 10
+	JUMP_FORCE        = 10
 	PLAYER_MOVE_SPEED = 5
 
 	MIN_REWIND_SPEED = -4
@@ -31,6 +31,7 @@ type Player struct {
 	Pos                rl.Vector2                  `json:"-"`
 	CollisionProcessor collision.CollisionDetector `json:"-"`
 	velocity           rl.Vector2                  `json:"-"`
+	jumpCounter        uint8                       `json:"-"`
 
 	width, height float32           `json:"-"`
 	orientation   Orientation       `json:"-"`
@@ -162,19 +163,24 @@ func (p *Player) Update(delta float32) {
 	rewindEnabled := rl.IsKeyDown(rl.KeyLeftShift)
 
 	if !rewindEnabled {
-		p.movementResist(1, delta)
-		p.velocity.Y += FALL_GRAVITY * delta
+		newVelocity := p.velocity
 
-		moveByXButtonPressed := p.processMoveXInput()
+		newVelocity = p.movementResist(newVelocity, 1, delta)
+		newVelocity.Y += FALL_GRAVITY * delta
 
-		futurePos := rl.Vector2Add(p.Pos, p.velocity)
+		newVelocity = p.processMoveXInput(newVelocity)
 
-		futureHitboxMap := GetDynamicHitboxMap(futurePos, p.width, p.height)
+		futureHitboxMap := GetDynamicHitboxMap(rl.Vector2Add(p.Pos, newVelocity), p.width, p.height)
 		hitbox := GetDynamicHitboxFromMap(futureHitboxMap)
-		hasCollision, collisionMap := p.CollisionProcessor.Detect(hitbox)
+		hasCollision, collisionMapArray := p.CollisionProcessor.Detect(hitbox)
 		if hasCollision {
-			futurePos = p.resolveCollission(moveByXButtonPressed, collisionMap, delta)
+			for i, _ := range collisionMapArray {
+				newVelocity = p.resolveCollission(newVelocity, collisionMapArray[i], delta)
+			}
 		}
+
+		p.velocity = newVelocity
+		futurePos := rl.Vector2Add(p.Pos, p.velocity)
 
 		posDelta := rl.Vector2Subtract(p.Pos, futurePos)
 
@@ -226,6 +232,10 @@ func (p *Player) Update(delta float32) {
 			rewind = 1.0
 		}
 		rl.SetShaderValue(p.Shader, p.shaderLocs[7], []float32{float32(rewind)}, rl.ShaderUniformFloat)
+	}
+
+	if p.jumpCounter > 0 {
+		p.jumpCounter--
 	}
 }
 
@@ -331,20 +341,17 @@ func (p *Player) updateAnimation(delta float32, speed uint8) {
 	p.currentAnimation.Update(delta)
 }
 
-func (p *Player) processMoveXInput() bool {
+func (p *Player) processMoveXInput(velocity rl.Vector2) rl.Vector2 {
 	if rl.IsKeyDown(rl.KeyLeft) && !p.paused {
-		p.velocity.X = (-1) * PLAYER_MOVE_SPEED
+		velocity.X = (-1) * PLAYER_MOVE_SPEED
 		p.orientation = Left
-		return true
 	}
 
 	if rl.IsKeyDown(rl.KeyRight) && !p.paused {
-		p.velocity.X = PLAYER_MOVE_SPEED
+		velocity.X = PLAYER_MOVE_SPEED
 		p.orientation = Right
-		return true
 	}
-
-	return false
+	return velocity
 }
 
 func (p *Player) AddLightbox(lp Light) *Player {
@@ -357,64 +364,104 @@ func (p *Player) WithShader(gs resources.GameShader) *Player {
 	return p
 }
 
-func (p *Player) resolveCollission(moveByXButtonPressed bool, collisionMap map[int]bool, delta float32) rl.Vector2 {
-	// _, topLeft := collisionMap[0]
-	// _, topRight := collisionMap[1]
+func (p *Player) resolveCollission(velocity rl.Vector2, collisionMap map[int]float32, delta float32) rl.Vector2 {
+	_, topLeft := collisionMap[0]
+	_, topRight := collisionMap[1]
 
 	_, rightTop := collisionMap[2]
 	_, rightBottom := collisionMap[3]
 
-	_, bottomRight := collisionMap[4]
-	_, bottomLeft := collisionMap[5]
+	bottomRightRotation, bottomRight := collisionMap[4]
+	bottomLeftRotation, bottomLeft := collisionMap[5]
 
 	_, leftBottom := collisionMap[6]
 	_, leftTop := collisionMap[7]
 
-	if bottomRight || bottomLeft { // fall on ground
-		p.velocity.Y = 0
-		p.movementResist(7, delta)
+	if bottomRight && bottomLeft { // fall on ground
+		velocity.Y = 0
+		velocity = p.movementResist(velocity, 7, delta)
+		velocity = Vec2Rotate(velocity, math.Max(float64(bottomLeftRotation), float64(bottomRightRotation)))
 	}
 
-	pushFromWall := false
-
-	if leftTop && leftBottom { // left wall collision (push side)
-		p.velocity.X = PUSH_FORCE * 5 * delta
-		pushFromWall = true
+	if leftTop || leftBottom { // left wall collision
+		velocity.X = 0
 	}
 
-	if rightTop && rightBottom { // right wall collision (push side)
-		p.velocity.X = (-1) * PUSH_FORCE * 5 * delta
-		pushFromWall = true
+	if rightTop || rightBottom { // right wall collision
+		velocity.X = 0
 	}
 
-	if (rightBottom && bottomRight || bottomLeft && leftBottom) && moveByXButtonPressed && !pushFromWall { // push hero up when go stairs
-		p.velocity.Y = (-1) * PUSH_FORCE * 5 * delta
+	bottomLeftStuck := bottomLeft && leftBottom && !bottomRight && !leftTop // slide down-side when on border of collision box
+	if bottomLeftStuck {
+		velocity.X = 3
+		velocity.Y = 3
+	}
+	bottomRightStuck := bottomRight && rightBottom && !bottomLeft && !rightTop // slide down-side when on border of collision box
+	if bottomRightStuck {
+		velocity.X = -3
+		velocity.Y = 3
+	}
+
+	if topLeft || topRight { // top collission
+		if velocity.Y < 0 {
+			velocity.Y = 0
+		}
+	}
+
+	topLeftStuck := topLeft && leftTop && !leftBottom && !topRight // topLeft border stuck SLIDE DOWN
+	if topLeftStuck {
+		velocity.X = 3
+		velocity.Y = 3
+	}
+
+	topRightStuck := topRight && rightTop && !rightBottom && !topLeft // top right border stuck SLIDE DOWN
+	if topRightStuck {
+		velocity.X = -3
+		velocity.Y = 3
+	}
+
+	if !leftBottom && leftTop && !topLeft { // LEFT SINGLE TOP COLLISION
+		if velocity.Y < 0 {
+			velocity.Y = 0
+		}
+	}
+
+	if !rightBottom && rightTop && !topRight { // RIGHT SINGLE TOP COLLISION
+		if velocity.Y < 0 {
+			velocity.Y = 0
+		}
+	}
+
+	if bottomRight && bottomLeft {
+		p.jumpCounter = 0
 	}
 
 	// jump
-	if bottomRight || bottomLeft {
+	if bottomRight || bottomLeft && (!leftBottom && !rightBottom && !leftTop && !rightTop) {
 		spacePressed := rl.IsKeyDown(rl.KeySpace)
-		if spacePressed {
-			p.velocity.Y = (-1) * (JUMP_FORCE)
+		if spacePressed && p.jumpCounter == 0 {
+			velocity.Y = (-1) * (JUMP_FORCE)
+			p.jumpCounter = uint8(FPS)
 		}
 	}
 
-	return rl.Vector2Add(p.Pos, p.velocity)
+	return velocity
 }
 
-func (p *Player) movementResist(resistScale float32, delta float32) {
-	if p.velocity.X > 0 {
-		p.velocity.X += -1 * PLAYER_MOVE_SPEED * resistScale * delta
-		if p.velocity.X < 0 {
-			p.velocity.X = 0
+func (p *Player) movementResist(velocity rl.Vector2, resistScale float32, delta float32) rl.Vector2 {
+	if velocity.X > 0 {
+		velocity.X += -1 * PLAYER_MOVE_SPEED * resistScale * delta
+		if velocity.X < 0 {
+			velocity.X = 0
 		}
 	}
-	if p.velocity.X < 0 {
-		p.velocity.X += PLAYER_MOVE_SPEED * resistScale * delta
-		if p.velocity.X > 0 {
-			p.velocity.X = 0
+	if velocity.X < 0 {
+		velocity.X += PLAYER_MOVE_SPEED * resistScale * delta
+		if velocity.X > 0 {
+			velocity.X = 0
 		}
 	}
+	return velocity
 }
 
 func (p *Player) drawHitbox() {

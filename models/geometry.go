@@ -41,28 +41,42 @@ type DynamicHitboxMap struct {
 	bottomRightTwo rl.Vector2
 }
 
+func Vec2Rotate(v rl.Vector2, degrees float64) rl.Vector2 {
+	// Преобразование угла в радианы
+	radians := degrees * math.Pi / 180
+
+	// Поворот вектора с использованием тригонометрических функций
+	result :=  rl.Vector2{
+		X: (v.X*float32(math.Cos(radians)) - v.Y*float32(math.Sin(radians))),
+		Y: (v.X*float32(math.Sin(radians)) + v.Y*float32(math.Cos(radians))),
+	}
+	return result
+}
+
 func GetDynamicHitboxMap(pos rl.Vector2, width, height float32) DynamicHitboxMap {
-	cornerOffset := float32(10)
+	topCornerOffset := float32(20)
+	middleBottomCornerOffset := float32(30)
+	bottomCornerOffset := float32(0)
 	return DynamicHitboxMap{
-		topLeftOne: rl.Vector2{pos.X + cornerOffset, pos.Y},
-		topLeftTwo: rl.Vector2{pos.X, pos.Y + cornerOffset},
+		topLeftOne: rl.Vector2{pos.X + topCornerOffset, pos.Y},
+		topLeftTwo: rl.Vector2{pos.X, pos.Y + topCornerOffset},
 
 		topMiddle: rl.Vector2{pos.X + width/2, pos.Y},
 
-		topRightOne: rl.Vector2{pos.X + width - cornerOffset, pos.Y},
-		topRightTwo: rl.Vector2{pos.X + width, pos.Y + cornerOffset},
+		topRightOne: rl.Vector2{pos.X + width - topCornerOffset, pos.Y},
+		topRightTwo: rl.Vector2{pos.X + width, pos.Y + topCornerOffset},
 
 		leftMiddle:  rl.Vector2{pos.X, pos.Y + height/2},
 		center:      rl.Vector2{pos.X + width/2, pos.Y + height/2},
 		rightMiddle: rl.Vector2{pos.X + width, pos.Y + height/2},
 
-		bottomRightOne: rl.Vector2{pos.X + width, pos.Y + height - cornerOffset},
-		bottomRightTwo: rl.Vector2{pos.X + width - cornerOffset, pos.Y + height},
+		bottomRightOne: rl.Vector2{pos.X + width, pos.Y + height - middleBottomCornerOffset},
+		bottomRightTwo: rl.Vector2{pos.X + width - bottomCornerOffset, pos.Y + height},
 
 		bottomMiddle: rl.Vector2{pos.X + width/2, pos.Y + height},
 
-		bottomLeftOne: rl.Vector2{pos.X + cornerOffset, pos.Y + height},
-		bottomLeftTwo: rl.Vector2{pos.X, pos.Y + height - cornerOffset},
+		bottomLeftOne: rl.Vector2{pos.X + bottomCornerOffset, pos.Y + height},
+		bottomLeftTwo: rl.Vector2{pos.X, pos.Y + height - middleBottomCornerOffset},
 	}
 }
 

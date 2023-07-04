@@ -232,7 +232,7 @@ func (p *BaseEditorItem) SetPolygons(polys [2]collision.Polygon) {
 
 func (p *BaseEditorItem) Draw() {
 	if p.EditorRotateMode {
-		rl.DrawText("Rotate on [R and T]", int32(p.TopLeft().X), int32(p.TopLeft().Y+40), 40, rl.Red)
+		rl.DrawText(fmt.Sprintf("\nRotate on [R and T] %.1f", p.Rotation), int32(p.TopLeft().X), int32(p.TopLeft().Y+40), 40, rl.Red)
 	}
 
 	if p.EditSelected {
