@@ -2,7 +2,10 @@
 
 Платформер с возможностью отмотки времени.
 
-Demo: https://www.youtube.com/watch?v=sXyjijSwvnU
+# Demo
+
+[![Watch the video](https://img.youtube.com/vi/sXyjijSwvnU/maxresdefault.jpg)](https://youtu.be/sXyjijSwvnU)
+
 
 # Система частиц
 
